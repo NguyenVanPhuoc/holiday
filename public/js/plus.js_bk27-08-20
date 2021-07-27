@@ -1,0 +1,1329 @@
+jQuery(document).ready(function($){
+ 
+    // Select2 js
+        $('select.js-select2').select2()
+        .on("select2:open", function () {
+        $('.select2-results__options').scrollbar().parent().addClass('scrollbar-inner');
+    });
+    function add7DaysW(){
+        var d = new Date();
+        var day = d.getDay();
+        if(day>=0 && day<=3) {day= '+9d'} //Sunday monday tuesday wednesday
+        else if(day!=6) {day= '+10d'}     // thurday and friday
+        else {day= '+11d'};               // Saturday 
+        return day                         
+    }
+
+    $("#frm-appointmentDate .input-group.date").datepicker({
+        format: "DD dd-mm-yyyy",
+        startDate: new Date(),
+        endDate: add7DaysW(),
+        showOtherMonths: true,
+        daysOfWeekDisabled: [0,6],
+        autoclose: true,
+    }); 
+    $('#frm-arrivalDate .input-group.date').datepicker({
+        format: "DD, dd/mm/yyyy",
+        startDate: new Date(),
+        autoclose: true,
+    });
+    // Calculate Approximate departure date
+    Date.prototype.addDays = function(days) {
+        var date = new Date(this.valueOf());
+        date.setDate(date.getDate() + days);
+        return date;
+    }
+    $('input[name="arrivalDate"], select[name="duration"]').on('change', function() {
+        var arr =  $('#frm-arrivalDate .input-group.date').datepicker('getDate');
+        var dur = $('select[name="duration"]').val();
+        var res = arr.addDays(parseInt(dur));
+        var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        var d = new Date(res);
+        var dayName = days[d.getDay()];
+        var day = ("0" + d.getUTCDate()).slice(-2);
+        if(dur == 0) {
+            $(this).parents('.arravel-duration').find('p#approDate span').text();
+        } else {
+            var month =("0" + (d.getUTCMonth()+1)).slice(-2);
+            var year = d.getUTCFullYear();
+            $(this).parents('.arravel-duration').find('p#approDate span').text(dayName+','+' '+day+'/'+month+'/'+year);
+        }        
+    });
+    // Show hide app-name in mobile-app
+    $('ul.socials.m-app label').on('mouseenter',function() {
+        $(this).siblings('.app-name').removeClass('hide');
+    });
+    $('ul.socials.m-app label').on('mouseleave',function() {
+        $(this).siblings('.app-name').addClass('hide');
+    });
+    $('ul.socials.m-app label').on('change',function() {
+        if($(this).children('input[type=checkbox]').is(':checked')) {
+            $(this).siblings('input').removeClass('hide');
+            $(this).siblings('.app-name').addClass('active');
+        }else {
+            $(this).siblings('input').addClass('hide');
+            $(this).siblings('.app-name').removeClass('active');
+        } 
+    });
+
+    // Least one checkbox id seleced
+    $("#frm-destination input[type=checkbox]").on("change",function(){
+        var check = false;
+        $("#frm-destination .col-md-4").each(function(){
+            if($(this).find("input[type=checkbox]").is(":checked")){
+                check = true;
+            }
+        });
+        if(check == true){
+            $("#frm-destination input").prop("required",false);
+        }else{
+            $("#frm-destination input").prop("required",true);
+        }
+    });
+    // Turn off 1 on 2 or turn off this
+    $('#frm-meals .checkbox input[name=meals]').on('click', function(){
+        if($(this).parents('.checkbox').hasClass('active')){
+            $(this).parents('.checkbox').removeClass('active');
+            $(this).prop('checked', false);
+        } 
+        else{
+            $('#frm-meals .checkbox').removeClass('active');
+            $('#frm-meals .checkbox input[name=meals]').prop('checked', false);
+            $(this).parents('.checkbox').addClass('active');
+            $(this).prop('checked', true);
+        }
+    });
+    // Turn off 1 on 2 item or turn off it's
+    $('#frm-accommodation .checkbox input[name=accommodation]').on('click', function(){
+        if($(this).parents('.checkbox').hasClass('active')){
+            $(this).parents('.checkbox').removeClass('active');
+            $(this).prop('checked', false);
+        } 
+        else{
+            $('#frm-accommodation .checkbox').removeClass('active');
+            $('#frm-accommodation .checkbox input[name=accommodation]').prop('checked', false);
+            $(this).parents('.checkbox').addClass('active');
+            $(this).prop('checked', true);
+        }
+    });
+    // Turn off 1 on 2 item or turn off it's
+    $('#frm-canContact input[name=canContact]').on('change',function(){
+        var check = false;
+        $('#frm-canContact .col-md-3').each(function(){
+            if($(this).find('input[name=canContact]').is(":checked") && $(this).find('input[name=canContact]').val() == "Yes"){
+                check = true;
+            }else if($(this).find('input[name=canContact]').is(":checked") && $(this).find('input[name=canContact]').val() == "No"){
+                check = false;
+            }
+        });
+
+        if(check == true){
+            $('.hideNoCall').slideToggle();
+            $('#frm-appointmentDate input[name=appointmentDate]').prop('required',true);
+            $('#frm-appointmentDate').addClass('has-feedback');
+        }else if(check == false){
+            $('.hideNoCall').slideToggle();
+            $('#frm-appointmentDate input[name=appointmentDate]').prop('required',false);
+            $('#frm-appointmentDate').removeClass('has-feedback');
+        }   
+    });
+    // Modal scroll
+    $('.modal-preview .scrollbar-inner').scrollbar();
+    // Show preview create my trip
+    $("#btn-trip").on("click",function(e){
+        e.preventDefault();
+        var title = $("select[name=title]").find(":selected").val();
+        var firstName = $("input[name=firstName]").val();
+        var lastName = $("input[name=lastName]").val();
+        $(".box-modal .fullName span").text(' '+title+firstName+' '+lastName);
+        var email = $("#frm-email input[name=email]").val();
+        $(".box-modal .email span").text(email);
+        var areaCode = $("#frm-phone select[name=areaCode]").find(":selected").val();
+        var numberPhone = $("#frm-phone input[name=numberPhone]").val();
+        if(numberPhone.charAt(0) == '0'){
+            var validateNumberPhone = numberPhone.substr(1); 
+        }else{
+            var validateNumberPhone = numberPhone;
+        }
+        $(".box-modal .phone span").text(' '+areaCode+validateNumberPhone);
+        var ageGroup = $("#frm-ageGroup select[name='ageGroup']").find(":selected").val();
+        $(".box-modal .are-group span").text(ageGroup);
+        var country = $("#frm-country select[name=country]").find(":selected").val();
+        $(".box-modal .country span").text(country);
+        if($("#frm-newsletter input[name=newsletter]").is(':checked')){
+            $(".box-modal .newsletter span").text('Yes');
+        }
+        else{
+            $(".box-modal .newsletter span").text('No');
+        }
+        var numAdult = $("select[id=numAdult]").find(":selected").val();
+        var numChild = $("select[id=numChild]").find(":selected").val();
+        var numBaby = $("select[id=numBaby]").find(":selected").val();
+        var numberTravels = "";
+        if(parseInt(numAdult) > 0){
+            numberTravels += ' Adult: ' + numAdult;
+        }
+        if(parseInt(numChild) > 0){
+            if(numberTravels == ""){
+                numberTravels +=  'Child 2-12 y.o: ' + numChild;
+            }else{
+                numberTravels +=  ' / Child 2-12 y.o: ' + numChild;
+            }
+        }
+        if(parseInt(numBaby) > 0){
+            if(numberTravels == ""){
+                numberTravels +=  'Baby < 2 y.o: ' + numBaby;
+            }else{
+            numberTravels += ' / Baby < 2 y.o: ' + numBaby;
+            }
+        }
+        $(".box-modal .travel-of span").text(numberTravels);
+        var condition = $("input[name=condition]:checked").val();
+        $(".box-modal .phy-cal span").text(condition);
+        var descProject = $("textarea[name=descProject]").val();
+        $(".box-modal .project-item1").text(descProject);
+        var furtherNote = $("textarea[name=furtherNote]").val();
+        $(".box-modal .project-item2").text(furtherNote);
+        if($('#frm-meals .checkbox ').hasClass('active')){
+            var meals = $("#frm-meals input[name=meals]:checked").val();
+            $(".box-modal .meals span").text(meals);
+        }else{
+            var meals = ""
+            $(".box-modal .meals span").text(meals);
+        }
+        
+        var mealsTrips = $("textarea[name=mealsTrips]").val();
+        $(".box-modal .project-item3").text(mealsTrips);
+        var arrivalDate = $("input[name=arrivalDate]").val();
+        $(".box-modal .arrival span").text(arrivalDate);
+        var duration = $("select[name=duration]").val();
+        $(".box-modal .duration span").text(duration);
+        var destination = "";
+        $("#frm-destination .custom-checkbox .selected").each(function(){
+            var checkbox = $(this).find("input[name='destination[]']");
+            if(checkbox.is(":checked")){
+                if(destination == ""){
+                    destination = checkbox.val();
+                }else{
+                    destination = destination + ' / ' + checkbox.val();
+                }
+            }
+        });
+        $(".box-modal .destination span").text(destination);
+        var tourType = "";
+        $("#frm-tourType .custom-checkbox .selected").each(function(){
+            var checkbox = $(this).find("input[name='tourType[]']");
+            if(checkbox.is(":checked")){
+                if(tourType == ""){
+                    tourType = checkbox.val();
+                }else{
+                    tourType = tourType + ' / ' + checkbox.val();
+                }
+            }
+        });
+
+        $(".box-modal .tour span").text(tourType);
+        if($('#frm-accommodation .checkbox ').hasClass('active')){
+            var accommodation = $("#frm-accommodation input[name=accommodation]:checked").val();
+            $(".box-modal .accommodation span").text(accommodation);
+        }else{
+            var accommodation = ""
+            $(".box-modal .accommodation span").text(accommodation);
+        }
+        var doubleRoom = $("select[name=doubleRoom]").val();
+        var twinRoom = $("select[name=twinRoom]").val();
+        var individualRoom = $("select[name=individualRoom]").val();
+        var tripleRoom = $("select[name=tripleRoom]").val();
+        var rooms = "";
+        if(parseInt(doubleRoom) > 0){
+            if(rooms == ""){
+                rooms += "Double: "+ doubleRoom;
+            }else{
+                rooms += " / Double: "+ doubleRoom;
+            }
+        }
+        if(parseInt(twinRoom) > 0){
+            if(rooms == ""){
+                rooms += "Twin: "+ twinRoom;
+            }else{
+                rooms += " / Twin: "+ twinRoom;
+            }
+        }
+        if(parseInt(individualRoom) > 0){
+            if(rooms == ""){
+                rooms += "Individual: "+ individualRoom;
+            }else{
+                rooms += " / Individual: "+ individualRoom;
+            }
+        }
+        if(parseInt(tripleRoom) > 0){
+            if(rooms == ""){
+                rooms += "Individual: "+ tripleRoom;
+            }else{
+                rooms += " / Individual: "+ tripleRoom;
+            }
+        }
+        $(".box-modal .room span").text(rooms);
+        var budgetPerson = $("input[name=budgetPerson]").val();
+        var currencyPerson = $("select[name=currencyPerson]").find(":selected").val();
+        $(".box-modal .person span").text(budgetPerson+' '+ currencyPerson);
+        var hobbies = $("textarea[name=hobbies]").val();
+        $(".box-modal .better-item1").text(hobbies);
+        var lastLong = $("textarea[name=lastLong]").val();
+        $(".box-modal .better-item2").text(lastLong);
+        if($("input[id=callYes]").is(":checked")){
+            $(".box-modal .text-can span").text('Yes');
+        }else{
+            $(".box-modal .text-can span").text('No');
+        }
+        if($("#frm-canContact input[name=canContact]:checked").val() == "Yes"){
+            var appointmentDate = $("input[name=appointmentDate]").val();
+            $(".box-modal .app-date span").text(appointmentDate);
+            var timeZone = $("select[name=timeZone]").find(":selected").val();
+            $(".box-modal .app-zone span").text(timeZone);
+            var accWhatsapp = $('input[name=whatsapp_id]').val();
+            var accFacebook = $('input[name=facebook_id]').val();
+            var accSkype = $('input[name=skype_id]').val();
+            $('.box-modal .apps-call span').text('');
+            if($("#frm-mobileApp label input#whatsapp").is(":checked")){
+                var name = $("#frm-mobileApp label input#whatsapp").val();
+                $(".box-modal .apps-call span").append(name+' : '+accWhatsapp);
+            }
+            if($("#frm-mobileApp label input#messenger").is(":checked")){
+                var name = $("#frm-mobileApp label input#messenger").val();
+                if($('.box-modal .apps-call span').length >0){
+                    $(".box-modal .apps-call span").append(' / ' +name +' : '+ accFacebook);
+                }else{
+                    $(".box-modal .apps-call span").append(name +' : '+ accFacebook);
+                }
+            }
+            if($("#frm-mobileApp label input#skype").is(":checked")){
+                var name = $("#frm-mobileApp label input#skype").val();
+                if($(".box-modal .apps-call span").length > 0){
+                    $(".box-modal .apps-call span").append(' / ' +name +' : '+ accSkype);
+                }else{
+                    $("box-modal .apps-call span").append(name +' : '+ accSkype);
+                }
+            }   
+            var timeSlot = "";
+            $("#frm-timeSlot .custom-checkbox .item").each(function(){
+                var checkbox = $(this).find("input[name='timeSlot[]']");
+                if(checkbox.is(":checked")){
+                    if(timeSlot == ""){
+                        timeSlot = checkbox.val();
+                    }else{
+                        timeSlot = timeSlot + ' / ' + checkbox.val();
+                    }
+                }
+            }); 
+            $(".box-modal .app-slot span").text(timeSlot);
+        }else{
+            $(".box-modal .app-date span").text('');
+            $(".box-modal .app-zone span").text('');
+            $(".box-modal .apps-call span").text('');
+            $(".box-modal .app-slot span").text('');
+        }
+        var titleIntro =  $("select[name=titleIntro]").find(":selected").val();
+        var firstNameIntro = $("input[name=firstNameIntro]").val();
+        var lastNameIntro = $("input[name=lastNameIntro]").val();
+        if(titleIntro != "" || firstNameIntro != "" || lastNameIntro != ""){
+            $(".box-modal .text-recon span").text('Yes');
+            if(titleIntro != "" && firstNameIntro != "" && lastNameIntro != ""){
+                $(".box-modal .sponsor span").text(' '+titleIntro+firstNameIntro+' '+lastNameIntro);
+            }else if(titleIntro == "" && firstNameIntro != "" && lastNameIntro != ""){
+                $(".box-modal .sponsor span").text(' '+firstNameIntro+' '+lastNameIntro);
+            }else if(titleIntro != "" && firstNameIntro != "" && lastNameIntro == ""){
+                $(".box-modal .sponsor span").text(' '+titleIntro+' '+firstNameIntro);
+            }else if(titleIntro != "" && firstNameIntro == "" && lastNameIntro != ""){
+                $(".box-modal .sponsor span").text(' '+titleIntro+' '+lastNameIntro);
+            }
+        }else{
+            $(".box-modal .text-recon span").text('No');
+            $(".box-modal .sponsor span").text('');
+        }
+        $("#createMyTripModal").modal("show");
+    });
+    // Show preview personalize
+    $("#btn-person").on("click",function(e){
+        e.preventDefault();
+        var title = $("select[name=title]").find(":selected").val();
+        var firstName = $("input[name=firstName]").val();
+        var lastName = $("input[name=lastName]").val();
+        $(".box-modal .fullName span").text(' '+title+firstName+' '+lastName);
+        var email = $("#frm-email input[name=email]").val();
+        $(".box-modal .email span").text(email);
+        var areaCode = $("#frm-phone select[name=areaCode]").find(":selected").val();
+        var numberPhone = $("#frm-phone input[name=numberPhone]").val();
+        if(numberPhone.charAt(0) == '0'){
+            var validateNumberPhone = numberPhone.substr(1); 
+        }else{
+            var validateNumberPhone = numberPhone;
+        }
+        $(".box-modal .phone span").text(' '+areaCode+validateNumberPhone);
+        var ageGroup = $("#frm-ageGroup select[name='ageGroup']").find(":selected").val();
+        $(".box-modal .are-group span").text(ageGroup);
+        var country = $("#frm-country select[name=country]").find(":selected").val();
+        $(".box-modal .country span").text(country);
+        if($("#frm-newsletter input[name=newsletter]").is(':checked')){
+            $(".box-modal .newsletter span").text('Yes');
+        }
+        else{
+            $(".box-modal .newsletter span").text('No');
+        }
+        var numAdult = $("select[id=numAdult]").find(":selected").val();
+        var numChild = $("select[id=numChild]").find(":selected").val();
+        var numBaby = $("select[id=numBaby]").find(":selected").val();
+        var numberTravels = "";
+        if(parseInt(numAdult) > 0){
+            numberTravels += ' Adult: ' + numAdult;
+        }
+        if(parseInt(numChild) > 0){
+            if(numberTravels == ""){
+                numberTravels +=  'Child 2-12 y.o: ' + numChild;
+            }else{
+                numberTravels +=  ' / Child 2-12 y.o: ' + numChild;
+            }
+        }
+        if(parseInt(numBaby) > 0){
+            if(numberTravels == ""){
+                numberTravels +=  'Baby < 2 y.o: ' + numBaby;
+            }else{
+            numberTravels += ' / Baby < 2 y.o: ' + numBaby;
+            }
+        }
+        $(".box-modal .travel-of span").text(numberTravels);
+        var condition = $("input[name=condition]:checked").val();
+        $(".box-modal .phy-cal span").text(condition);
+        var explainTrip = $("textarea[name=explainTrip]").val();
+        $(".box-modal .project-item1").text(explainTrip);
+        var otherDest = $("textarea[name=otherDest]").val();
+        $(".box-modal .project-item2").text(otherDest);
+        if($('#frm-meals .checkbox ').hasClass('active')){
+            var meals = $("#frm-meals input[name=meals]:checked").val();
+            $(".box-modal .meals span").text(meals);
+        }else{
+            var meals = ""
+            $(".box-modal .meals span").text(meals);
+        }
+        
+        var mealsTrips = $("textarea[name=mealsTrips]").val();
+        $(".box-modal .project-item3").text(mealsTrips);
+        var arrivalDate = $("input[name=arrivalDate]").val();
+        $(".box-modal .arrival span").text(arrivalDate);
+        var duration = $("select[name=duration]").val();
+        $(".box-modal .duration span").text(duration);
+        if($('#frm-accommodation .checkbox ').hasClass('active')){
+            var accommodation = $("#frm-accommodation input[name=accommodation]:checked").val();
+            $(".box-modal .accommodation span").text(accommodation);
+        }else{
+            var accommodation = ""
+            $(".box-modal .accommodation span").text(accommodation);
+        }
+        var doubleRoom = $("select[name=doubleRoom]").val();
+        var twinRoom = $("select[name=twinRoom]").val();
+        var individualRoom = $("select[name=individualRoom]").val();
+        var tripleRoom = $("select[name=tripleRoom]").val();
+        var rooms = "";
+        if(parseInt(doubleRoom) > 0){
+            if(rooms == ""){
+                rooms += "Double: "+ doubleRoom;
+            }else{
+                rooms += " / Double: "+ doubleRoom;
+            }
+        }
+        if(parseInt(twinRoom) > 0){
+            if(rooms == ""){
+                rooms += "Twin: "+ twinRoom;
+            }else{
+                rooms += " / Twin: "+ twinRoom;
+            }
+        }
+        if(parseInt(individualRoom) > 0){
+            if(rooms == ""){
+                rooms += "Individual: "+ individualRoom;
+            }else{
+                rooms += " / Individual: "+ individualRoom;
+            }
+        }
+        if(parseInt(tripleRoom) > 0){
+            if(rooms == ""){
+                rooms += "Individual: "+ tripleRoom;
+            }else{
+                rooms += " / Individual: "+ tripleRoom;
+            }
+        }
+        $(".box-modal .room span").text(rooms);
+        var budgetPerson = $("input[name=budgetPerson]").val();
+        var currencyPerson = $("select[name=currencyPerson]").find(":selected").val();
+        $(".box-modal .person span").text(budgetPerson+' '+ currencyPerson);
+        var hobbies = $("textarea[name=hobbies]").val();
+        $(".box-modal .better-item1").text(hobbies);
+        var lastLong = $("textarea[name=lastLong]").val();
+        $(".box-modal .better-item2").text(lastLong);
+        if($("input[id=callYes]").is(":checked")){
+            $(".box-modal .text-can span").text('Yes');
+        }else{
+            $(".box-modal .text-can span").text('No');
+        }
+        if($("#frm-canContact input[name=canContact]:checked").val() == "Yes"){
+            var appointmentDate = $("input[name=appointmentDate]").val();
+            $(".box-modal .app-date span").text(appointmentDate);
+            var timeZone = $("select[name=timeZone]").find(":selected").val();
+            $(".box-modal .app-zone span").text(timeZone);
+            var accWhatsapp = $('input[name=whatsapp_id]').val();
+            var accFacebook = $('input[name=facebook_id]').val();
+            var accSkype = $('input[name=skype_id]').val();
+            $('.box-modal .apps-call span').text('');
+            if($("#frm-mobileApp label input#whatsapp").is(":checked")){
+                var name = $("#frm-mobileApp label input#whatsapp").val();
+                $(".box-modal .apps-call span").append(name+' : '+accWhatsapp);
+            }
+            if($("#frm-mobileApp label input#messenger").is(":checked")){
+                var name = $("#frm-mobileApp label input#messenger").val();
+                if($('.box-modal .apps-call span').length >0){
+                    $(".box-modal .apps-call span").append(' / ' +name +' : '+ accFacebook);
+                }else{
+                    $(".box-modal .apps-call span").append(name +' : '+ accFacebook);
+                }
+            }
+            if($("#frm-mobileApp label input#skype").is(":checked")){
+                var name = $("#frm-mobileApp label input#skype").val();
+                if($(".box-modal .apps-call span").length > 0){
+                    $(".box-modal .apps-call span").append(' / ' +name +' : '+ accSkype);
+                }else{
+                    $("box-modal .apps-call span").append(name +' : '+ accSkype);
+                }
+            }   
+            var timeSlot = "";
+            $("#frm-timeSlot .custom-checkbox .item").each(function(){
+                var checkbox = $(this).find("input[name='timeSlot[]']");
+                if(checkbox.is(":checked")){
+                    if(timeSlot == ""){
+                        timeSlot = checkbox.val();
+                    }else{
+                        timeSlot = timeSlot + ' / ' + checkbox.val();
+                    }
+                }
+            }); 
+            $(".box-modal .app-slot span").text(timeSlot);
+        }else{
+            $(".box-modal .app-date span").text('');
+            $(".box-modal .app-zone span").text('');
+            $(".box-modal .apps-call span").text('');
+            $(".box-modal .app-slot span").text('');
+        }
+        var titleIntro =  $("select[name=titleIntro]").find(":selected").val();
+        var firstNameIntro = $("input[name=firstNameIntro]").val();
+        var lastNameIntro = $("input[name=lastNameIntro]").val();
+        if(titleIntro != "" || firstNameIntro != "" || lastNameIntro != ""){
+            $(".box-modal .text-recon span").text('Yes');
+            if(titleIntro != "" && firstNameIntro != "" && lastNameIntro != ""){
+                $(".box-modal .sponsor span").text(' '+titleIntro+firstNameIntro+' '+lastNameIntro);
+            }else if(titleIntro == "" && firstNameIntro != "" && lastNameIntro != ""){
+                $(".box-modal .sponsor span").text(' '+firstNameIntro+' '+lastNameIntro);
+            }else if(titleIntro != "" && firstNameIntro != "" && lastNameIntro == ""){
+                $(".box-modal .sponsor span").text(' '+titleIntro+' '+firstNameIntro);
+            }else if(titleIntro != "" && firstNameIntro == "" && lastNameIntro != ""){
+                $(".box-modal .sponsor span").text(' '+titleIntro+' '+lastNameIntro);
+            }
+        }else{
+            $(".box-modal .text-recon span").text('No');
+            $(".box-modal .sponsor span").text('');
+        }
+        $("#personalizeModal").modal("show");
+    });
+    // Contact Form Submit
+    $(document).on("submit", "#contact-frm" , function(e){
+        e.preventDefault(); 
+        var title = $("select[name=title]").find(":selected").val();
+        var firstName = $("input[name=firstName]").val();
+        var lastName = $("input[name=lastName]").val();
+        var email = $("input[name=email]").val();
+        var areaCode = $("select[name=areaCode]").find(":selected").val();
+        var numberPhone = $("input[name=numberPhone]").val();
+        if(numberPhone.charAt(0) == '0'){
+            var validateNumberPhone = numberPhone.substr(1); 
+        }else{
+            var validateNumberPhone = numberPhone;
+        }
+        
+        var ageGroup = $("select[name='ageGroup']").find(":selected").text();
+        var country = $("select[name=country]").find(":selected").text();
+        var subject = $("select[name=subject]").find(":selected").text();
+        if($("input[name=newsletter]").is(':checked')){
+            var newsletter = "Yes";
+        }
+        else{
+            var newsletter = "No";
+        }
+        var message = $("textarea[name=message]").val();
+        var titleIntro =  $("select[name=titleIntro]").find(":selected").val();
+        var firstNameIntro = $("input[name=firstNameIntro]").val();        
+        var lastNameIntro = $("input[name=lastNameIntro]").val();
+        var url = $("input[name=url-frm]").val();
+        var _token = $("input[name=_token]").val();
+        var response = grecaptcha.getResponse();
+        if(response.length === 0) {
+            e.preventDefault();
+            $(this).find('.g-recaptcha').addClass('error');
+        } else {
+            $(this).find('.g-recaptcha').removeClass('error');
+        }
+        if(response.length > 0 && title != "" && firstName != "" && lastName != ""  && email != "" && areaCode !="" && numberPhone != ""  && ageGroup != "" && country != ""
+        &&  subject != "" && message != "") {
+            if(firstNameIntro != "" || lastNameIntro != "" || titleIntro != ""){
+                $('.dev-form')[0].reset();
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    cache: false,
+                    data: {
+                        '_token': _token,    
+                        'title': title,
+                        'firstName': firstName,
+                        'lastName': lastName,
+                        'ageGroup': ageGroup,
+                        'country': country,
+                        'email': email,
+                        'areaCode': areaCode,
+                        'numberPhone': validateNumberPhone,
+                        'subject': subject,
+                        'newsletter': newsletter,
+                        'message': message,
+                        'titleIntro': titleIntro,
+                        'firstNameIntro': firstNameIntro,
+                        'lastNameIntro': lastNameIntro
+                    },
+                    beforeSend: function () {
+                        $('#overlay').fadeIn();
+                        $('img.loading').fadeIn();
+                    },
+                    success: function (data) {
+                        $('#overlay').fadeOut();
+                        $('img.loading').fadeOut();
+                        $('#successForm').modal('show'); 
+                    }
+                });
+            }else{
+                $('.dev-form')[0].reset();
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    cache: false,
+                    data: {
+                        '_token': _token,    
+                        'title': title,
+                        'firstName': firstName,
+                        'lastName': lastName,
+                        'ageGroup': ageGroup,
+                        'country': country,
+                        'email': email,
+                        'areaCode': areaCode,
+                        'numberPhone': validateNumberPhone,
+                        'subject': subject,
+                        'newsletter': newsletter,
+                        'message': message
+                    },
+                    beforeSend: function () {
+                        $('#overlay').fadeIn();
+                        $('img.loading').fadeIn();
+                    },
+                    success: function (data) {
+                        $('#overlay').fadeOut();
+                        $('img.loading').fadeOut();
+                        $('#successForm').modal('show'); 
+                    }
+                });
+            }   
+        }else{
+            $('#errorForm').modal('show'); 
+        }
+    });
+    // Setup Phone Call Form Submit
+    $(document).on("submit", "#setupCall-frm" , function(e){
+        e.preventDefault(); 
+        if($("input[name='mobileApp[]']").is(":checked")){
+            var inputAcc = [];
+            $("input[name='mobileApp[]']:checked").each( function(){
+                var text = [];
+                text.push($(this).val());
+                text.push($(this).parents('li').find('input[type=text]').val()); 
+                inputAcc.push(text); 
+            });
+            var mobileApp = JSON.stringify(inputAcc);
+        }else{
+           var mobileApp = ""; 
+        }
+        if($("input[name='timeSlot[]']").is(":checked")){
+            var timeSlot = []
+            $("input[name='timeSlot[]']:checked").each( function(){
+                timeSlot.push($(this).val());
+            });
+        }else{
+           var timeSlot = ""; 
+        }
+        var title = $("select[name=title]").find(":selected").val();
+        var firstName = $("input[name=firstName]").val();
+        var lastName = $("input[name=lastName]").val();
+        var email = $("input[name=email]").val();
+        var areaCode = $("select[name=areaCode]").find(":selected").val();
+        var numberPhone = $("input[name=numberPhone]").val();
+        if(numberPhone.charAt(0) == '0'){
+            var validateNumberPhone = numberPhone.substr(1); 
+        }else{
+            var validateNumberPhone = numberPhone;
+        }
+        var ageGroup = $("select[name=ageGroup]").find(":selected").text();
+        var country = $("select[name=country]").find(":selected").text();
+        var subject = $("select[name=subject]").find(":selected").text();
+        if($("input[name=newsletter]").is(':checked')){
+            var newsletter = "Yes";
+        }
+        else{
+            var newsletter = "No";
+        }
+        var titleIntro =  $("select[name=titleIntro]").find(":selected").val();
+        var firstNameIntro = $("input[name=firstNameIntro]").val();        
+        var lastNameIntro = $("input[name=lastNameIntro]").val();
+        var appointmentDate = $("input[name=appointmentDate]").val();
+        var timeZone = $("select[name=timeZone]").find(":selected").text();
+        var url = $("input[name=url-frm]").val();
+        var _token = $("input[name=_token]").val();
+        var response = grecaptcha.getResponse();
+        if(response.length === 0) {
+            e.preventDefault();
+            $(this).find('.g-recaptcha').addClass('error');
+        } else {
+            $(this).find('.g-recaptcha').removeClass('error');
+        }
+        if(response.length > 0 && title != "" && firstName != "" && lastName != ""  && email != "" && areaCode !="" && numberPhone != ""  && ageGroup != "" && country != ""
+        &&  subject != "" && appointmentDate != "" && timeZone != "") {
+            if(firstNameIntro != "" || lastNameIntro != "" || titleIntro != ""){
+                $('.dev-form')[0].reset();
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    cache: false,
+                    data: {
+                        '_token': _token,    
+                        'title': title,
+                        'firstName': firstName,
+                        'lastName': lastName,
+                        'ageGroup': ageGroup,
+                        'country': country,
+                        'email': email,
+                        'areaCode': areaCode,
+                        'numberPhone': validateNumberPhone,
+                        'subject': subject,
+                        'newsletter': newsletter,
+                        'titleIntro': titleIntro,
+                        'firstNameIntro': firstNameIntro,
+                        'lastNameIntro': lastNameIntro,
+                        'appointmentDate': appointmentDate,
+                        'timeZone': timeZone,
+                        'timeSlot': timeSlot,
+                        'mobileApp': mobileApp,
+                    },
+                    beforeSend: function () {
+                        $('#overlay').fadeIn();
+                        $('img.loading').fadeIn();
+                    },
+                    success: function (data) {
+                        $('#overlay').fadeOut();
+                        $('img.loading').fadeOut();
+                        $('#successForm').modal('show');
+                    }
+                });
+            }else{
+                $('.dev-form')[0].reset();
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    cache: false,
+                    data: {
+                        '_token': _token,    
+                        'title': title,
+                        'firstName': firstName,
+                        'lastName': lastName,
+                        'ageGroup': ageGroup,
+                        'country': country,
+                        'email': email,
+                        'areaCode': areaCode,
+                        'numberPhone': validateNumberPhone,
+                        'subject': subject,
+                        'newsletter': newsletter,
+                        'appointmentDate': appointmentDate,
+                        'timeZone': timeZone,
+                        'timeSlot': timeSlot,
+                        'mobileApp': mobileApp,
+                    },
+                    beforeSend: function () {
+                        $('#overlay').fadeIn();
+                        $('img.loading').fadeIn();
+                    },
+                    success: function (data) {
+                        $('#overlay').fadeOut();
+                        $('img.loading').fadeOut();
+                        $('#successForm').modal('show'); 
+                    }
+                });
+            }   
+        }else{
+            $('#errorForm').modal('show'); 
+        }
+    });
+    // Create My Trip Form Submit
+    $(document).on("submit", "#createMyTrip-frm" , function(e){
+        e.preventDefault(); 
+        if($("input[name='mobileApp[]']").is(":checked")){
+            var inputAcc = [];
+            $("input[name='mobileApp[]']:checked").each( function(){
+                var text = [];
+                text.push($(this).val());
+                text.push($(this).parents('li').find('input[type=text]').val()); 
+                inputAcc.push(text); 
+            });
+            var mobileApp = JSON.stringify(inputAcc);
+        }else{
+           var mobileApp = ""; 
+        }
+        if($("input[name='timeSlot[]']").is(":checked")){
+            var inputTimeSlot = []
+            $("input[name='timeSlot[]']:checked").each( function(){
+                inputTimeSlot.push($(this).val());
+            });
+            var timeSlot = JSON.stringify(inputTimeSlot);
+
+        }else{
+           var timeSlot = ""; 
+        }
+        if($("input[name='destination[]']").is(":checked")){
+            var inputDest = []
+            $("input[name='destination[]']:checked").each( function(){
+                inputDest.push($(this).val());
+            });
+            var destination = JSON.stringify(inputDest);
+        }else{
+           var destination = ""; 
+        }
+        if($("input[name='tourType[]']").is(":checked")){
+            var inputTourType = []
+            $("input[name='tourType[]']:checked").each( function(){
+                inputTourType.push($(this).val());
+            });
+            var tourType = JSON.stringify(inputTourType);
+        }else{
+           var tourType = ""; 
+        }
+        var title = $("select[name=title]").find(":selected").val();
+        var firstName = $("input[name=firstName]").val();
+        var lastName = $("input[name=lastName]").val();
+        var email = $("input[name=email]").val();
+        var areaCode = $("select[name=areaCode]").find(":selected").val();
+        var numberPhone = $("input[name=numberPhone]").val();
+        if(numberPhone.charAt(0) == '0'){
+            var validateNumberPhone = numberPhone.substr(1); 
+        }else{
+            var validateNumberPhone = numberPhone;
+        }
+        var ageGroup = $("select[name=ageGroup]").find(":selected").text();
+        var country = $("select[name=country]").find(":selected").text();
+        if($("input[name=newsletter]").is(':checked')){
+            var newsletter = "Yes";
+        }
+        else{
+            var newsletter = "No";
+        }
+        var numAdult = $("select[id=numAdult]").find(":selected").val();
+        var numChild = $("select[id=numChild]").find(":selected").val();
+        var numBaby = $("select[id=numBaby]").find(":selected").val();
+        var condition = $("input[name=condition]:checked").val();
+        var descProject = $("textarea[name=descProject]").val();
+        var arrivalDate = $("input[name=arrivalDate]").val();
+        var duration = $("select[name=duration]").val();
+        var doubleRoom = $("select[name=doubleRoom]").val();
+        var twinRoom = $("select[name=twinRoom]").val();
+        var individualRoom = $("select[name=individualRoom]").val();
+        var tripleRoom = $("select[name=tripleRoom]").val();
+        if($('#frm-meals .checkbox').hasClass('active')){
+            var meals = $("#frm-meals input[name=meals]:checked").val();
+        }else{
+            var meals = "";
+        }
+        var mealsTrips = $("textarea[name=mealsTrips]").val();
+        var budgetPerson = $("input[name=budgetPerson]").val();
+        var currencyPerson = $("select[name=currencyPerson]").find(":selected").val();
+        var accommodation = $("#frm-accommodation input[name=accommodation]:checked").val();
+        var furtherNote = $("textarea[name=furtherNote").val();
+        var hobbies = $("textarea[name=hobbies]").val();
+        var lastLong = $("textarea[name=lastLong]").val();
+        var canContact = $("input[name=canContact]:checked").val();
+        var titleIntro =  $("select[name=titleIntro]").find(":selected").val();
+        var firstNameIntro = $("input[name=firstNameIntro]").val();        
+        var lastNameIntro = $("input[name=lastNameIntro]").val();
+        var appointmentDate = $("input[name=appointmentDate]").val();
+        var timeZone = $("select[name=timeZone]").find(":selected").text();
+        var url = $("input[name=url-frm]").val();
+        var _token = $("input[name=_token]").val();
+        var response = grecaptcha.getResponse();
+        if(response.length === 0) {
+            e.preventDefault();
+            $(this).find('.g-recaptcha').addClass('error');
+        } else {
+            $(this).find('.g-recaptcha').removeClass('error');
+        }
+        if(response.length > 0 && title != "" && firstName != "" && lastName != ""  && email != "" && areaCode !="" && numberPhone != ""  && ageGroup != "" && country != "" 
+        && condition != "" && arrivalDate != "" && duration != "" && destination != "") {
+            if(canContact == "Yes" && appointmentDate!= ""){
+                if(firstNameIntro != "" || lastNameIntro != "" || titleIntro != ""){
+                    $('.dev-form')[0].reset();
+                    $.ajax({
+                        type: 'POST',
+                        url: url,
+                        cache: false,
+                        data: {
+                            '_token': _token,    
+                            'title': title,
+                            'firstName': firstName,
+                            'lastName': lastName,
+                            'ageGroup': ageGroup,
+                            'country': country,
+                            'email': email,
+                            'areaCode': areaCode,
+                            'numberPhone': validateNumberPhone,
+                            'newsletter': newsletter,
+                            'destination' : destination,
+                            'tourType' : tourType,
+                            'accommodation' : accommodation,
+                            'furtherNote' : furtherNote,
+                            'numAdult' : numAdult,
+                            'numChild' : numChild, 
+                            'numBaby' : numBaby,
+                            'condition' : condition,
+                            //'descProject' : descProject,
+                            'meals': meals,
+                            'mealsTrips' : mealsTrips,
+                            'arrivalDate' : arrivalDate, 
+                            'duration' : duration,
+                            'doubleRoom' : doubleRoom,
+                            'twinRoom' : twinRoom,
+                            'individualRoom' : individualRoom,
+                            'tripleRoom' : tripleRoom,
+                            'budgetPerson' : budgetPerson,
+                            'currencyPerson' : currencyPerson,
+                            'hobbies' : hobbies,
+                            'lastLong' : lastLong,
+                            'canContact' : canContact,
+                            'titleIntro': titleIntro,
+                            'firstNameIntro': firstNameIntro,
+                            'lastNameIntro': lastNameIntro,
+                            'appointmentDate': appointmentDate,
+                            'timeZone': timeZone,
+                            'timeSlot': timeSlot,
+                            'mobileApp': mobileApp
+                        },
+                        beforeSend: function () {
+                            $('#overlay').fadeIn();
+                            $('img.loading').fadeIn();
+                        },
+                        success: function (data) {
+                            $('#overlay').fadeOut();
+                            $('img.loading').fadeOut();
+                            $('#successForm').modal('show'); 
+                        }
+                    });
+                }else{
+                    $('.dev-form')[0].reset();
+                    $.ajax({
+                        type: 'POST',
+                        url: url,
+                        cache: false,
+                        data: {
+                            '_token': _token,    
+                            'title': title,
+                            'firstName': firstName,
+                            'lastName': lastName,
+                            'ageGroup': ageGroup,
+                            'country': country,
+                            'email': email,
+                            'areaCode': areaCode,
+                            'numberPhone': validateNumberPhone,
+                            'newsletter': newsletter,
+                            'destination' : destination,
+                            'tourType' : tourType,
+                            'accommodation' : accommodation,
+                            'furtherNote' : furtherNote,
+                            'numAdult' : numAdult,
+                            'numChild' : numChild, 
+                            'numBaby' : numBaby,
+                            'condition' : condition,
+                            //'descProject' : descProject,
+                            'meals': meals,
+                            'mealsTrips' : mealsTrips,
+                            'arrivalDate' : arrivalDate, 
+                            'duration' : duration,
+                            'doubleRoom' : doubleRoom,
+                            'twinRoom' : twinRoom,
+                            'individualRoom' : individualRoom,
+                            'tripleRoom' : tripleRoom,
+                            'budgetPerson' : budgetPerson,
+                            'currencyPerson' : currencyPerson,
+                            'hobbies' : hobbies,
+                            'lastLong' : lastLong,
+                            'canContact' : canContact,
+                            'appointmentDate': appointmentDate,
+                            'timeZone': timeZone,
+                            'timeSlot': timeSlot,
+                            'mobileApp': mobileApp
+                        },
+                        beforeSend: function () {
+                            $('#overlay').fadeIn();
+                            $('img.loading').fadeIn();
+                        },
+                        success: function (data) {
+                            $('#overlay').fadeOut();
+                            $('img.loading').fadeOut();
+                            $('#successForm').modal('show'); 
+                        }
+                    });
+                }   
+            }else if(canContact == "No" && appointmentDate == ""){
+                $('.dev-form')[0].reset();
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    cache: false,
+                    data: {
+                        '_token': _token,    
+                        'title': title,
+                        'firstName': firstName,
+                        'lastName': lastName,
+                        'ageGroup': ageGroup,
+                        'country': country,
+                        'email': email,
+                        'areaCode': areaCode,
+                        'numberPhone': validateNumberPhone,
+                        'newsletter': newsletter,
+                        'destination' : destination,
+                        'tourType' : tourType,
+                        'accommodation' : accommodation,
+                        'furtherNote' : furtherNote,
+                        'numAdult' : numAdult,
+                        'numChild' : numChild, 
+                        'numBaby' : numBaby,
+                        'condition' : condition,
+                        //'descProject' : descProject,
+                        'meals': meals,
+                        'mealsTrips' : mealsTrips,
+                        'arrivalDate' : arrivalDate, 
+                        'duration' : duration,
+                        'doubleRoom' : doubleRoom,
+                        'twinRoom' : twinRoom,
+                        'individualRoom' : individualRoom,
+                        'tripleRoom' : tripleRoom,
+                        'budgetPerson' : budgetPerson,
+                        'currencyPerson' : currencyPerson,
+                        'hobbies' : hobbies,
+                        'lastLong' : lastLong,
+                        'canContact' : canContact,
+                        'titleIntro': titleIntro,
+                        'firstNameIntro': firstNameIntro,
+                        'lastNameIntro': lastNameIntro,
+                    },
+                    beforeSend: function () {
+                        $('#overlay').fadeIn();
+                        $('img.loading').fadeIn();
+                    },
+                    success: function (data) {
+                        $('#overlay').fadeOut();
+                        $('img.loading').fadeOut();
+                        $('#successForm').modal('show'); 
+                    }
+                });
+            }else{
+                $('#errorForm').modal('show'); 
+            }
+        }else{
+            $('#errorForm').modal('show'); 
+        }
+    });
+    // Personal Form Submit
+    $(document).on("submit", "#personalize-frm" , function(e){
+        e.preventDefault(); 
+        if($("input[name='mobileApp[]']").is(":checked")){
+            var inputAcc = [];
+            $("input[name='mobileApp[]']:checked").each( function(){
+                var text = [];
+                text.push($(this).val());
+                text.push($(this).parents('li').find('input[type=text]').val()); 
+                inputAcc.push(text); 
+            });
+            var mobileApp = JSON.stringify(inputAcc);
+        }else{
+           var mobileApp = ""; 
+        }
+        if($("input[name='timeSlot[]']").is(":checked")){
+            var inputTimeSlot = []
+            $("input[name='timeSlot[]']:checked").each( function(){
+                inputTimeSlot.push($(this).val());
+            });
+            var timeSlot = JSON.stringify(inputTimeSlot);
+
+        }else{
+           var timeSlot = ""; 
+        }
+        var title = $("select[name=title]").find(":selected").val();
+        var firstName = $("input[name=firstName]").val();
+        var lastName = $("input[name=lastName]").val();
+        var email = $("input[name=email]").val();
+        var areaCode = $("select[name=areaCode]").find(":selected").val();
+        var numberPhone = $("input[name=numberPhone]").val();
+        if(numberPhone.charAt(0) == '0'){
+            var validateNumberPhone = numberPhone.substr(1); 
+        }else{
+            var validateNumberPhone = numberPhone;
+        }
+        var ageGroup = $("select[name=ageGroup]").find(":selected").text();
+        var country = $("select[name=country]").find(":selected").text();
+        if($("input[name=newsletter]").is(':checked')){
+            var newsletter = "Yes";
+        }
+        else{
+            var newsletter = "No";
+        }
+        var numAdult = $("select[id=numAdult]").find(":selected").val();
+        var numChild = $("select[id=numChild]").find(":selected").val();
+        var numBaby = $("select[id=numBaby]").find(":selected").val();
+        var condition = $("input[name=condition]:checked").val();
+        var explainTrip = $("textarea[name=explainTrip]").val();
+        var otherDest = $("textarea[name=otherDest]").val();
+        var arrivalDate = $("input[name=arrivalDate]").val();
+        var duration = $("select[name=duration]").val();
+        var doubleRoom = $("select[name=doubleRoom]").val();
+        var twinRoom = $("select[name=twinRoom]").val();
+        var individualRoom = $("select[name=individualRoom]").val();
+        var tripleRoom = $("select[name=tripleRoom]").val();
+        if($('#frm-meals .checkbox').hasClass('active')){
+            var meals = $("#frm-meals input[name=meals]:checked").val();
+        }else{
+            var meals = "";
+        }
+        var mealsTrips = $("textarea[name=mealsTrips]").val();
+        var budgetPerson = $("input[name=budgetPerson]").val();
+        var currencyPerson = $("select[name=currencyPerson]").find(":selected").val();
+        var accommodation = $("#frm-accommodation input[name=accommodation]:checked").val();
+        var hobbies = $("textarea[name=hobbies]").val();
+        var lastLong = $("textarea[name=lastLong]").val();
+        var canContact = $("input[name=canContact]:checked").val();
+        var titleIntro =  $("select[name=titleIntro]").find(":selected").val();
+        var firstNameIntro = $("input[name=firstNameIntro]").val();        
+        var lastNameIntro = $("input[name=lastNameIntro]").val();
+        var appointmentDate = $("input[name=appointmentDate]").val();
+        var timeZone = $("select[name=timeZone]").find(":selected").text();
+        var url = $("input[name=url-frm]").val();
+        var _token = $("input[name=_token]").val();
+        var response = grecaptcha.getResponse();
+        if(response.length === 0) {
+            e.preventDefault();
+            $(this).find('.g-recaptcha').addClass('error');
+        } else {
+            $(this).find('.g-recaptcha').removeClass('error');
+        }
+        if(response.length > 0 && title != "" && firstName != "" && lastName != ""  && email != "" && areaCode !="" && numberPhone != ""  && ageGroup != "" && country != "" 
+        && condition != "" && arrivalDate != "" && duration != "" != "" && explainTrip != "") {
+            if(canContact == "Yes" && appointmentDate!= ""){
+                if(firstNameIntro != "" || lastNameIntro != "" || titleIntro != ""){
+                    $('.dev-form')[0].reset();
+                    $.ajax({
+                        type: 'POST',
+                        url: url,
+                        cache: false,
+                        data: {
+                            '_token': _token,    
+                            'title': title,
+                            'firstName': firstName,
+                            'lastName': lastName,
+                            'ageGroup': ageGroup,
+                            'country': country,
+                            'email': email,
+                            'areaCode': areaCode,
+                            'numberPhone': validateNumberPhone,
+                            'newsletter': newsletter,
+                            'accommodation' : accommodation,
+                            'numAdult' : numAdult,
+                            'numChild' : numChild, 
+                            'numBaby' : numBaby,
+                            'condition' : condition,
+                            'explainTrip' : explainTrip,
+                            'otherDest' : otherDest,
+                            'meals': meals,
+                            'mealsTrips' : mealsTrips,
+                            'arrivalDate' : arrivalDate, 
+                            'duration' : duration,
+                            'doubleRoom' : doubleRoom,
+                            'twinRoom' : twinRoom,
+                            'individualRoom' : individualRoom,
+                            'tripleRoom' : tripleRoom,
+                            'budgetPerson' : budgetPerson,
+                            'currencyPerson' : currencyPerson,
+                            'hobbies' : hobbies,
+                            'lastLong' : lastLong,
+                            'canContact' : canContact,
+                            'titleIntro': titleIntro,
+                            'firstNameIntro': firstNameIntro,
+                            'lastNameIntro': lastNameIntro,
+                            'appointmentDate': appointmentDate,
+                            'timeZone': timeZone,
+                            'timeSlot': timeSlot,
+                            'mobileApp': mobileApp
+                        },
+                        beforeSend: function () {
+                            $('#overlay').fadeIn();
+                            $('img.loading').fadeIn();
+                        },
+                        success: function (data) {
+                            $('#overlay').fadeOut();
+                            $('img.loading').fadeOut();
+                            $('#successForm').modal('show'); 
+                        }
+                    });
+                }else{
+                    $('.dev-form')[0].reset();
+                    $.ajax({
+                        type: 'POST',
+                        url: url,
+                        cache: false,
+                        data: {
+                            '_token': _token,    
+                            'title': title,
+                            'firstName': firstName,
+                            'lastName': lastName,
+                            'ageGroup': ageGroup,
+                            'country': country,
+                            'email': email,
+                            'areaCode': areaCode,
+                            'numberPhone': validateNumberPhone,
+                            'newsletter': newsletter,
+                            'accommodation' : accommodation,
+                            'numAdult' : numAdult,
+                            'numChild' : numChild, 
+                            'numBaby' : numBaby,
+                            'condition' : condition,
+                            'explainTrip' : explainTrip,
+                            'otherDest' : otherDest,
+                            'meals': meals,
+                            'mealsTrips' : mealsTrips,
+                            'arrivalDate' : arrivalDate, 
+                            'duration' : duration,
+                            'doubleRoom' : doubleRoom,
+                            'twinRoom' : twinRoom,
+                            'individualRoom' : individualRoom,
+                            'tripleRoom' : tripleRoom,
+                            'budgetPerson' : budgetPerson,
+                            'currencyPerson' : currencyPerson,
+                            'hobbies' : hobbies,
+                            'lastLong' : lastLong,
+                            'canContact' : canContact,
+                            'appointmentDate': appointmentDate,
+                            'timeZone': timeZone,
+                            'timeSlot': timeSlot,
+                            'mobileApp': mobileApp
+                        },
+                        beforeSend: function () {
+                            $('#overlay').fadeIn();
+                            $('img.loading').fadeIn();
+                        },
+                        success: function (data) {
+                            $('#overlay').fadeOut();
+                            $('img.loading').fadeOut();
+                            $('#successForm').modal('show'); 
+                        }
+                    });
+                }   
+            }else if(canContact == "No" && appointmentDate == ""){
+                $('.dev-form')[0].reset();
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    cache: false,
+                    data: {
+                        '_token': _token,    
+                        'title': title,
+                        'firstName': firstName,
+                        'lastName': lastName,
+                        'ageGroup': ageGroup,
+                        'country': country,
+                        'email': email,
+                        'areaCode': areaCode,
+                        'numberPhone': validateNumberPhone,
+                        'newsletter': newsletter,
+                        'accommodation' : accommodation,
+                        'numAdult' : numAdult,
+                        'numChild' : numChild, 
+                        'numBaby' : numBaby,
+                        'condition' : condition,
+                        'explainTrip' : explainTrip,
+                        'otherDest' : otherDest,
+                        'meals': meals,
+                        'mealsTrips' : mealsTrips,
+                        'arrivalDate' : arrivalDate, 
+                        'duration' : duration,
+                        'doubleRoom' : doubleRoom,
+                        'twinRoom' : twinRoom,
+                        'individualRoom' : individualRoom,
+                        'tripleRoom' : tripleRoom,
+                        'budgetPerson' : budgetPerson,
+                        'currencyPerson' : currencyPerson,
+                        'hobbies' : hobbies,
+                        'lastLong' : lastLong,
+                        'canContact' : canContact,
+                        'titleIntro': titleIntro,
+                        'firstNameIntro': firstNameIntro,
+                        'lastNameIntro': lastNameIntro,
+                    },
+                    beforeSend: function () {
+                        $('#overlay').fadeIn();
+                        $('img.loading').fadeIn();
+                    },
+                    success: function (data) {
+                        $('#overlay').fadeOut();
+                        $('img.loading').fadeOut();
+                        $('#successForm').modal('show'); 
+                    }
+                });
+            }else{
+                $('#errorForm').modal('show'); 
+            }
+        }else{
+            $('#errorForm').modal('show'); 
+        }
+    });
+
+    // Click show search form blog
+    $('.header-blog').on('click','.search', function(){
+        $(this).parents('.frm-search').find('.show-search').slideToggle();
+    });
+
+    // Show menu table of content
+    $('.menu-wrap .collap a').on("click", function(e){
+        e.preventDefault();
+        $(this).parent(".collap").addClass("hidden");
+        $(".menu-wrap .expand").removeClass("hidden");
+        $(this).parents("h2").siblings("ul").removeClass("in");
+    });
+    $('.menu-wrap .expand a').on("click", function(e){
+        e.preventDefault();
+        $(this).parent(".expand").addClass("hidden");
+        $(".menu-wrap .collap").removeClass("hidden");
+        $(this).parents("h2").siblings("ul").addClass("in");
+    });
+    $(".menu-wrap ul li").find("a").on("click", function(e){
+        e.preventDefault();
+        $([document.documentElement, document.body]).animate({
+            scrollTop: $($(this).attr('href')).offset().top - 50
+        },'normal', function(){
+            $('html, body').removeClass('scrolling');
+            $(e.target).removeClass('scrolling');
+        });
+    });
+});

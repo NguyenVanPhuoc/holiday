@@ -1,0 +1,41 @@
+@extends('templates.master')
+@section('title', 'tìm kiếm NetLoading')
+@section('description', 'tìm kiếm NetLoading')
+@section('keywords', 'tìm kiếm NetLoading')
+@section('content')
+<?php $key = isset($s)? $s : '';?>
+<div id="search-blog" class="container page blog">
+    <div class="main">
+    	<div class="row">
+    		<div id="content" class="col-md-9">
+                <div class="title-search">
+                    <h2 class="title left">Kết quả tìm kiếm từ khóa ({{$key}})</h2>
+                </div>
+    			<div class="description">
+    				@if($blog)
+    					<div class="list-item">
+						@foreach($blog as $item)
+                        <div class="item">
+							<div class="row">
+								<div class="col-md-4 thumb"><a href="{{route('blogDetail',['slug'=>$item->slug])}}">{!!image($item->image, 262,124,$item->title)!!}</a></div>
+								<div class="col-md-8 desc">
+                                    <h3><a href="{{route('blogDetail',['slug'=>$item->slug])}}">{{$item->title}}</a></h3>
+                                    <p>{{$item->desc}}</p>
+                                </div>
+							</div>
+                        </div>
+						@endforeach
+						</div>
+    				@endif
+    			</div>
+                @if(isset($s))                
+        			{!!$blog->appends(['s'=>$s])->links()!!}
+                @else
+                    {!!$blog->links()!!}
+                @endif
+    		</div>
+    		<div id="sidebar" class="col-md-3">@include('sidebars.blog')</div>
+    	</div>
+    </div>
+</div>
+@stop

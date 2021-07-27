@@ -1,0 +1,7 @@
+<?php $key = isset($s)? $s : '';?>
+<div class="search">
+    <form name="search" action="{{route('blogSearch')}}" method="GET">
+        <input type="text" name="s" placeholder="Nhập từ khóa..." value="{{$key}}">
+        <button type="submit" class="btn"><i class="fa fa-search" aria-hidden="true"></i></button>
+    </form>
+</div>

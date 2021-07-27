@@ -1,0 +1,616 @@
+@extends('templates.master')
+@section('title','Personalize')
+@section('content')
+<div id="personalize" class="page form-page bg-gray">
+    <div class="image-header" style="background-image: url('{{asset('public/images/temp/personalize_the_real_luang_prabang_tour.jpg')}}');">
+        <div class="wrap bottom">
+            <div class="container">
+                <img src="{{asset('public/images/temp/icons/personalize.PNG')}}" alt="Personalized">
+                <h1 class="title-banner">Personalize a tour - Sonasia Holiday</h1>
+            </div>
+        </div>
+    </div>
+	<div class="container">
+		<div class="form">
+			<div class="box">
+					<div class="desc text-center">
+						<p>You have a travel plan in your mind or at least some ideas ? Just <br/> share it with us by filling in the form below and we will develop <br/> together your project to make your dreams come true</p>
+						<p>One of our travel expert will reply you back <span class="highlight">within 48 hours.</span></p>
+					</div>	
+				<form id="personalize-frm" autocomplete="off" action="#" method="POST" data-toggle="validator" role="form" name="contact" class="dev-form frm-personalize">
+                    {{csrf_field()}}
+					<input type="hidden" autocomplete="false" name="url-frm" value="{{route('updatePersonalize')}}">
+					<h4 class="desc-contact text-center">Personal information</h4>
+					<div class="row">
+						<div id="frm-title"  class="form-group col-md-2 has-feedback">
+							<label for="title" class="control-label">Title</label>
+							<div class="wrap-select">
+								<select class="form-control" name="title" id="title" data-error="Not a valid title!" required>
+									<option value="Mr.">Mr.</option>
+									<option value="Mrs.">Mrs.</option>
+									<option value="Ms.">Ms.</option>
+								</select>
+							</div>
+							<div class="help-block with-errors"></div>
+						</div>
+						<div if="frm-firstName" class="form-group col-md-5 has-feedback">
+							<label for="firstName" class="control-label">First name</label>
+							<input type="text" class="form-control" name="firstName" id="firstName" data-error="Not a valid first name!" placeholder="First name" required>
+							<div class="help-block with-errors"></div>
+						</div>
+						<div if="frm-lastName" class="form-group col-md-5 has-feedback">
+							<label for="lastName" class="control-label">Last name</label>
+							<input type="text" class="form-control" name="lastName" id="lastName" data-error="Not a valid last name!" placeholder="Last name" required>
+							<div class="help-block with-errors"></div>
+						</div>
+					</div>
+					<div class="row">
+                        <div id="frm-email" class="form-group col-md-6 has-feedback">
+                            <label for="email" class="control-label">Email</label>
+                            <input type="email" class="form-control" name="email" id="email" data-error="Not a valid email address!" placeholder="Email" required>
+                            <div class="help-block with-errors"></div>
+                        </div>
+                        <div id="frm-phone" class="form-group col-md-6 has-feedback">
+                            <label for="areaCode" class="control-label">Phone number</label>
+                            <div class="input-group">
+                                <div class="input-group-btn">
+                                    <div class="wrap-select">
+                                        <select class="form-control" name="areaCode" id="areaCode" required>
+                                            {!!option_country_code()!!}
+                                        </select>
+                                    </div>
+                                </div>
+                                <input type="text" class="form-control" name="numberPhone" id="numberPhone" data-error="Not a valid number phone!" required>
+                            </div>
+                            <div class="help-block with-errors"></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div id="frm-ageGroup" class="form-group col-md-6">
+                            <label for="ageGroup" class="control-label">Age group</label>
+                            <div class="input-group">
+                                <span class="input-group-addon">Select range</span>
+                                <select name="ageGroup" id="ageGroup" class="js-select2 form-control">
+                                    <option value="18-25" selected>18-25</option>
+                                    <option value="26-30">26-30</option>
+                                    <option value="31-35">31-35</option>
+                                    <option value="36-40">36-40</option>
+                                    <option value="41-45">41-45</option>
+                                    <option value="46-50">46-50</option>
+                                    <option value="51-55">51-55</option>
+                                    <option value="56-60">56-60</option>
+                                    <option value="61-65">61-65</option>
+                                    <option value="65-up">66-up</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="frm-country" class="form-group col-md-6">
+                            <label for="country" class="control-label">Country</label>
+                            <div class="wrap-select">
+                                <select name="country" id="country" class="form-control chose-country" data-error="Not a valid country!" required>
+                                    {!!option_country_ncode()!!}
+                                </select>
+                            </div>
+                        </div>                    
+                    </div>
+                    <label class="control-label">Number of Travelers</label>
+                    <div class="row num-travel">
+                        <div id="frm-numAdult" class="form-group col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-addon">Adult</span>
+                                <select name="numAdult" id="numAdult" class="js-select2 form-control" data-error="Numbers adult other 0!" required>
+                                    <option value="" >0</option>
+                                    @for($i = 1; $i <= 40; $i++) :
+                                        <option value="{{$i}}">{{$i}}</option>
+                                    @endfor;
+                                </select>
+                            </div>
+                            <div class="help-block with-errors"></div>
+                        </div>
+                        <div id="frm-numChild" class="form-group col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-addon">Child 2-12 y.o.</span>
+                                <select name="numChild" id="numChild" class="js-select2 form-control">
+                                    <option value="0" selected>0</option>
+                                    @for($i=1; $i<=10; $i++) :
+                                        <option value="{{$i}}">{{$i}}</option>
+                                    @endfor;
+                                </select>
+                            </div>
+                        </div>
+                        <div id="frm-numBaby" class="form-group col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-addon">Baby < 2 y.o.</span>
+                                <select name="numBaby" id="numBaby" class="js-select2 form-control">
+                                    <option value="0" selected>0</option>
+                                    @for($i=1; $i<=10; $i++) :
+                                        <option value="{{$i}}">{{$i}}</option>
+                                    @endfor;
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="frm-condition" class="form-group has-feedback">
+                        <label for="condition" class="control-label">Physical conditions of participants</label>
+                        <div class="row custom-checkbox">
+                            <div class="col-md-4">
+                                <div class="selected">
+                                    <label class="checkbox checkbox-2">
+                                        <input type="radio" name="condition" id="excellent" value="Excellent" data-error="Not a valid condition!" required><span class="checkmark"></span>Excellent
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="selected">
+                                    <label class="checkbox checkbox-2">
+                                        <input type="radio" name="condition" id="good" value="Good"  data-error="Not a valid condition!" required><span class="checkmark"></span>Good
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                               <div class="selected">
+                                    <label class="checkbox checkbox-2">
+                                        <input type="radio" name="condition" id="average" value="Average"  data-error="Not a valid condition!" required><span class="checkmark"></span>Average
+                                    </label>
+                               </div>
+                            </div>
+                        </div>
+                        <div class="help-block with-errors"></div>	
+                    </div>				
+                    <h4 class="desc-contact text-center">Project information</h4>
+                    <div class="row arravel-duration">
+                        <div id="frm-arrivalDate" class="form-group col-md-6 has-feedback">
+                            <label for="arrivalDate" class="control-label">Arrival date</label>
+                            <div class="input-group date">
+                                <input type="text" class="form-control" name="arrivalDate" id="arrivalDate" data-error="Not a valid arrival date!" required>
+                                <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                            </div>
+                            <div class="help-block with-errors"></div>
+                        </div>
+                        <div class="col-md-1"></div>
+                        <div id="frm-duration" class="form-group col-md-5">
+                            <label for="duration" class="control-label">Duration</label>
+                            <div class="input-group">
+                                <span class="input-group-addon">Nb of day(s)</span>
+                                <select name="duration" id="duration" class="js-select2 form-control">
+                                    <option value="0" selected>0</option>
+                                    @for($i=1; $i<=100; $i++) :
+                                        <option value="{{$i}}">{{$i}}</option>
+                                    @endfor;
+                                </select>
+                            </div>
+                        </div>								
+                    </div>
+                    <div id="frm-explainTrip" class="form-group has-feedback">
+                        <label for="explainTrip" class="control-label">Explain us what you expect from this trip</label>
+                        <textarea name="explainTrip" id="explainTrip" class="form-control" data-error="Please fill out this field.!"  placeholder="Type in your answer" required></textarea>
+                        <div class="help-block with-errors"></div>
+                    </div>	
+                    <div id="frm-otherDest" class="form-group">
+                        <label for="otherDest" class="control-label"><span>Tell us if there is anything you wish to personalize</span><span> - Optional</span></label>
+                        <textarea name="otherDest" id="otherDest" class="form-control" placeholder="From activites to accommodation, food and transport"></textarea>
+                    </div>	
+                    <div id="frm-accommodation" class="form-group">
+                        <label for="accommodation" class="control-label"><span>Accommodation type</span><span> - Optional</span></label>
+                        <div class="row custom-checkbox">
+                            <div class="col-md-4">
+                                <div class="selected">
+                                    <label class="checkbox checkbox-2">
+                                        <input type="radio" name="accommodation" id="accommodation" value="Standard 2 stars" required><span class="checkmark"></span>Standard 2 stars
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="selected">
+                                    <label class="checkbox checkbox-2">
+                                        <input type="radio" name="accommodation" id="accommodation" value="Comfort 3 stars" required><span class="checkmark"></span>Comfort 3 stars
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="selected">
+                                    <label class="checkbox checkbox-2">
+                                        <input type="radio" name="accommodation" id="accommodation" value="First Class 4 stars" required><span class="checkmark"></span>First Class 4 stars
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="selected">
+                                    <label class="checkbox checkbox-2">
+                                        <input type="radio" name="accommodation" id="accommodation" value="Superior 5 stars" required><span class="checkmark"></span>Superior 5 stars
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="selected">
+                                    <label class="checkbox checkbox-2">
+                                        <input type="radio" name="accommodation" id="accommodation" value="Luxury 5 stars +" required><span class="checkmark"></span>Luxury 5 stars +
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="selected">
+                                    <label class="checkbox checkbox-2">
+                                        <input type="radio" name="accommodation" id="accommodation" value="Homestay" required><span class="checkmark"></span>Homestay
+                                    </label>
+                                </div>
+                            </div>
+                        </div>	    
+                    </div>		
+                    <label class="control-label"><span>Number of room(s)</span><span> - Optional</span></label>
+                    <div class="row num-room">
+                        <div class="col-md-8">
+                            <div id="frm-doubleRoom" class="form-group">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Double room with 1 big bed</span>
+                                    <select name="doubleRoom" id="doubleRoom" class="js-select2 form-control">
+                                        <option value="0" selected>0</option>
+                                        @for($i = 1; $i <= 25; $i++) :
+                                            <option value="{{$i}}">{{$i}}</option>
+                                        @endfor;
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="frm-twinRoom" class="form-group">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Twin room with 2 single beds</span>
+                                    <select name="twinRoom" id="twinRoom" class="js-select2 form-control">
+                                        <option value="0" selected>0</option>
+                                        @for($i=1; $i<=25; $i++) :
+                                            <option value="{{$i}}">{{$i}}</option>
+                                        @endfor;
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div id="frm-individualRoom" class="form-group">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Individual room</span>
+                                    <select name="individualRoom" id="individualRoom" class="js-select2 form-control">
+                                        <option value="0">0</option>
+                                        @for($i = 1; $i <= 50; $i++) :
+                                            <option value="{{$i}}">{{$i}}</option>
+                                        @endfor;
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="frm-tripleRoom" class="form-group">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Triple room</span>
+                                    <select name="tripleRoom" id="tripleRoom" class="js-select2 form-control">
+                                        <option value="0">0</option>
+                                        @for($i = 1; $i <= 15; $i++) :
+                                            <option value="{{$i}}">{{$i}}</option>
+                                        @endfor;
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="frm-meals" class="form-group">
+                        <label for="tourType" class="control-label"><span>Meals preferences</span><span> - Optional</span></label>
+                        <p>Please note that breakfast is alway included</p>
+                        <div class="row custom-checkbox">
+                            <div class="col-md-3">
+                                <div class="selected">
+                                    <label class="checkbox checkbox-2">
+                                        <input type="radio" name="meals" class="meal-option" id="halfBorad" value="Half-board"><span class="checkmark"></span>Half-board
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="selected">
+                                    <label class="checkbox checkbox-2">
+                                        <input type="radio" name="meals" class="meal-option" id="fullBoard" value="Full-board"><span class="checkmark"></span>Full-board
+                                    </label>
+                                </div>
+                            </div>
+                        </div>	
+                        <textarea name="mealsTrips" id="mealsTrips" class="form-control" placeholder="Please specify here if you have any allergy or special diet"></textarea>
+                    </div>
+                    <div id="frm-budgetPerson" class="form-group">
+                        <label for="budgetPerson" class="control-label"><span>Budget per person</span><span> - Optional</span></label>
+                        <p>Excluding international flight tickets</p>
+                        <div class="input-group">
+                            <span class="input-group-addon">
+                                <input type="text" name="budgetPerson" id="budgetPerson" placeholder="Type in amount">
+                            </span>
+                            <select name="currencyPerson" id="currencyPerson" class="js-select2 form-control">
+                                <option value="USD" selected>USD</option>
+                                <option value="EUR">EUR</option> 
+                            </select>
+                        </div>
+                    </div>   
+                    <h4 class="desc-contact text-center">To know you better</h4>
+                    <div id="frm-hobbies" class="form-group">
+                        <label for="hobbies" class="control-label"><span>Describe your hobbies, passion and what you dislike</span><span>- Optional</span></label>
+                        <textarea name="hobbies" id="hobbies" class="form-control" placeholder="Type in your answer"></textarea>
+                    </div>
+                    <div id="frm-lastLong" class="form-group">
+                        <label for="lastLong" class="control-label"><span>Describe your last long haul travel experience</span><span> - Optional</span></label>
+                        <textarea name="lastLong" id="lastLong" class="form-control" placeholder="Type in your answer"></textarea>
+                    </div>
+                    <h4 class="desc-contact text-center">Set up a phone call</h4>  
+                    <div id="frm-canContact" class="form-group">
+                        <label>Can we contact you by phone to further understand your project ?</label>
+                        <div class="row custom-checkbox">
+                            <div class="col-md-3">
+                                <div class="selected">
+                                    <label class="checkbox checkbox-2">
+                                        <input type="radio" name="canContact" id="callYes" value="Yes"><span class="checkmark"></span>Yes
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="selected">
+                                    <label class="checkbox checkbox-2">
+                                        <input type="radio" name="canContact" id="callNo" checked value="No"><span class="checkmark"></span>No
+                                    </label>
+                                </div>
+                            </div>
+                        </div>					
+                    </div>
+                    <div class="hideNoCall">
+                        <div class="row">
+                            <div id="frm-appointmentDate" class="form-group col-md-6 has-feedback">
+                                <label for="appointmentDate" class="control-label">Appointment date</label>
+                                <div class="input-group date">
+                                    <input type="text" class="form-control" name="appointmentDate" id="appointmentDate">
+                                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                                </div>
+                                <div class="help-block with-errors"></div>
+                            </div>
+                            <div id="frm-timeZone" class="form-group col-md-6">
+                                <label for="timeZone" class="control-label">Appointment time zone</label>
+                                <div class="wrap-select">
+                                    <select name="timeZone" id="timeZone" class="form-control">
+                                        {!!option_timezone()!!}
+                                    </select>
+                                </div>
+                            </div>								
+                        </div>
+                        <div id="frm-timeSlot" class="form-group">
+                            <label>Appointment time slot</label>
+                            <p>Select below the most convenient time (your local time) for us to call you. It is possible to choose multiple time slots.</p>
+                            <div class="row custom-checkbox">
+                                <div class="col-md-3 item">
+                                    <label><input type="checkbox" name="timeSlot[]" id="timeSlot" class="form-control" value="8-9 AM"><span>8-9 AM</span></label>	
+                                </div>
+                                <div class="col-md-3 item">
+                                    <label><input type="checkbox" name="timeSlot[]" id="timeSlot" class="form-control" value="9-10 AM"><span>9-10 AM</span></label>	
+                                </div>
+                                <div class="col-md-3 item">
+                                    <label><input type="checkbox" name="timeSlot[]" id="timeSlot" class="form-control" value="10-11 AM"><span>10-11 AM</span></label>	
+                                </div>
+                                <div class="col-md-3 item">
+                                    <label><input type="checkbox" name="timeSlot[]" id="timeSlot" class="form-control" value="11 AM-12 PM"><span>11 AM-12 PM</span></label>	
+                                </div>
+                                <div class="col-md-3 item">
+                                    <label><input type="checkbox" name="timeSlot[]" id="timeSlot" class="form-control" value="12-1 PM"><span>12-1 PM</span></label>	
+                                </div>
+                                <div class="col-md-3 item">
+                                    <label><input type="checkbox" name="timeSlot[]" id="timeSlot" class="form-control" value="1-2 PM"><span>1-2 PM</span></label>	
+                                </div>
+                                <div class="col-md-3 item">
+                                    <label><input type="checkbox" name="timeSlot[]" id="timeSlot" class="form-control" value="2-3 PM"><span>2-3 PM</span></label>	
+                                </div>
+                                <div class="col-md-3 item">
+                                    <label><input type="checkbox" name="timeSlot[]" id="timeSlot" class="form-control" value="3-4 PM"><span>3-4 PM</span></label>	
+                                </div>
+                                <div class="col-md-3 item">
+                                    <label><input type="checkbox" name="timeSlot[]" id="timeSlot" class="form-control" value="4-5 PM"><span>4-5 PM</span></label>	
+                                </div>
+                                <div class="col-md-3 item">
+                                    <label><input type="checkbox" name="timeSlot[]" id="timeSlot" class="form-control" value="5-6 PM"><span>5-6 PM</span></label>	
+                                </div>
+                            </div>
+                        </div>
+                        <div id="frm-mobileApp" class="form-group">
+                            <label><span>Preferred channel to reach you</span><span> - Optional</span></label>
+                            <p><?php echo __('If you prefer us to call you through a mobile app instead of the phone network, please select it below.'); ?></p>
+                            <ul class="row socials m-app list-inline">
+                                <li class="col-md-4">
+                                    <label>
+                                        <input type="checkbox" name="mobileApp[]" id="whatsapp" value="Whatsapp">
+                                        <span><img src="{{asset('public/images/temp/icons/whatsapp-logo.png')}}" alt=""></span>
+                                    </label>
+                                    <input type="text" name="whatsapp_id" class="form-control hide" placeholder="Your WhatsApps Number">
+                                    <span class="app-name hide">WhatsApps</span>															
+                                </li>
+                                <li class="col-md-4">
+                                    <label>
+                                        <input type="checkbox" name="mobileApp[]" id="messenger" value="Facebook">
+                                        <span><img src="{{asset('public/images/temp/icons/messenger.png')}}" alt=""></span>
+                                    </label>
+                                    <input type="text" name="facebook_id" class="form-control hide" placeholder="Your Facebook Name">
+                                    <span class="app-name hide">Facebook Messenger</span>
+                                </li>									
+                                <li class="col-md-4">
+                                    <label>
+                                        <input type="checkbox" name="mobileApp[]" id="skype" value="Skype">
+                                        <span><img src="{{asset('public/images/temp/icons/skype-logo.png')}}" alt=""></span>				
+                                    </label>
+                                    <input type="text" name="skype_id" class="form-control hide" placeholder="Your Skype Name">
+                                    <span class="app-name hide">Skype</span>
+                                </li>							
+                            </ul>
+                        </div>
+                    </div>
+                    <div id="frm-newsletter" class="form-group">
+                        <label for="newsletter" class="control-label">Newsletter</label>
+                        <div class="newsletter-wrap">
+                            <label class="checkbox checkbox-2">
+                            <input type="checkbox" name="newsletter" id="newsletter" checked><span class="checkmark"></span>I want to receive Sonasia Holiday news & promotions (once or twice per month)
+                            </label>
+                        </div>
+                    </div>
+                    <div id="frm-sponsor" class="form-group">
+                        <label for="sponsor" class="control-label"><span>Sponsor</span><span> - Optional</span></label>
+                        <p>If you are recommended by an existing Sonasia Holiday customer, please specify his name</p>
+                        <div class="row">
+                            <div id="frm-titleIntro"  class="col-md-2 form-group">
+                                <div class="wrap-select">
+                                    <select class="form-control" name="titleIntro" id="titleIntro">
+                                        <option value="">Title</option>
+                                        <option value="Mr.">Mr.</option>
+                                        <option value="Mrs.">Mrs.</option>
+                                        <option value="Ms.">Ms.</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="frm-firstNameIntro" class="col-md-5 form-group">
+                                <input type="text" class="form-control" name="firstNameIntro" id="firstNameIntro" placeholder="First name">
+                            </div>
+                            <div id="frm-lastNameIntro" class="col-md-5 form-group">
+                                <input type="text" class="form-control" name="lastNameIntro" id="lastNameIntro" placeholder="Last name">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="g-recaptcha" data-sitekey="6LdNwNEUAAAAAAw5m1Nu-Ua9t5YZOe0BYU_womGv" ></div> 
+                    <h4 class="desc-contact desc-preview text-center"><a href="#" id="btn-person">Preview</a></h4>
+					<h3 class="text-center ">Good to go ?</h3>
+					<div class="text-center wrap-btn"><button type="submit" class="btn-page-2"><i class="fa fa-paper-plane" aria-hidden="true"></i>Send</button></div>
+					<p class="text-center">By submitting this form, you agree to our privacy policy.<a href="http://sonasia-holiday.com/privacy-policy"><strong>Privacy policy</strong></a> </p>
+					</div>
+				</form>
+				<script src='https://www.google.com/recaptcha/api.js'></script>
+			</div>
+		</div>
+	</div>
+    <!-- Modal -->
+    <div id="personalizeModal" class="modal fade modal-preview" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h2 class="modal-title">Preview</h2>
+                </div>
+                <div class="modal-body scrollbar-inner">
+                    <div class="item md-info">
+                        <h4>Your personal information</h4>
+                        <div class="box-modal">
+                            <ul class="clearfix no-list-style">
+                                <li class="fullName">Fullname: <span></span></li>
+                                <li class="are-group">Are group: <span></span></li>
+                                <li class="email">Email: <span></span></li>
+                                <li class="phone">Phone: <span></span></li>
+                                <li class="country">Country: <span></span></li>
+                                <li class="newsletter">Newsletter: <span></span></li>
+                                <li class="travel-of">Number of Travelers: <span></span></li>
+                                <li class="phy-cal">Physical conditions of participants: <span></span></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="item md-project">
+                        <h4>Your Project information</h4>
+                        <div class="box-modal">
+                            <div class="row">
+                                <div class="col-md-7 text-area">
+                                    <p>Explain us what you expect from this trip
+                                    <span class="project-item1"></span></p>
+                                    <p>Tell us if there is anything you wish to personalize
+                                    <span class="project-item2"></span></p>
+                                    <p>Please specify here if you have any allergy or special diet
+                                    <span class="project-item3"></span></p>
+                                </div>
+                                <div class="col-md-5">
+                                    <ul class="full no-list-style">
+                                        <li class="arrival">Arrival date: <span></span></li>
+                                        <li class="duration">Duration: <span></span></li>
+                                        <li class="accommodation">Accommodation type: <span></span></li>
+                                        <li class="room">Number of room: <span></span></li>
+                                        <li class="person">Budget per person: <span></span></li>
+                                        <li class="meals">Meals preferences: <span></span></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item md-better">
+                        <h4>To know you better</h4>
+                        <div class="box-modal">
+                            <div class="row">
+                                <div class="col-md-6 text-area">
+                                    <p>Describe your hobbies, passion and what you dislike
+                                    <span class="better-item1"></span></p>
+                                </div>
+                                <div class="col-md-6 text-area">
+                                    <p>Describe your last long haul travel experience
+                                    <span class="better-item2"></span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item md-phone">
+                        <h4>Set up a phone call</h4>
+                        <div class="box-modal">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="full no-list-style">
+                                        <li class="text-can">Can we contact you by phone to further understand your project: <span></span></li>
+                                        <li class="apps-call">Preferred channel to reach you: <span></span></li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="full no-list-style">
+                                        <li class="app-date">Appointment date: <span></span></li>
+                                        <li class="app-zone">Appointment time zone: <span></span></li>
+                                        <li class="app-slot">Appointment time slot: <span></span></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item md-phone">
+                        <h4>Sponsorship</h4>
+                        <div class="box-modal">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="full no-list-style">
+                                        <li class="text-recon">Are you recommended by an existing Sonasia Holiday customer? : <span></span></li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="full no-list-style">
+                                        <li class="sponsor">Sponsored by: <span></span></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i>Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+	<div id="errorForm" class="modal fade alertForm" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-body">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<img src="{{asset('public/images/bee/base_fill.png')}}" alt=""/>
+					<h3>Oops!</h3>
+					<p>Please fill in the required information.</p>
+				</div>
+			</div>
+		</div>
+    </div>
+    <div id="successForm" class="modal fade alertForm" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-body">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<img src="{{asset('public/images/bee/base_fill.png')}}" alt=""/>
+					<h3>Thank you for your interest !!</h3>
+                    <p>We have well received your request. <br/> One of our consultant will reply you shortly.</p>
+                    <p>For any further question, feel free to contact us at <a href="mailto:info@biig-holiday.com">info@biig-holiday.com</a></p>
+                    <div class="text-center wrap-btn"><a href="{{route('home')}}" class="btn-page-2"><i class="fa fa-home" aria-hidden="true"></i>Homepage</a></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+@stop

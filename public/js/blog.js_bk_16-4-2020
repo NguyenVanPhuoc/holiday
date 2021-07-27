@@ -1,0 +1,57 @@
+$(document).ready(function(){
+	$('.blog #sb-view .sb-title').on('click', function(event) {
+		event.preventDefault();
+        $(this).toggleClass('active');
+		$('.blog #sidebar #sb-view .desc').slideToggle(500);
+	});
+	$('.blog #sb-social .sb-title').on('click', function(event) {
+		event.preventDefault();
+        $(this).toggleClass('active');
+		$('.blog #sidebar #sb-social .desc').slideToggle(500);
+	});
+
+    /**
+     * .gr-filter blog
+     */
+    $('.gr-filter .box-item1').on('click', function(event) {
+    	event.preventDefault();
+    	if ($(this).hasClass('active')) {
+    		$(this).removeClass('active');
+	    	$(this).find('ul.list-unstyled').removeClass('show');
+    	}else {
+    		$('.gr-filter .box-item1').removeClass('active');
+    		$('.gr-filter .box-item1 ul.list-unstyled').removeClass('show');
+    		$(this).addClass('active');
+    		$(this).find('ul.list-unstyled').addClass('show');
+    	}
+    });
+    $('.gr-filter .box-item1 ul li').on('click', function(event) {
+    	event.preventDefault();
+    	var parent = $(this).closest('.box-item1 ');
+        if(parent.hasClass('single-value')){
+            if($(this).hasClass('active')){
+                parent.find('li').removeClass('active');
+                parent.find('li input').prop('checked', false);
+            }else{
+                parent.find('li').removeClass('active');
+                parent.find('li input').prop('checked', false);
+                $(this).addClass('active');
+                $(this).find('input').prop('checked', true);
+            }
+        }
+        else{ 
+            if($(this).hasClass('active')){
+                $(this).removeClass('active');
+                $(this).find('input').prop('checked', false);
+            }
+            else{ 
+                $(this).addClass('active');
+                $(this).find('input').prop('checked', true);
+            }
+        }
+    });
+
+
+        
+	
+})

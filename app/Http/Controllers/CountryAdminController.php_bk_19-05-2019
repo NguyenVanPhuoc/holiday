@@ -1,0 +1,179 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Countries;
+use App\CountryCategory;
+use App\Highlight;
+use App\Seo;
+
+class CountryAdminController extends Controller
+{
+    public function index(){    	
+    	$countries = Countries::orderBy('created_at', 'desc')->paginate(14);
+    	return view('backend.countries.list',['countries'=>$countries]);
+    }  
+
+    public function store(){
+    	return view('backend.countries.add');
+    }
+
+    public function create(Request $request){
+    	$msg = 'error';
+    	if($request->ajax()){
+            $country = new Countries;
+            $country->title = $request->title;
+            $country->slug = $request->title;
+            $country->desc = $request->shortContent;
+            $country->best_time_to_visit = $request->best_time_to_visit;
+            $country->color = $request->color;
+            $country->image = $request->image;
+            $country->map = $request->map;
+            $country->flag = $request->flag;
+            $country->icon = $request->icon;
+            $country->parent_id = $request->parent_id;
+            if($country->save()){
+                //seo
+                $seo = new Seo;
+                $seo->value = $request->metaValue;
+                $seo->type = "country";
+                $seo->post_id = $country->id;
+                $seo->save();
+            }
+		    $msg = 'success';
+    	}
+        return $msg;
+    }
+
+    public function edit($slug){
+        $country = Countries::findBySlug($slug);
+        $haveHighlight = false;
+        $highlight = Highlight::where('country_id', $country->id)->first();
+        $seo = get_seo($country->id,'country');
+        if($highlight)
+            $haveHighlight = true;
+        $data = [];
+        $data['country'] = $country;
+        $data['seo'] = $seo;
+        $data['haveHighlight'] = $haveHighlight;
+        return view('backend.countries.edit', $data);
+    }
+
+    public function update(Request $request, $slug){
+        if($request->ajax()){
+            $country = Countries::findBySlug($slug);
+            $country->title = $request->title;
+            $country->slug = $request->title;
+            $country->desc = $request->shortContent;
+            $country->best_time_to_visit = $request->best_time_to_visit;
+            $country->color = $request->color;
+            $country->image = $request->image;
+            $country->map = $request->map;
+            $country->flag = $request->flag;
+            $country->icon = $request->icon;
+            $country->parent_id = $request->parent_id;
+            if($country->save()){
+                //seo
+                $seo = Seo::where('post_id',$country->id)->where('type','country')->first();
+                if(!$seo){
+                    $seo = new Seo;
+                    $seo->type = "country";
+                }
+                $seo->value = $request->metaValue;
+                $seo->post_id = $country->id;
+                $seo->save();
+             
+            }
+            return response()->json(['msg'=>'success', 'redirect' => route('editCountryAdmin', ['slug'=>$country->slug])]);
+        }
+        return response()->json(['msg'=>'error', 'html'=> $result->error]);
+    }
+
+
+    public function delete($id){
+        $country = Countries::find($id);
+        $country->delete();
+        return redirect('/admin/country/')->with('success','Xóa thành công');
+    }
+
+    //deleteAll
+    public function deleteAll(Request $resquest){
+        $message = "error";
+        if($resquest->ajax()){
+            $items = json_decode($resquest->items);
+            if(count($items)>0){
+                Countries::destroy($items);
+            }
+            $message = "success";
+        }
+        return $message;
+    }
+
+    //country haven't tour style
+    public function countryCatAdmin(){
+        $countries = Countries::where('parent_id', 0)->get();
+        $country_cats = CountryCategory::orderBy('created_at', 'asc')->get();
+        return view('backend.countries.countryCat', ['countries'=>$countries, 'country_cats'=>$country_cats]);
+    }
+
+    public function postCountryCatAdmin(Request $request){
+        $msg = 'error';
+        if($request->ajax()){
+            $array_add = $request->array_add;
+            $array_edit = $request->array_edit;
+
+            if(count($array_add) > 0){ 
+                foreach($array_add as $item){
+                    $country_cat = new CountryCategory;
+                    $country_cat->country_id = $item['country'];
+                    $country_cat->cat_id = $item['cat'];
+                    $country_cat->save();
+                }
+            }
+
+            if(count($array_edit) > 0){
+                foreach($array_edit as $item){
+                    $country_cat = CountryCategory::find($item['id']);
+                    $country_cat->country_id = $item['country'];
+                    $country_cat->cat_id = $item['cat'];
+                    $country_cat->save();
+                }
+            }
+
+            $msg = 'success';
+        }
+        return $msg;
+    }
+
+    public function deleteCountryCatAdmin($id){
+        $country_cat = CountryCategory::find($id);
+        if($country_cat){
+            $country_cat->delete();
+            return redirect()->route('countryCatAdmin')->with('deleted','Successfully deleted.');
+        }
+    }
+
+    public function search(Request $request){
+        $s = $request->s;
+        $parent_id = $request->parent_id; 
+        $countries = Countries::query(); 
+        if($s != ''){
+            $countries = $countries->where('title','like','%'.$s.'%');
+        }
+        if($parent_id != ''){
+            $countries = $countries->where('parent_id', $parent_id);
+        }
+        $countries = $countries->orderBy('created_at', 'desc')->paginate(14);
+        return view('backend.countries.list',['countries'=>$countries, 's'=>$s, 'parent_id'=>$parent_id]);
+    }
+
+    public function searchFromList(Request $request){
+        if($request->ajax()){
+            $html = getHtmlCountriesOrderByTitle(0, 0, $request->keyword);
+            return response()->json(['msg'=>'success', 'html'=>$html]);
+        }
+        return response()->json(['msg'=>'error']);
+    }
+
+}

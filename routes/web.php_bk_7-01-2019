@@ -1,0 +1,328 @@
+<?php
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
+|
+*/ 
+Route::get('ajax_regen_captcha', function(){
+    return captcha_src();
+});
+//resize image
+Route::get('image/{scr}/{w}/{h}', function($src, $w=100, $h=100){
+	$caheimage = Image::cache(function($image) use ($src, $w, $h){
+		return $image->make('public/uploads/'.$src)->resize($w, $h);
+	}, 10, true);
+	$extention = explode(".", $src);
+	return $caheimage->response($extention[1]);
+});
+Route::group(['prefix'=>'page'],function(){
+	Route::get('/{slug}', 'PagesController@page');
+});
+Route::get('/', ['as'=>'home','uses'=>'PagesController@index']);
+Route::get('p/contact', ['as'=>'contact','uses'=>'FormPagesController@contact']);
+Route::post('p/contact', ['as'=>'updateContact','uses'=>'FormPagesController@updateContact']);
+Route::get('p/setup-call-phone', ['as'=>'setupCallPhone','uses'=>'FormPagesController@setupCallPhone']);
+Route::post('p/setup-call-phone', ['as'=>'updateSetupCallPhone','uses'=>'FormPagesController@updateSetupCallPhone']);
+Route::get('p/create-my-trip', ['as'=>'createMyTrip','uses'=>'FormPagesController@createMyTrip']);
+Route::post('p/create-my-trip', ['as'=>'updateCreateMyTrip','uses'=>'FormPagesController@updateCreateMyTrip']);
+Route::get('p/personalize', ['as'=>'createPersonalize','uses'=>'FormPagesController@createPersonalize']);
+Route::post('p/personalize', ['as'=>'updatePersonalize','uses'=>'FormPagesController@updatePersonalize']);
+// Route::get('/p/{slug}', ['as'=>'page','uses'=>'PagesController@page']);
+Route::get('/p/faq', ['as'=>'createFaq','uses'=>'PagesController@createFaq']);
+
+Route::group(['prefix'=>'blog'], function(){
+	Route::get('/',['as'=>'blog', 'uses'=>'ArticleFrontController@index']);
+	Route::get('/{slug}', 'ArticleFrontController@blogCall');
+	Route::get('/{slug_cat}',['as'=>'blogCat', 'uses'=>'ArticleFrontController@blogCat']);
+	Route::get('/{slug_country}',['as'=>'blogCountry', 'uses'=>'ArticleFrontController@blogCountry']);
+	Route::get('/{slug_country}/{slug}',['as'=>'blogDetail', 'uses'=>'ArticleFrontController@blogDetail']);
+	Route::get('/search',['as'=>'blogSearch', 'uses'=>'ArticleFrontController@search']);
+});
+
+Route::get('login', ['as'=>'login','uses'=>'AuthController@login']);
+Route::post('login', ['as'=>'postLogin','uses'=>'AuthController@postLogin']);
+Route::get('logout', ['as'=>'logout','uses'=>'AuthController@logout']);
+Route::get('register', ['as'=>'register','uses'=>'AuthController@register']);
+Route::post('register', ['as'=>'postRegister','uses'=>'AuthController@postRegister']);
+
+Route::group(['prefix'=>'profile','middleware'=>'memberLogin'],function(){
+	Route::get('/',['as'=>'profile', 'uses'=>'AuthController@storeNews']);	
+	Route::get('news',['as'=>'newsProfile', 'uses'=>'AuthController@storeNews']);
+	Route::get('news/create',['as'=>'storeNews', 'uses'=>'AuthController@createNews']);
+	Route::post('news/create',['as'=>'createNewsProfile', 'uses'=>'AuthController@createNews']);
+	Route::get('news/edit/{id}',['as'=>'editNewsProfile', 'uses'=>'AuthController@editNews']);
+	Route::post('news/edit/{id}',['as'=>'updateNewsProfile', 'uses'=>'AuthController@updateNews']);	
+	Route::get('edit',['as'=>'editProfile', 'uses'=>'AuthController@editAccount']);
+	Route::post('edit',['as'=>'updateProfile', 'uses'=>'AuthController@updateAccount']);
+	Route::get('password',['as'=>'editPassword', 'uses'=>'AuthController@editPassword']);
+	Route::post('password',['as'=>'updatePassword', 'uses'=>'AuthController@updatePassword']);	
+	Route::get('media',['as'=>'mediaProfile', 'uses'=>'MediaController@index']);
+	Route::get('media/create',['as'=>'storeMediaProfile', 'uses'=>'MediaController@store']);
+	Route::post('media/create',['as'=>'createMediaProfile', 'uses'=>'MediaController@create']);
+	Route::get('media/edit/{id}',['as'=>'editMediaProfile', 'uses'=>'MediaController@edit']);
+	Route::post('media/edit/{id}',['as'=>'updateMediaProfile', 'uses'=>'MediaController@update']);
+	Route::get('media/delete/{id}',['as'=>'deleteMediaProfile', 'uses'=>'MediaController@delete']);	
+	Route::post('media/delete',['as'=>'deleteMediasProfile', 'uses'=>'MediaController@deleteAll']);
+	Route::post('avatar',['as'=>'avatarMediaProfile', 'uses'=>'MediaController@changeAvatar']);
+	Route::post('library',['as'=>'libraryProfile', 'uses'=>'MediaController@library']);
+	Route::post('delete-library',['as'=>'deleteLibraryProfile', 'uses'=>'MediaController@deleteLibrary']);
+	Route::post('change-banner',['as'=>'bannerProfile', 'uses'=>'MediaController@changeBanner']);
+	Route::post('change-avatar',['as'=>'avatarProfile', 'uses'=>'MediaController@changeAvatar']);
+});
+
+/*
+* Tours Group
+*/
+Route::group(['prefix'=>'tours'],function(){
+	Route::get('/{slug_country}',['as'=>'countryTour', 'uses'=>'TourController@countryTour']);	
+	Route::get('/{slug_country}/{region}/{duration}/{cat}/{per_page}/{page}',
+				['as'=>'tourFilterByCountry', 
+				'uses'=>'TourController@tourFilterByCountry']
+			);	
+	//Route::get('/single/{slug}',['as'=>'tour', 'uses'=>'TourController@tour']);
+	Route::get('/{slug_country}/{slug}',['as'=>'tour', 'uses'=>'TourController@tour']);	
+	Route::post('/filter-tours',['as'=>'filterTour', 'uses'=>'TourController@filterTour']);
+});
+
+
+Route::group(['prefix'=>'admin','middleware'=>'adminLogin'],function(){
+	Route::get('/',['as'=>'indexAdmin','uses'=>'ArticleAdminController@index']);
+	//pages
+	Route::group(['prefix'=>'pages'],function(){
+		Route::get('/',['as'=>'pagesAdmin','uses'=>'PageAdminController@index']);
+		Route::get('/create',['as'=>'storePageAdmin','uses'=>'PageAdminController@store']);
+		Route::post('/create',['as'=>'createPageAdmin','uses'=>'PageAdminController@create']);
+		Route::get('/edit/{id}',['as'=>'editPageAdmin','uses'=>'PageAdminController@edit']);
+		Route::post('/edit/{id}',['as'=>'updatePageAdmin','uses'=>'PageAdminController@update']);
+		Route::get('/delete/{id}',['as'=>'deletePageAdmin','uses'=>'PageAdminController@delete']);
+	});
+	//blogs	
+	Route::group(['prefix'=>'blog'],function(){
+		Route::get('/',['as'=>'blogAdmin','uses'=>'ArticleAdminController@index']);		
+		Route::get('create',['as'=>'storeBlogAdmin','uses'=>'ArticleAdminController@store']);
+		Route::post('create',['as'=>'createBlogAdmin','uses'=>'ArticleAdminController@create']);
+		Route::get('/edit/{id}',['as'=>'editBlogAdmin','uses'=>'ArticleAdminController@edit']);
+		Route::post('/edit/{id}',['as'=>'updateBlogAdmin','uses'=>'ArticleAdminController@update']);
+		Route::get('/delete/{id}',['as'=>'deleteBlogAdmin','uses'=>'ArticleAdminController@delete']);
+		Route::post('/delete-all',['as'=>'deleteBlogsAdmin','uses'=>'ArticleAdminController@deleteAll']);
+		Route::get('/search',['as'=>'searchBlogAdmin','uses'=>'ArticleAdminController@search']);
+
+		Route::post('/delete-row-content/',['as'=>'deleteRowContent','uses'=>'ArticleAdminController@deleteRowContent']);
+	});
+	//categories
+	Route::group(['prefix'=>'categories'],function(){
+		Route::get('/',['as'=>'categoriesAdmin','uses'=>'ArticleCatController@index']);		
+		Route::get('create',['as'=>'storeCategoryAdmin','uses'=>'ArticleCatController@store']);
+		Route::post('create',['as'=>'createCategoryAdmin','uses'=>'ArticleCatController@create']);
+		Route::get('/edit/{id}',['as'=>'editCategoryAdmin','uses'=>'ArticleCatController@edit']);
+		Route::post('/edit/{id}',['as'=>'updateCategoryAdmin','uses'=>'ArticleCatController@update']);
+		Route::get('/delete/{id}',['as'=>'deleteCategoryAdmin','uses'=>'ArticleCatController@delete']);
+		Route::post('/position',['as'=>'positionCategoryAdmin','uses'=>'ArticleCatController@position']);
+	});
+	//brands	
+	Route::group(['prefix'=>'brands'],function(){
+		Route::get('/',['as'=>'brandsAdmin','uses'=>'BrandAdminController@index']);		
+		Route::get('create',['as'=>'storeBrandAdmin','uses'=>'BrandAdminController@store']);
+		Route::post('create',['as'=>'createBrandAdmin','uses'=>'BrandAdminController@create']);
+		Route::get('/edit/{id}',['as'=>'editBrandAdmin','uses'=>'BrandAdminController@edit']);
+		Route::post('/edit/{id}',['as'=>'updateBrandAdmin','uses'=>'BrandAdminController@update']);
+		Route::get('/delete/{id}',['as'=>'deleteBrandAdmin','uses'=>'BrandAdminController@delete']);
+	});
+	//slides	
+	Route::group(['prefix'=>'slides'],function(){
+		Route::get('/',['as'=>'slidesAdmin','uses'=>'SlideAdminController@index']);		
+		Route::get('create',['as'=>'storeSlideAdmin','uses'=>'SlideAdminController@store']);
+		Route::post('/create',['as'=>'createSlideAdmin','uses'=>'SlideAdminController@create']);
+		Route::get('/edit/{id}',['as'=>'editSlideAdmin','uses'=>'SlideAdminController@edit']);
+		Route::post('/edit/{id}',['as'=>'updateSlideAdmin','uses'=>'SlideAdminController@update']);
+		Route::get('/delete/{id}',['as'=>'deleteSlideAdmin','uses'=>'SlideAdminController@delete']);		
+	});
+	//users	
+	Route::group(['prefix'=>'users'],function(){
+		Route::get('/',['as'=>'users','uses'=>'UserController@index']);		
+		Route::get('role/{level}',['as'=>'levelAdmin','uses'=>'UserController@getUserByLevel']);
+		Route::get('create',['as'=>'storeAdmin','uses'=>'UserController@store']);
+		Route::post('create',['as'=>'createAdmin','uses'=>'UserController@create']);		
+		Route::get('edit/{id}',['as'=>'editAdmin','uses'=>'UserController@edit']);
+		Route::post('edit/{id}',['as'=>'updateAdmin','uses'=>'UserController@update']);
+		Route::get('delete/{id}',['as'=>'deleteAdmin','uses'=>'UserController@delete']);
+	});
+	//group metas
+	Route::group(['prefix'=>'group-meta'],function(){
+		Route::get('/',['as'=>'metas','uses'=>'GroupMetaController@index']);		
+		Route::get('create',['as'=>'storeMeta','uses'=>'GroupMetaController@store']);
+		Route::post('/create',['as'=>'createMeta','uses'=>'GroupMetaController@create']);		
+		Route::get('/edit/{id}',['as'=>'editMeta','uses'=>'GroupMetaController@edit']);
+		Route::post('/edit/{id}',['as'=>'updateMeta','uses'=>'GroupMetaController@update']);				
+		Route::post('/delete/{id}',['as'=>'deleteGroupMeta','uses'=>'GroupMetaController@delete']);
+	});
+	//Reviewers
+	Route::group(['prefix'=>'reviews'],function(){
+		Route::get('/',['as'=>'reviews','uses'=>'ReviewerAdminController@index']);
+		Route::get('create',['as'=>'storeReview','uses'=>'ReviewerAdminController@store']);
+		Route::post('create',['as'=>'createReview','uses'=>'ReviewerAdminController@create']);
+		Route::get('edit/{id}',['as'=>'editReview','uses'=>'ReviewerAdminController@edit']);
+		Route::post('edit/{id}',['as'=>'updateReview','uses'=>'ReviewerAdminController@update']);		
+		Route::get('/delete/{id}',['as'=>'deleteReview','uses'=>'ReviewerAdminController@delete']);				
+	});
+	//System
+	Route::group(['prefix'=>'setting'],function(){
+		Route::get('/option',['as'=>'setting','uses'=>'OptionsAdminController@index']);
+		Route::get('/social-media',['as'=>'settingSocial','uses'=>'OptionsAdminController@socialMedia']);
+		Route::post('/edit-system',['as'=>'editSytem','uses'=>'OptionsAdminController@updateSystem']);
+		Route::post('/edit-social',['as'=>'editSocial','uses'=>'OptionsAdminController@updateSocial']);
+		Route::post('/media',['as'=>'systemMedia','uses'=>'OptionsAdminController@media']);
+	});
+	//menus	
+	Route::group(['prefix'=>'menu'],function(){
+		Route::get('/',['as'=>'menu','uses'=>'MenuController@index']);
+		Route::get('/create',['as'=>'storeMenu','uses'=>'MenuController@store']);
+		Route::post('/create',['as'=>'creatMenu','uses'=>'MenuController@create']);		
+		Route::get('/edit/{id}',['as'=>'editMenu','uses'=>'MenuController@edit']);
+		Route::post('/edit/{id}',['as'=>'updateMenu','uses'=>'MenuController@update']);
+		Route::get('/sub/{id}',['as'=>'storeSubMenu','uses'=>'MenuController@storeSubMenu']);
+		Route::post('/sub/{id}',['as'=>'createSubMenu','uses'=>'MenuController@createSubMenu']);
+		Route::get('/delete/{id}',['as'=>'deleteMenu','uses'=>'MenuController@delete']);
+		Route::post('/loadType',['as'=>'loadType','uses'=>'MenuController@loadType']);
+		Route::post('/search',['as'=>'searchMenu','uses'=>'MenuController@search']);
+	});
+	/**
+	 * Media
+	 */
+	Route::group(['prefix'=>'media'],function(){
+		Route::get('/',['as'=>'media','uses'=>'MediaAdminController@index']);
+		Route::get('create',['as'=>'addMedia', 'uses'=>'MediaAdminController@store']);
+		Route::post('create',['as'=>'createMedia', 'uses'=>'MediaAdminController@create']);
+		Route::get('edit/{id}',['as'=>'editMedia', 'uses'=>'MediaAdminController@edit']);
+		Route::post('edit/{id}',['as'=>'updateMedia', 'uses'=>'MediaAdminController@update']);
+		Route::get('delete/{id}',['as'=>'deleteMedia','uses'=>'MediaAdminController@delete']);
+		Route::post('delete-all/',['as'=>'deleteAllMedia','uses'=>'MediaAdminController@deleteAll']);
+		Route::post('load-by-cat',['as'=>'loadByCatMedia', 'uses'=>'MediaAdminController@loadByCat']);
+		Route::post('load-more',['as'=>'loadMoreMedia', 'uses'=>'MediaAdminController@loadMore']);
+	});
+	Route::group(['prefix'=>'media-cat'],function(){
+		Route::get('/',['as'=>'mediaCat','uses'=>'MediaCatAdminController@index']);
+		Route::get('create',['as'=>'storeMediaCat', 'uses'=>'MediaCatAdminController@store']);
+		Route::post('create',['as'=>'createMediaCat', 'uses'=>'MediaCatAdminController@create']);
+		Route::get('edit/{id}',['as'=>'editMediaCat', 'uses'=>'MediaCatAdminController@edit']);
+		Route::post('edit/{id}',['as'=>'updateMediaCat', 'uses'=>'MediaCatAdminController@update']);
+		Route::get('/delete/{id}',['as'=>'deleteMediaCat','uses'=>'MediaCatAdminController@delete']);
+		Route::post('/delete-all/',['as'=>'deleteAllMediaCat','uses'=>'MediaCatAdminController@deleteAll']);
+		Route::post('/position',['as'=>'positionAllMediaCat','uses'=>'MediaCatAdminController@position']);
+	});
+	//delete media with ajax
+	Route::post('/delete-media',['as'=>'deleteMediaSingle','uses'=>'MediaAdminController@deleteMediaSingle']);
+	Route::post('/loadMedia',['as'=>'loadMedia','uses'=>'MediaAdminController@loadMedia']);		
+	Route::post('load-more-page',['as'=>'loadMorePage','uses'=>'MediaAdminController@loadMorePage']);
+	Route::post('filter-media',['as'=>'filterMedia','uses'=>'MediaAdminController@searchMedia']);
+	Route::post('search-cat-media',['as'=>'searchCatMedia','uses'=>'MediaAdminController@searchCatMedia']);
+
+	/*
+	* Country
+	*/
+	Route::group(['prefix'=>'country'],function(){
+		Route::get('/',['as'=>'countryAdmin','uses'=>'CountryAdminController@index']);
+		Route::get('/create',['as'=>'storeCountryAdmin','uses'=>'CountryAdminController@store']);
+		Route::post('/create',['as'=>'createCountryAdmin','uses'=>'CountryAdminController@create']);
+		Route::get('edit/{slug}',['as'=>'editCountryAdmin', 'uses'=>'CountryAdminController@edit']);
+		Route::post('edit/{slug}',['as'=>'updateCountryAdmin', 'uses'=>'CountryAdminController@update']);
+		Route::get('/delete/{id}',['as'=>'deleteCountryAdmin','uses'=>'CountryAdminController@delete']);
+		Route::post('/delete-all/',['as'=>'deleteAllCountry','uses'=>'CountryAdminController@deleteAll']);
+		Route::get('/have-not-tour-style/',['as'=>'countryCatAdmin','uses'=>'CountryAdminController@countryCatAdmin']);
+		Route::post('/have-not-tour-style/',['as'=>'postCountryCatAdmin','uses'=>'CountryAdminController@postCountryCatAdmin']);
+		Route::get('/have-not-tour-style/delete/{id}',['as'=>'deleteCountryCatAdmin','uses'=>'CountryAdminController@deleteCountryCatAdmin']);
+
+		Route::get('/search',['as'=>'searchCountryAdmin','uses'=>'CountryAdminController@search']);
+	});
+	/*
+	* Category Tour
+	*/
+	Route::group(['prefix'=>'category-tour'],function(){
+		Route::get('/',['as'=>'catTourAdmin','uses'=>'CategoryTourAdminController@index']);
+		Route::get('/create',['as'=>'storeCatTourAdmin','uses'=>'CategoryTourAdminController@store']);
+		Route::post('/create',['as'=>'createCatTourAdmin','uses'=>'CategoryTourAdminController@create']);
+		Route::get('edit/{slug}',['as'=>'editCatTourAdmin','uses'=>'CategoryTourAdminController@edit']);
+		Route::post('edit/{slug}',['as'=>'updateCatTourAdmin','uses'=>'CategoryTourAdminController@update']);
+		Route::get('/delete/{id}',['as'=>'deleteCatTourAdmin','uses'=>'CategoryTourAdminController@delete']);
+		Route::post('/position',['as'=>'positionCatTourAdmin','uses'=>'CategoryTourAdminController@position']);
+	});
+	/*
+	* Duration
+	*/
+	Route::group(['prefix'=>'duration'],function(){
+		Route::get('/',['as'=>'durationAdmin','uses'=>'DurationAdminController@index']);
+		Route::get('/create',['as'=>'storeDurationAdmin','uses'=>'DurationAdminController@store']);
+		Route::post('/create',['as'=>'createDurationAdmin','uses'=>'DurationAdminController@create']);
+		Route::get('edit/{slug}',['as'=>'editDurationAdmin','uses'=>'DurationAdminController@edit']);
+		Route::post('edit/{slug}',['as'=>'updateDurationAdmin','uses'=>'DurationAdminController@update']);
+		Route::get('/delete/{id}',['as'=>'deleteDurationAdmin','uses'=>'DurationAdminController@delete']);
+		Route::post('/position',['as'=>'positionDurationAdmin','uses'=>'DurationAdminController@position']);
+	});
+	/*
+	* Tour
+	*/
+	Route::group(['prefix'=>'tour'], function(){
+		Route::get('/',['as'=>'tourAdmin', 'uses'=>'TourAdminController@index']);
+		Route::get('/create',['as'=>'storeTourAdmin','uses'=>'TourAdminController@store']);
+		Route::post('/create',['as'=>'createTourAdmin','uses'=>'TourAdminController@create']);
+		Route::get('edit/{slug}',['as'=>'editTourAdmin','uses'=>'TourAdminController@edit']);
+		Route::post('edit/{slug}',['as'=>'updateTourAdmin','uses'=>'TourAdminController@update']);
+		Route::get('/delete/{id}',['as'=>'deleteTourAdmin','uses'=>'TourAdminController@delete']);
+		Route::post('/delete-all/',['as'=>'deleteAllTour','uses'=>'TourAdminController@deleteAll']);
+		Route::get('/search',['as'=>'searchTourAdmin','uses'=>'TourAdminController@search']);
+		Route::post('/delete-shedule/',['as'=>'deleteScheduleTour','uses'=>'TourAdminController@deleteSchedule']);
+	});
+
+	/*
+	* icons detail schedule
+	*/
+	Route::group(['prefix'=>'icons-detail-schedule'],function(){
+		Route::get('/',['as'=>'iconSchedules','uses'=>'IconScheduleController@index']);
+		Route::get('/create',['as'=>'storeIconSchedules','uses'=>'IconScheduleController@store']);
+		Route::post('/create',['as'=>'createIconSchedules','uses'=>'IconScheduleController@create']);
+		Route::get('edit/{id}',['as'=>'editIconSchedules','uses'=>'IconScheduleController@edit']);
+		Route::post('edit/{id}',['as'=>'updateIconSchedules','uses'=>'IconScheduleController@update']);
+		Route::get('/delete/{id}',['as'=>'deleteIconSchedules','uses'=>'IconScheduleController@delete']);
+		Route::post('/delete-all/',['as'=>'deleteAllIconSchedules','uses'=>'IconScheduleController@deleteAll']);
+	});
+	/*
+	* categories icons detail schedule
+	*/
+	Route::group(['prefix'=>'category-icon-schedule'],function(){
+		Route::get('/',['as'=>'catIconSchedules','uses'=>'CatIconScheduleController@index']);
+		Route::get('/create',['as'=>'storeCatIconSchedules','uses'=>'CatIconScheduleController@store']);
+		Route::post('/create',['as'=>'createCatIconSchedules','uses'=>'CatIconScheduleController@create']);
+		Route::get('edit/{id}',['as'=>'editCatIconSchedules','uses'=>'CatIconScheduleController@edit']);
+		Route::post('edit/{id}',['as'=>'updateCatIconSchedules','uses'=>'CatIconScheduleController@update']);
+		Route::get('/delete/{id}',['as'=>'deleteCatIconSchedules','uses'=>'CatIconScheduleController@delete']);
+	});
+
+	//consultants
+	Route::group(['prefix'=>'consultants'],function(){
+		Route::get('/',['as'=>'consultantsAdmin','uses'=>'ConsultantsAdminController@index']);		
+		Route::get('create',['as'=>'storeConsultantAdmin','uses'=>'ConsultantsAdminController@store']);
+		Route::post('create',['as'=>'createConsultantAdmin','uses'=>'ConsultantsAdminController@create']);		
+		Route::get('edit/{slug}',['as'=>'editConsultantAdmin','uses'=>'ConsultantsAdminController@edit']);
+		Route::post('edit/{slug}',['as'=>'updateConsultantAdmin','uses'=>'ConsultantsAdminController@update']);
+		Route::get('delete/{id}',['as'=>'deleteConsultantAdmin','uses'=>'ConsultantsAdminController@delete']);
+		Route::post('/delete-all',['as'=>'deleteAllConsultantAdmin','uses'=>'ConsultantsAdminController@deleteAll']);
+	});
+
+	//guide
+	Route::group(['prefix'=>'guides'],function(){
+		Route::get('/',['as'=>'guidesAdmin','uses'=>'GuideAdminController@index']);		
+		Route::get('create',['as'=>'storeGuideAdmin','uses'=>'GuideAdminController@store']);
+		Route::post('create',['as'=>'createGuideAdmin','uses'=>'GuideAdminController@create']);		
+		Route::get('edit/{slug}',['as'=>'editGuideAdmin','uses'=>'GuideAdminController@edit']);
+		Route::post('edit/{slug}',['as'=>'updateGuideAdmin','uses'=>'GuideAdminController@update']);
+		Route::get('delete/{id}',['as'=>'deleteGuideAdmin','uses'=>'GuideAdminController@delete']);
+		Route::post('/delete-all',['as'=>'deleteAllGuideAdmin','uses'=>'GuideAdminController@deleteAll']);
+	});
+
+});

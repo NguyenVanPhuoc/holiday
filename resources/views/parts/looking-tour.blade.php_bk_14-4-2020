@@ -1,0 +1,43 @@
+<div class="container">
+    <div class="list-search">
+        <div class="filter-about gr-filter">
+            <h7 class="title-header">LOOKING FOR A TOUR PLAN?</h7>
+            <form action="{{ route('asiaTour') }}" method="GET" class="search_form">
+            {{-- {{ csrf_field() }} --}}
+            <div class="list-filter">
+                <div class="box-items region">
+                    <select class="select_filter" name="destination_id">
+                        <option value="" >Country</option>
+                        @foreach($regions as $region)
+                            <option value="{{ $region->id }}">{{ $region->title }}</option>
+                            
+                        @endforeach
+                    </select>
+                </div>
+                <div class="box-items duration">
+                    <select class="select_filter" name="duration_id">
+                        <option value="">Duration</option>
+                        @foreach($durations as $duration)
+                            <option value="{{ $duration->id }}">{{ $duration->title }}</option>
+                            
+                        @endforeach
+                    </select>
+                </div>
+                <div class="box-items styles">
+                    <select class="select_filter" name="cat_id">
+                        <option value="">Tour styles</option>
+                        @foreach($styles as $style)
+                            <option value="{{ $style->id }}">{{ $style->title }}</option>
+                            
+                        @endforeach
+                    </select>
+                </div>
+                <div class="submit_search">
+                    <input type="submit" name="search" class="search" value="Search">
+                    <img src="{{asset('public/images/loupe search.png')}}" alt="image">
+                </div>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>

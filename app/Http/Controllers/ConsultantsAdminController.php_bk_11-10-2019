@@ -1,0 +1,291 @@
+<?php
+namespace App\Http\Controllers;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use App\Http\Requests;
+use App\Consultant;
+use App\ConsultantTourGuide;
+use App\Media;
+use App\Highlight;
+
+class ConsultantsAdminController extends Controller
+{
+	public function index(){    	
+    	$consultants = Consultants::where('type', 'consultant')->orderBy('created_at', 'desc')->paginate(14);
+    	return view('backend.consultants.list',['consultants'=>$consultants]);
+    }
+
+    public function store(){
+        $list_tourStyle = get_categories_tour();
+        $list_country = getListMainCountry();
+        $list_tour = getToursOrderByTitle();
+        $list_hotel = getHotelsOrderByTitle();
+        $list_highlight = Highlight::get();
+
+        $data = [
+            'list_tourStyle' => $list_tourStyle,
+            'list_country' => $list_country,
+            'list_tour' => $list_tour,
+            'list_hotel' => $list_hotel,
+            'list_highlight' => $list_highlight,
+        ];
+        return view('backend.consultants.create', $data);
+    }
+
+    public function create(Request $request){
+        $msg = 'error';
+        if($request->ajax()){
+
+            $favourite_tours = json_decode($request->favourite_tours);
+            $favourite_countries = json_decode($request->favourite_countries);
+            $favourite_hotels = json_decode($request->favourite_hotels);
+
+            $consultant = new Consultants;
+            $consultant->title = $request->title;
+            $consultant->slug = $request->title;
+            $consultant->desc = $request->desc;
+            $consultant->short_desc = $request->short_desc;
+            $consultant->text_destination = $request->text_country;
+            //$consultant->type = 'consultant';
+            $consultant->type = $request->type;
+            $consultant->image = $request->image;
+            if($consultant->save()){
+                // consultant_metas
+                if(isset($request->country) && isset($request->tour_style)){
+                    $consultant_metas = new ConsultantMetas;
+                    $consultant_metas->country = $request->country;
+                    $consultant_metas->tour_style = $request->tour_style;
+                    $consultant_metas->consultant_id = $consultant->id;
+                    $consultant_metas->save();
+                }
+
+                //consultant_tour_guide
+                $consultant_tour_guide = new ConsultantTourGuides;
+                $consultant_tour_guide->text_tour = $request->text_tour;
+                $consultant_tour_guide->text_hotel = $request->text_hotel;
+                $consultant_tour_guide->consultant_id = $consultant->id;
+                $consultant_tour_guide->save();
+
+                //consultant_tours
+                if(!empty($favourite_tours)){
+                    foreach($favourite_tours as $item){
+                        $consultant_tours = new ConsultantTours;
+                        $consultant_tours->consultant_id = $consultant->id;
+                        $consultant_tours->tour_id = $item->id;
+                        $consultant_tours->position = $item->position;
+                        $consultant_tours->save();
+                    }
+                }
+                
+                //consultant_countries
+                if(!empty($favourite_countries)){
+                    foreach($favourite_countries as $item){
+                        $consultant_countries =  new ConsultantCountries;
+                        $consultant_countries->consultant_id = $consultant->id;
+                        $consultant_countries->country_id = $item->id;
+                        $consultant_countries->position = $item->position;
+                        $consultant_countries->save();
+                    }
+                }
+
+                //consultant_hotels
+                if(!empty($favourite_hotels)){
+                    foreach($favourite_hotels as $item){
+                        $consultant_hotels =  new ConsultantHotels;
+                        $consultant_hotels->consultant_id = $consultant->id;
+                        $consultant_hotels->hotel_id = $item->id;
+                        $consultant_hotels->position = $item->position;
+                        $consultant_hotels->save();
+                    }
+                }
+                $msg = 'success';
+            }
+
+        }
+        return $msg;
+    }
+
+    public function edit($slug){
+        $msg = 'error';
+        $consultant = Consultants::findBySlug($slug);
+        return view('backend.consultants.edit', ['consultant'=>$consultant]);
+    }
+
+    public function update($slug, Request $request){
+        if($request->ajax()){
+
+            $favourite_tours = json_decode($request->favourite_tours);
+            $favourite_countries = json_decode($request->favourite_countries);
+            $favourite_hotels = json_decode($request->favourite_hotels);
+
+            $consultant = Consultants::findBySlug($slug);
+            $consultant->title = $request->title;
+            $consultant->slug = $request->title;
+            $consultant->desc = $request->desc;
+            $consultant->short_desc = $request->short_desc;
+            $consultant->text_destination = $request->text_country;
+            $consultant->image = $request->image;
+            if($consultant->save()){
+                // consultant_metas
+                if(isset($request->country) && isset($request->tour_style)){
+                    $consultant_metas = ConsultantMetas::where('consultant_id', $consultant->id)->first();
+                    if(!$consultant_metas) $consultant_metas = new ConsultantMetas;
+                    $consultant_metas->country = $request->country;
+                    $consultant_metas->tour_style = $request->tour_style;
+                    $consultant_metas->consultant_id = $consultant->id;
+                    $consultant_metas->save();
+                }
+
+                //consultant_tour_guide
+                $consultant_tour_guide = ConsultantTourGuides::where('consultant_id', $consultant->id)->first();
+                if(!$consultant_tour_guide) $consultant_tour_guide = new ConsultantTourGuides;
+                $consultant_tour_guide->text_tour = $request->text_tour;
+                $consultant_tour_guide->text_hotel = $request->text_hotel;
+                $consultant_tour_guide->consultant_id = $consultant->id;
+                $consultant_tour_guide->save();
+
+                //consultant_tours
+                if(!empty($favourite_tours)){
+                    foreach($favourite_tours as $item){
+                        //add
+                        if($item->action == 'add'){
+                            $consultant_tours = new ConsultantTours;
+                            $consultant_tours->consultant_id = $consultant->id;
+                            $consultant_tours->tour_id = $item->id;
+                            $consultant_tours->position = $item->position;
+                            $consultant_tours->save();
+                        }
+                        //edit
+                        if($item->action == 'edit'){
+                            $consultant_tours = ConsultantTours::where('tour_id', $item->id)->first();
+                            $consultant_tours->consultant_id = $consultant->id;
+                            $consultant_tours->tour_id = $item->id;
+                            $consultant_tours->position = $item->position;
+                            $consultant_tours->save();
+                        }
+                        //delete
+                        if($item->action == 'delete'){
+                            $consultant_tours = ConsultantTours::where('tour_id', $item->id)->first();
+                            $consultant_tours->delete();
+                        }
+                    }
+                }
+                
+                //consultant_countries
+                if(!empty($favourite_countries)){
+                    foreach($favourite_countries as $item){
+                        //add
+                        if($item->action == 'add'){
+                            $consultant_countries =  new ConsultantCountries;
+                            $consultant_countries->consultant_id = $consultant->id;
+                            $consultant_countries->country_id = $item->id;
+                            $consultant_countries->position = $item->position;
+                            $consultant_countries->save();
+                        }
+                        //edit
+                        if($item->action == 'edit'){
+                            $consultant_countries =  ConsultantCountries::where('country_id', $item->id)->first();
+                            $consultant_countries->consultant_id = $consultant->id;
+                            $consultant_countries->country_id = $item->id;
+                            $consultant_countries->position = $item->position;
+                            $consultant_countries->save();
+                        }
+                        //delete
+                        if($item->action == 'delete'){
+                            $consultant_countries =  ConsultantCountries::where('country_id', $item->id)->first();
+                            $consultant_countries->delete();
+                        }
+                    }
+                }
+
+                //consultant_hotels
+                if(!empty($favourite_hotels)){
+                    foreach($favourite_hotels as $item){
+                        //add
+                        if($item->action == 'add'){
+                            $consultant_hotels =  new ConsultantHotels;
+                            $consultant_hotels->consultant_id = $consultant->id;
+                            $consultant_hotels->hotel_id = $item->id;
+                            $consultant_hotels->position = $item->position;
+                            $consultant_hotels->save();
+                        }
+                        //edit
+                        if($item->action == 'edit'){
+                            $consultant_hotels = ConsultantHotels::where('hotel_id', $item->id)->first();
+                            $consultant_hotels->consultant_id = $consultant->id;
+                            $consultant_hotels->hotel_id = $item->id;
+                            $consultant_hotels->position = $item->position;
+                            $consultant_hotels->save();
+                        }
+                        //delete
+                        if($item->action == 'delete'){
+                            $consultant_hotels = ConsultantHotels::where('hotel_id', $item->id)->first();
+                            $consultant_hotels->delete();
+                        }
+                    }
+                }
+                $redirect = route('editConsultantAdmin', ['slug'=>$consultant->slug]);
+                if($consultant->type == 'tour_guide')
+                    $redirect = route('editTourGuideAdmin', ['slug'=>$consultant->slug]);
+                return response()->json(['msg'=>'success', 'redirect'=>$redirect]);
+            }
+        }
+        return response()->json(['msg'=>'error']);
+    }
+
+    public function delete($id){
+        $consultant = Consultants::find($id);
+        $type = 'consultant';
+        if($consultant->type == 'tour_guide')
+            $type = 'tour_guide';
+        if($consultant->type == 'blogger')
+            $type = 'blogger';
+        if($consultant) $consultant->delete();
+        if($type == 'tour_guide')
+            return redirect()->route('tourGuidesAdmin')->with('success', 'Delete successfull.');
+        else if($type == 'blogger')
+            return redirect()->route('bloggersAdmin')->with('success', 'Delete successfull.');
+        return redirect()->route('consultantsAdmin')->with('success', 'Delete successfull.');
+    }
+
+     public function deleteAll(Request $request){
+        $msg = "error";
+        if($request->ajax()){
+            $items = json_decode($request->items);
+            if(count($items)>0){
+                Consultants::destroy($items);
+            }
+            $msg = "success";
+        }
+        return $msg;
+    }
+
+    public function search(Request $request){
+        $s = $request->s;
+        $type = $request->type;
+        $country_id = isset($request->country_id) ? $request->country_id : '';
+        $cat_tour_id = isset($request->cat_tour_id) ? $request->cat_tour_id : '';
+        $consultants = Consultants::query();
+        if($country_id != '' || $cat_tour_id != ''){
+            $consultants = $consultants->join('consultant_metas', 'consultants.id', '=', 'consultant_metas.consultant_id')->select('consultants.*');
+            if($country_id != ''){
+                $consultants = $consultants->where('consultant_metas.country', $country_id);
+            }
+            if($cat_tour_id != ''){
+                $consultants = $consultants->where('consultant_metas.tour_style', $cat_tour_id);
+            }
+        }
+        if($s && $s != ''){
+            $consultants = $consultants->where('consultants.title', 'LIKE', '%'.$s.'%');
+        }
+        if($type != ''){
+            $consultants = $consultants->where('type', $type);
+        }
+        $consultants = $consultants->orderBy('consultants.created_at', 'desc')->distinct()->paginate(14);
+        if($type == 'tour_guide')
+            return view('backend.tourGuides.list',['consultants'=>$consultants, 's'=>$s]);
+        if($type == 'blogger')
+            return view('backend.bloggers.list',['consultants'=>$consultants, 's'=>$s]);
+        return view('backend.consultants.list',['consultants'=>$consultants, 's'=>$s, 'country_id'=>$country_id, 'cat_tour_id'=>$cat_tour_id]);
+    }
+}

@@ -1,0 +1,396 @@
+@php
+	$title_tag = ($city->title_tag != null) ? $city->title_tag : '';
+	$seo = get_seo($city->id, 'country');
+	$meta_key = ($seo && $seo->value != null) ? $seo->key : '';
+	$meta_value = ($seo && $seo->value != null) ? $seo->value : '';		
+
+	$list_bestTimeToVisit = json_decode($city->best_time_to_visit);
+	$list_howToGet = json_decode($city->how_to_get);
+	$list_whatToEat = json_decode($city->what_to_eat);
+	//$list_thingToDo = getListPostGuideByStrCatID('thing_to_do', $highlight->things_to_do, $country->id);
+	//dd($city->highlight->things_to_do);
+	$list_thingToDo = $city->catGuideSelect('thing_to_do'); //dd($list_thingToDo);
+	$bg_img = getImgUrl($city->image);
+	$breadcrumb = Breadcrumbs::render('placeToVisit', $country, $region , $city->title);
+	$title_top_h1 = $city->title . ' Travel Guide';
+	$post_type_active = 'highlight';
+	$include_searchBox = 'countries.highlights.search-box';
+
+@endphp
+
+@extends('templates.master')
+@section('content')
+@section('title', $title_tag)
+@section('description', $meta_value)
+@section('keywords', $meta_key)
+@section('image_url', $bg_img)
+djhbgsvhfjbfjkjhnkl
+<div class="place-to-visit">
+    @include('layouts.top_banner')
+	@include('countries.groupTopButton')
+	<div class="container">
+		<p class="top-intro text-center font-semibold">{{ $city->desc }}</p>
+	</div>
+
+	<div class="map m-b-40">
+		<div class="container">
+			<div class="title-sec text-center">
+				<h2 class="title-page pink text-center">
+					<img src="{{ asset('public/images/icons/all/location2-pink.png') }}" alt="icon">
+					<span>
+						Location & map of {{ $city->title }}	
+					</span>
+				</h2>
+				<p>{{ $highlight->text_map }}</p>
+			</div>
+			{!! $city->map !!}
+		</div>
+	</div>
+	
+	@if($gallery && count($gallery) > 0)
+		<div class="section gallery">
+			<div class="container">
+				<h2 class="title-page yellow text-center">
+					<img src="{{asset('public/images/icons/all/gallery-yellow.png')}}" alt="icon">
+					<span>
+						Images of {{ $city->title }}					
+					</span>
+				</h2>
+
+				<div class="list-four-sec">
+					<div class="row">
+						<div class="col-md-4">
+							@if($gallery[0])
+								<div class="item">
+									<a class="thumb html5lightbox" href="{{ getImgUrl($gallery[0]) }}" data-group="gallery">
+										{!! image($gallery[0], 350, 650, 'image') !!}
+									</a>
+								</div>
+							@endif
+						</div>
+						<div class="col-md-8">
+							<div class="row">
+								@for($i = 1; $i < 3; $i++)
+									@if(!empty($gallery[$i]))
+										<div class="col-md-6">
+											<div class="item">
+												<a class="thumb html5lightbox" href="{{ getImgUrl($gallery[$i]) }}" data-group="gallery">
+													{!! image($gallery[$i], 350, 320, 'image') !!}
+												</a>
+											</div>
+										</div>
+									@endif
+								@endfor
+								@if(isset($gallery[3]))
+									<div class="col-md-12">
+										<div class="item">
+											<a class="thumb html5lightbox" href="{{ getImgUrl($gallery[3]) }}" data-group="gallery">
+												{!! image($gallery[3], 710, 320, 'image') !!}
+											</a>
+										</div>
+									</div>
+								@endif
+							</div>
+						</div>
+					</div>
+					<div class="hide">
+						@for($i = 4; $i < count($gallery); $i++)
+							<a class="thumb html5lightbox" href="{{ getImgUrl($gallery[$i]) }}" data-group="gallery">
+								{!! image($gallery[$i], 350, 320, 'image') !!}
+							</a>
+						@endfor
+					</div>
+				</div>
+			</div>
+		</div>
+	@endif
+	
+	@if($list_bestTimeToVisit)
+		<div class="section">
+			<div class="container">
+				<h2 class="title-page green text-center">
+					<img src="{{ asset('public/images/icons/all/weather-green.png') }}" alt="icon">
+					<span>
+						Best time to visit "{{ $city->title }}"
+					</span>
+				</h2>
+				<div class="list-row-reverse-3">
+					@foreach($list_bestTimeToVisit as $item)
+						<div class="item">
+							<div class="thumb">
+								{!! image($item->image, 350, 250, $item->title) !!}
+							</div>
+							<div class="desc">
+								<h3 class="title pink">{{ $item->title }}</h3>
+								<div class="text">{!! $item->content !!}</div>
+								<a href="javascript:void(0)" class="readmore font-semibold pink">Read more</a>
+								<a href="javascript:void(0)" class="collap-btn font-semibold pink">Collapse</a>
+							</div>
+						</div>
+					@endforeach
+				</div>
+			</div>
+		</div>
+	@endif
+
+	@if($list_attraction)
+		<div class="section attraction-sec">
+			<div class="container">
+				<div class="p-x-100">
+					<div class="title-sec text-center">
+						<h2 class="title-page pink text-center">
+							<img src="{{ asset('public/images/icons/all/things-to-do-pink.png') }}" alt="icon">
+							<span>
+								Things to do & see in "{{ $city->title }}"
+							</span>
+						</h2>
+						<p>{{ $highlight->text_attraction_sec }}</p>
+					</div>
+					<div class="wrap-content">
+						<input type="hidden" name="country_id" value="{{ $city->id }}">
+						<input type="hidden" name="icon_id" value="">
+						<input type="hidden" name="loadmore_action" value="{{ route('loadMoreAttraction') }}">
+						<input type="hidden" name="loadbyicon_action" value="{{ route('filterAttractionByIcon') }}">
+						
+						<div class="list-attraction list-row-reverse not-full">
+							@foreach($list_attraction as $key => $attraction)
+								@include('attractions.item')
+							@endforeach
+						</div>
+						<div class="text-center">
+							<a href="javascrip:void(0)" class="btn-page pinkbg load-more">
+								<span>Load <small class="number">5</small> more</span>
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	@endif
+
+	@if($list_howToGet)
+		<div class="section">
+			<div class="container">
+				<div class="p-x-100">
+					<h2 class="title-page yellow text-center">
+						<img src="{{ asset('public/images/icons/all/car-yellow.png') }}" alt="icon">
+						<span>
+							How to get to "{{ $city->title }}"
+						</span>
+					</h2>
+				</div>
+				<div class="list-row-reverse-3">
+					@foreach($list_howToGet as $item)
+						<div class="item">
+							<div class="thumb">
+								{!! image($item->image, 350, 250, $item->title) !!}
+							</div>
+							<div class="desc">
+								<h3 class="title yellow">{{ $item->title }}</h3>
+								<div class="text">{!! $item->content !!}</div>
+								<a href="javascript:void(0)" class="readmore font-semibold yellow">Read more</a>
+								<a href="javascript:void(0)" class="collap-btn font-semibold yellow">Collapse</a>
+							</div>
+						</div>
+					@endforeach
+				</div>
+			</div>
+		</div>
+	@endif
+
+	@if($highlight->how_to_get != '')
+	@php
+		$list_howtogets = json_decode($highlight->how_to_get);
+	@endphp
+	<div class="section how-to-get">
+		<div class="container">
+			<div class="p-x-100">
+				<h2 class="title-page yellow text-center">
+					<img src="{{ asset('public/images/icons/all/car-yellow.png') }}" alt="icon">
+					<span>
+						How to get to "{{ $city->title }}"
+					</span>
+				</h2>
+				<div class="list-content">
+					@foreach($list_howtogets as $item)
+						<div class="item">
+							<h3 class="title yellow">{{ $item->title }}</h3>
+							<div class="text-content">{!! $item->content !!}</div>
+						</div>
+					@endforeach
+				</div>
+			</div>
+		</div>
+	</div>
+	@endif
+
+	@if($list_hotel)
+	<div class="section hotel-sec">
+		<div class="container">
+			<div class="p-x-100">
+				<div class="title-sec text-center">
+					<h2 class="title-page green">
+						<img src="{{asset('public/images/icons/all/stay-green.png')}}" alt="icon">
+						<span>
+							{{ __('Where to stay in ').$city->title }} ?					
+						</span>
+					</h2>
+					<p>{{ $highlight->text_hotel_sec }}</p>
+				</div>
+				<div class="p-15 m-y-50 graybg search-highlights text-center">
+					<div class="search-box green">
+						{!!csrf_field()!!}
+						<input type="text" name="keyword" class="green" placeholder="Type in a hotel name in {{ $city->title }}" data-action="{{ route('searchHotelByName', $city->id) }}" />
+						<div class="list-result list-place light-graybg ">
+							<ul>
+								@foreach($list_hotel as $item)
+									<li><a href="#">{{ $item->title }}</a></li>
+								@endforeach
+							</ul>
+						</div>
+					</div>
+				</div>
+				<div class="slide-style list-hotel green">
+					@foreach($list_hotel as $hotel)
+						@include('hotels.item')
+					@endforeach
+				</div>
+			</div>
+		</div>
+	</div>
+	@endif
+
+	@if($list_whatToEat)
+	<div class="section where-to-eat">
+		<div class="container">
+			<div class="title-sec text-center small-w">
+				<h2 class="title-page pink text-center">
+					<img src="{{ asset('public/images/icons/all/eat-pink.png') }}" alt="icon">
+					<span>
+						What & where to eat in "{{ $city->title }}"
+					</span>
+				</h2>
+				<p>{{ $city->text_what_to_eat }}</p>
+			</div>
+			<div class="list-row-reverse-3">
+				@foreach($list_whatToEat as $item)
+					<div class="item">
+						<div class="thumb">
+							{!! image($item->image, 350, 250, $item->title) !!}
+						</div>
+						<div class="desc">
+							<h3 class="title pink">{{ $item->title }}</h3>
+							<div class="text">{!! $item->content !!}</div>
+							<a href="javascript:void(0)" class="readmore font-semibold pink">Read more</a>
+							<a href="javascript:void(0)" class="collap-btn font-semibold pink">Collapse</a>
+						</div>
+					</div>
+				@endforeach
+			</div>
+		</div>
+	</div>
+	@endif
+
+	@if($list_tour && count($list_tour) > 0)
+	<div class="section tour-sec">
+		<div class="container">
+			<div class="p-x-100">
+				<h2 class="title-page yellow text-center">
+					<img src="{{ asset('public/images/icons/all/tour-yellow.png') }}" alt="icon">
+					<span>
+						Our tour packages in "{{ $city->title }}"
+					</span>
+				</h2>
+				<div class="slide-style list-tour-2 related-tours yellow">
+					@foreach($list_tour as $tour)
+						@include('tours.related_item')
+					@endforeach
+				</div>
+			</div>
+		</div>
+	</div>
+	@endif
+
+	@if($related_highlights && count($related_highlights) > 0)
+	<div class="section similar-highligts has-bg-under">
+		<h2 class="title-page pink text-center">
+			<img src="{{ asset('public/images/icons/all/highlights-pink.png') }}" alt="icon">
+			<span>
+				Similar places to visit	
+			</span>
+		</h2>
+		<div class="bg-under light-graybg pink-right"></div>
+		<div class="container">
+			<div class="list-four-sec">
+				<div class="row">
+					<div class="col-md-4">
+						@if($related_highlights[0])
+							<div class="item">
+								<a class="thumb">
+									{!! image($related_highlights[0]->image, 350, 650, $related_highlights[0]->title) !!}
+								</a>
+								<a href="#" class="title">
+									{{$related_highlights[0]->title}}								
+								</a>
+							</div>
+						@endif
+					</div>
+					<div class="col-md-8">
+						<div class="row">
+							@for($i = 1; $i < 3; $i++)
+								@if(isset($related_highlights[$i]))
+									<div class="col-md-6">
+										<div class="item">
+											<a class="thumb">
+												{!! image($related_highlights[$i]->image, 350, 320, $related_highlights[$i]->title) !!}
+											</a>
+											<a href="#" class="title">
+												{{$related_highlights[$i]->title}}								
+											</a>
+										</div>
+									</div>
+								@endif
+							@endfor
+
+							@if(isset($related_highlights[3]))
+								<div class="col-md-12">
+									<div class="item">
+										<a class="thumb">
+											{!! image($related_highlights[3]->image, 710, 320, $related_highlights[3]->title) !!}
+										</a>
+										<a href="#" class="title">
+											{{$related_highlights[3]->title}}								
+										</a>
+									</div>
+								</div>
+							@endif
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	@endif
+	<div class="container">
+		<div class="p-x-100">
+			<div class="sec-bottom light-graybg text-center m-b-50">
+				<div class="title">
+					<span>Contact us</span>
+				</div>
+				<div class="content-bot">
+					<div class="icon yellowbg">
+						<img src="{{ asset('public/images/icons/all/letter-white.png') }}" alt="icon">
+					</div>
+					<p>Get in touch with us directly to get more details about this place to visit</p>
+					<a href="#" class="btn-page yellowbg">
+						<span>Find out more</span>
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	
+</div>
+
+@stop

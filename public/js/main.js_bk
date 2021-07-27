@@ -1,0 +1,734 @@
+$(document ).ready(function(){
+    // Hide Header on on scroll down menu
+    var didScroll;
+    var lastScrollTop = 0;
+    var delta = 5;
+    var navbarHeight = $('header').outerHeight();
+
+    $(window).scroll(function(event){
+        didScroll = true;
+    });
+
+    setInterval(function() {
+        if (didScroll) {
+            hasScrolled();
+            didScroll = false;
+        }
+    }, 250);
+
+    function hasScrolled() {
+        var st = $(this).scrollTop();
+        
+        // Make sure they scroll more than delta
+        if(Math.abs(lastScrollTop - st) <= delta)
+            return;
+        
+        // If they scrolled down and are past the navbar, add class .nav-up.
+        // This is necessary so you never see what is "behind" the navbar.
+        if (st > lastScrollTop && st > navbarHeight){
+            // Scroll Down
+            $('header').removeClass('nav-down').addClass('nav-up');
+        } else {
+            // Scroll Up
+            if(st + $(window).height() < $(document).height()) {
+                $('header').removeClass('nav-up').addClass('nav-down');
+            }
+        }
+        
+        lastScrollTop = st;
+    }
+    //back to top
+    $('body').append('<div id="backtotop"><i class="fa fa-chevron-circle-up" aria-hidden="true"></i></div>');
+        $(window).scroll(function() {
+            if($(window).scrollTop() >200) {
+              $('#backtotop').fadeIn();
+              } else {
+              $('#backtotop').fadeOut();
+              }
+            });
+        $('#backtotop').click(function() {
+        $('html, body').animate({scrollTop:0},500);
+    });
+        
+    //slide notifies
+    $('#list-notifies .list').owlCarousel({
+        items:1,
+        autoplay:false,
+        lazyLoad : true,        
+        loop:false,
+        margin:10,   
+        autoplayTimeout:1000,
+        autoplayHoverPause:true
+
+    });    
+    $('#list-notifies').on('click','h4, .op-close',function(){
+        $('#list-notifies').toggleClass("close");
+    });
+    //search
+    $("#banner .search .nav").on('click','li',function(){
+        $("#banner .search .nav li").removeClass("active");
+        $(this).addClass("active");
+    });
+    //check ticket
+    $("header #menu").on('click', '.ticket', function(){        
+        $("#check-ticket").modal("toggle");
+        return false;
+    });
+    $("#check-ticket .modal-footer").on('click', '.btn-primary', function(){                
+        var _token = $("#check-ticket input[name='_token']").val();
+        var link = $("#check-ticket form").attr("action");
+        var code = $("#check-ticket .code").val(); 
+        var phone = $("#check-ticket .phone").val(); 
+        $("#check-ticket .modal-body input").empty();
+        if(code !="" && phone !=""){
+            $.ajax({
+                type:'POST',            
+                url:link,
+                cache: false,
+                data:{
+                    '_token': _token,
+                    'code': code,
+                    'phone': phone
+                },
+                success:function(data){
+                    $("#check-ticket .modal-body").html(data);
+                }
+            });
+        }
+        return false;   
+    });
+    //custome flatpickr
+    flatpickr(".date input", {
+        altInput: true,     
+        dateFormat: "d-m-Y H:i",
+        enableTime: true,
+        time_24hr: true,
+        locale: {
+            // firstDayOfWeek: 1,
+            weekdays: {
+              shorthand: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
+              longhand: ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'],         
+            }, 
+            months: {
+              shorthand: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
+              longhand: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
+            },
+          },    
+    });
+    flatpickr(".date-noHour input", {
+        dateFormat: "d-m-Y",
+        time_24hr: true,
+        locale: {
+            // firstDayOfWeek: 1,
+            weekdays: {
+              shorthand: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
+              longhand: ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'],         
+            }, 
+            months: {
+              shorthand: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
+              longhand: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
+            },
+          },    
+    });
+    flatpickr(".date-range", {
+        mode: "range",
+        // minDate: "today",
+        dateFormat: "d-m-Y",
+        disable: [
+            function(date) {
+                // disable every multiple of 8
+                return !(date.getDate() % 8);
+            }
+        ],
+        locale: {
+            // firstDayOfWeek: 1,
+            weekdays: {
+              shorthand: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
+              longhand: ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'],         
+            }, 
+            months: {
+              shorthand: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
+              longhand: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
+            },
+          },    
+    });    
+    //load cars by driver_type
+    $(".order-info .driver_type select").change(function(){
+        var _token = $(".book-car input[name='_token']").val();
+        var link = $(".book-car").attr("action");
+        if($(this).val()!=""){
+            $(".result-cars").append('<div class="loadding"><img src="/public/images/loading_red.gif" alt="loadding.."></div>');
+            $.ajax({
+                type:'POST',            
+                url:link,
+                cache: false,
+                data:{
+                    '_token': _token,
+                    'driver_type': $(this).val(),
+                    'km': $(".order-info .km span").text(),
+                },
+                success:function(data){
+                    $(".result-cars .loadding").hide();
+                    var result = $.parseJSON(data);
+                    if(result!=""){
+                        $('.result-cars').html(result);           
+                    }else{
+                        $('.result-cars').text("Đang nhập loại xe này...");
+                    }
+                }
+            })
+        }
+        return false;
+    });
+    //book car
+    $(".result-cars").on('click', '.btn-primary', function(){
+        var _token = $(".book-car input[name='_token']").val();
+        var link = $(".check-price").val();        
+        
+        if($(".book-car .date input").val()==""){
+            $("#canculator .modal-body").html("<div class='alert alert-danger'>Vui lòng chọn thời gian khởi hành.</div>");
+            $("#canculator").modal('toggle');
+        }else{
+            $(".result-cars").append('<div class="loadding"><img src="/public/images/loading_red.gif" alt="loadding.."></div>');
+            $.ajax({
+                type:'POST',
+                url:link,
+                cache: false,
+                data:{
+                    '_token': _token,
+                    'startLocation': $("#startLocation").val(),
+                    'endLocation': $("#endLocation").val(),
+                    'date': $(".book-car .date input").val(),
+                    'driver_type': $(this).attr("data-value"),
+                    'driver_name': $(this).parents(".item").find(".car-info .rate h4").text(),
+                    'shipper_id': $(this).attr("data-shipper"),
+                    'time': $(".order-info .time span").text(),
+                    'km': $(".order-info .km span").text()
+                },
+                success:function(data){
+                    $(".result-cars .loadding").hide();                                 
+                    if(data ==1){
+                        window.location.href = '/dat-xe/thong-tin-khach-hang';
+                    }else{
+                        $("#canculator .modal-body").html(data);
+                        $("#canculator").modal('toggle');
+                    }
+                }
+            })
+        }
+        return false;
+    });
+    //check change password
+    $(".check-password input").change(function(){
+        if($(this).is(':checked')){
+            $(".change-password input").prop('disabled', false);
+            $(this).val("on");          
+        }else{
+            $(".change-password input").prop('disabled', true);
+            $(this).val("");                
+        }
+        $(".change-password").slideToggle(100);
+    });
+    $(".dev-form .action").on('click', '.delete', function(){
+        var title = $(this).parents("tr").find(".title").text();
+        var link = $(this).attr("href");
+        $('.delete-modal .modal-footer .btn-primary').attr("href",link);
+        $('.delete-modal .modal-body p').html("Bạn chắc là muốn xóa <strong>"+title+" ?</strong>");     
+        $('.delete-modal').modal('toggle');
+        return false;
+    });
+    
+    //media library
+    $(".library").click(function(){
+        $("#library-op #file-detail").empty();
+        var _token = $(".dev-form input[name='_token']").val();     
+        var link = $(this).attr("href");
+        var tag_id = $(this).parents(".img-upload").attr("id");         
+        $("#library-op .modal-footer .btn-primary").attr("id",tag_id);
+        $(".loadding").show();
+        $.ajax({
+            type:'POST',            
+            url:link,
+            cache: false,
+            data:{
+                '_token': _token
+            },
+            success:function(data){
+                $(".loadding").hide();
+                var images = $.parseJSON(data);
+                if(images!=""){
+                    $('#library-op .modal-body #files').html(images);           
+                }else{
+                    $('#library-op .modal-body #files').html("Bạn chưa tải ảnh nào lên...");
+                }
+                $("#library-op").modal('toggle');
+            }
+        })
+        return false;           
+    });
+
+    //change thumbnail
+    $("#library-op .modal-footer").on('click','.btn-primary',function(){            
+        $("#library-op .modal-footer .library-notify").empty();
+        var img_url = $("#library-op .modal-body li.active img").attr("src");
+        var img_alt = $("#library-op .modal-body li.active img").attr("alt");
+        var img_id = $(".list-media li.active").attr("id").split("-");
+        var tag_id = $(this).attr("id");
+        if(img_url === undefined){  
+            $("#library-op .modal-footer .library-notify").text("Vui lòng chọn file!!");
+        }else{
+            $(".dev-form #"+ tag_id+ " img").attr("src", img_url);
+            $(".dev-form #"+ tag_id+ " .thumb-media").val(img_id[1]);
+            $("#library-op").modal('toggle');
+            $(".modal-backdrop").modal('toggle');
+        }
+        return false;
+    })
+    //detail media file
+    $("#library-op.single .modal-body").on('click', 'li', function(){           
+        $(".list-media li").removeClass("active");
+        $(this).addClass('active');
+        var img_link = $(".list-media li.active img").attr("data-image");
+        var img_alt = $(".list-media li.active img").attr("alt");
+        var img_date = $(".list-media li.active img").attr("data-date");
+        var img_id = $(".list-media li.active").attr("id").split("-");
+        var html ="<div class='wrap'>";     
+        html += "<h3>Thông tin file</h3>";
+        html += "<img src='"+img_link+"' alt='"+img_alt+"' />";
+        html +="<h4>"+img_alt+"</h4>";
+        html +="<p class='date'>"+img_date+"</p>";
+        html +="<a href='#' class='delete' id='"+img_id[1]+"'>Xóa ảnh</a>";
+        html +="</div>";
+        $("#library-op #file-detail").html(html);
+    });
+    
+    //delete media
+    $("#library-op #file-detail").on('click', '.delete', function(){
+        var _token = $("#library-op input[name='_token']").val();
+        var id = $(this).attr("id");
+        var link = $("#library-op form").attr("action");
+        $.ajax({
+            type:'POST',            
+            url:link,
+            cache: false,
+            data:{
+                '_token': _token,
+                'id': id
+            },
+            success:function(data){
+                if(data!="error"){
+                    $("#library-op .modal-body #image-"+id).remove();
+                    $("#library-op #file-detail").empty();
+                    if(data!="success"){
+                        $("#avatar img").attr("src", data);
+                    }
+                }
+            }
+        })
+        return false;
+    });
+    //dropdown
+    $(".dropdown-menu").on('click','.list-item a',function(){
+        var value = $(this).attr("href").split("#");
+        var text = $(this).text();
+        $(this).parents('.dropdown-menu').find('li').removeClass('active');        
+        $(this).parents('.dropdown').find('.dropdown-toggle').attr("data-value",value[1]);
+        $(this).parents('.dropdown').find('.dropdown-toggle').text(text);
+        $(this).parent('li').addClass('active');
+    });
+    //book-car
+    $(".book-car").on('click','.btn-group button',function(){
+            var _token = $(".book-car input[name='_token']").val();
+            var url = $(".book-car").attr("action");
+            var cityStart = $("#frm-cityStart .custom-combobox input").attr("data-value");
+            var cityEnd = $("#frm-cityEnd .custom-combobox input").attr("data-value");
+            var streetStart = $("#frm-start input").val();
+            var streetEnd = $("#frm-end input").val();
+            var time = $("#frm-time #book-date").val();
+            var typeCar = $("#frm-typeCar .dropdown-toggle").attr("data-value");
+            var packageName = $("#package-name input").val();
+            var packageWeight = $("#package-weight input").val();
+            var packageVolume = $("#package-volume input").val();
+            var weightUnit = $("#package-weight .dropdown button").attr("data-value");
+            var volumeUnit = $("#package-volume .dropdown button").attr("data-value");
+            var errors = new Array();
+            var error_count = 0;            
+            
+            if(cityStart==""){
+                errors[0] = "Vui lòng nhập tuyến đi.";
+            }else{
+                errors[0] = "";
+            }
+            if(cityEnd==""){
+                errors[1] = "Vui lòng nhập tuyến đến.";
+            }else{
+                errors[1] = "";
+            }
+            if(streetStart==""){
+                errors[2] = "Vui lòng nhập điểm đi";
+            }else{
+                errors[2] = "";
+            }
+            if(streetEnd==""){
+                errors[3] = "Vui lòng nhập điểm đến";
+            }else{
+                errors[3] = "";
+            }
+            if(time==""){
+                errors[4] = "Vui lòng chọn ngày.";
+            }else{
+                errors[4] = "";
+            }
+            if(typeCar==""){
+                errors[5] = "Vui lòng chọn loại xe.";
+            }else{
+                errors[5] = "";
+            }
+            if(packageName==""){
+                errors[6] = "Vui lòng nhập tên hàng.";
+            }else{
+                errors[6] = "";
+            }
+            if(packageWeight==""){
+                errors[7] = "Vui lòng nhập khối lượng.";
+            }else{
+                errors[7] = "";
+            }
+            if(packageVolume==""){
+                errors[8] = "Vui lòng nhập số khối.";
+            }else{
+                errors[8] = "";
+            }
+            if(weightUnit==""){
+                errors[9] = "Vui lòng chọn đơn vị khối lượng";
+            }else{
+                errors[9] = "";
+            }
+            if(volumeUnit==""){
+                errors[10] = "Vui lòng chọn đơn vị số khối.";
+            }else{
+                errors[10] = "";
+            }
+
+            var i;
+            var html = "<ul>";
+            for(i = 0; i < errors.length; i++){
+                if(errors[i] != ""){
+                    html +='<li>'+errors[i]+'</li>';
+                    error_count += 1;
+                }
+            }            
+            if(error_count>0){
+                html += "</ul>";            
+                new PNotify({
+                    title: 'Lỗi dữ liệu ('+error_count+')',
+                    text: html,                         
+                    hide: true,
+                    delay: 6000,
+                });
+            }else{
+                $.ajax({
+                    type:'POST',            
+                    url:url,
+                    cache: false,
+                    data:{
+                        '_token': _token,
+                        'cityStart': cityStart,
+                        'cityEnd': cityEnd,
+                        'streetStart': streetStart,
+                        'streetEnd': streetEnd,
+                        'time': time,
+                        'typeCar': typeCar,
+                        'packageName': packageName,
+                        'packageWeight': packageWeight,
+                        'packageVolume': packageVolume,
+                        'weightUnit': weightUnit,
+                        'volumeUnit': volumeUnit,
+                        'numberCar':$("#frm-numberCar").val(),
+                        'price':$("#frm-price").val(),
+                        'typeMoney':1
+                    },
+                }).done(function(data) {
+                    if(data=="success"){   
+                        window.location.href = location.protocol + "//" + location.host+'/dat-xe/thong-tin-khach-hang';
+                    }else{
+                        new PNotify({
+                            title: 'Lỗi',
+                            text: 'Trình duyệt không hỗ trợ javascript.',                           
+                            hide: true,
+                            delay: 2000,
+                        });
+                    }                   
+                });
+            }   
+        return false;
+    });
+    //book-car
+    $("#book-car #customer-info").on('click','.btn-group button',function(){        
+            var _token = $(".book-car input[name='_token']").val();
+            var url = $(".book-car").attr("action");
+            var name = $("#frm-name input").val();
+            var phone = $("#frm-phone input").val();
+            var email = $("#frm-email input").val();
+            var note = $("#frm-note textarea").val();
+            var errors = new Array();
+            var error_count = 0;            
+            
+            if(name==""){
+                errors[0] = "Vui lòng nhập họ & tên.";
+            }else{
+                errors[0] = "";
+            }
+            if(phone==""){
+                errors[1] = "Vui lòng nhập số phone.";
+            }else{
+                errors[1] = "";
+            }
+            if(email=="" || validateEmail(email)==false){
+                errors[2] = "Email không đúng định dạng";
+            }else{
+                errors[2] = "";
+            }
+
+            var i;
+            var html = "<ul>";
+            for(i = 0; i < errors.length; i++){
+                if(errors[i] != ""){
+                    html +='<li>'+errors[i]+'</li>';
+                    error_count += 1;
+                }
+            }
+            
+            if(error_count>0){
+                html += "</ul>";            
+                new PNotify({
+                    title: 'Lỗi dữ liệu ('+error_count+')',
+                    text: html,                         
+                    hide: true,
+                    delay: 6000,
+                });
+            }else{
+                $("#book-car .book-car").append('<div class="loadding"><img src="'+location.protocol + "//" + location.host+'/public/images/loading_red.gif" alt="loadding..."/></div>')
+                $.ajax({
+                    type:'POST',            
+                    url:url,
+                    cache: false,
+                    data:{
+                        '_token': _token,
+                        'name': name,
+                        'phone': phone,
+                        'email': email,
+                        'note': note
+                    },
+                }).done(function(data) {
+                    if(data!="error"){                                                 
+                        window.location.href = location.protocol + "//" + location.host+'/dat-xe/hoan-tat/'+data;
+                    }else{
+                        new PNotify({
+                            title: 'Lỗi',
+                            text: 'Trình duyệt không hỗ trợ javascript.',                           
+                            hide: true,
+                            delay: 2000,
+                        });
+                    }                   
+                });
+            }
+        return false;
+    });
+
+    //filter car
+    $("#frm-searchCar").on('click','#frm-find button',function(){        
+            var _token = $("#frm-searchCar input[name='_token']").val();
+            var url = $("#frm-searchCar").attr("action");
+            var cityStart = $("#frm-cityStart .custom-combobox input").attr("data-value");
+            var cityEnd = $("#frm-cityEnd .custom-combobox input").attr("data-value");
+            var typeCar = $("#frm-typeCar .dropdown-toggle").attr("data-value");
+            var errors = new Array();
+            var error_count = 0;            
+            
+            if(cityStart==""){
+                errors[0] = "Vui lòng chọn điểm đi.";
+            }else{
+                errors[0] = "";
+            }
+            if(cityEnd==""){
+                errors[1] = "Vui lòng chọn điểm điến.";
+            }else{
+                errors[1] = "";
+            }
+            if(typeCar==""){
+                errors[2] = "Vui lòng loại xe";
+            }else{
+                errors[2] = "";
+            }
+
+            var i;
+            var html = "<ul>";
+            for(i = 0; i < errors.length; i++){
+                if(errors[i] != ""){
+                    html +='<li>'+errors[i]+'</li>';
+                    error_count += 1;
+                }
+            }
+            
+            if(error_count>0){
+                html += "</ul>";            
+                new PNotify({
+                    title: 'Lỗi dữ liệu ('+error_count+')',
+                    text: html,                         
+                    hide: true,
+                    delay: 6000,
+                });
+            }else{
+                var s = cityStart.split("#");
+                var e = cityEnd.split("#");
+                window.location.href = location.protocol + "//" + location.host+'/xe-chieu-ve/tim-xe.html?page=1&perPage=5&s='+s[1]+'&e='+e[1]+'&ct='+typeCar;
+            }
+        return false;
+    });
+    //validate filter car
+    $("#home #search-car").on('click','.btn-group button',function(){
+        var cityStart = $("#startLocation").val();
+        var cityEnd = $("#endLocation").val();
+        var date = $(".date-picker .txt-input").val();
+        var errors = new Array();
+        var error_count = 0;            
+
+        if(cityStart==""){
+            errors[0] = "Vui lòng chọn điểm đi.";
+        }else{
+            errors[0] = "";
+        }
+        if(cityEnd==""){
+            errors[1] = "Vui lòng chọn điểm điến.";
+        }else{
+            errors[1] = "";
+        }
+        if(date==""){
+            errors[2] = "Vui lòng ngày đi";
+        }else{
+            errors[2] = "";
+        }
+
+        var i;
+        var html = "<ul>";
+        for(i = 0; i < errors.length; i++){
+            if(errors[i] != ""){
+                html +='<li>'+errors[i]+'</li>';
+                error_count += 1;
+            }
+        }
+
+        if(error_count>0){
+            html += "</ul>";            
+            new PNotify({
+                title: 'Lỗi dữ liệu ('+error_count+')',
+                text: html,                         
+                hide: true,
+                delay: 6000,
+            });
+            return false;
+        }else{
+            return true;
+        }        
+    });
+    //contact
+    $(".frm-contact").on('click', '.btn-group button',function(){        
+        var errors = new Array();
+        var error_count = 0;
+        var _token = $(".frm-contact input[name='_token']").val();        
+        var name = $(".frm-contact #frm-name input").val();
+        var email = $(".frm-contact #frm-email input").val();
+        var phone = $(".frm-contact #frm-phone input").val();
+        var address = $(".frm-contact #frm-address input").val();
+        var message = $(".frm-contact #frm-message textarea").val();
+        if(name==""){
+            errors[0] = "Vui lòng nhập họ tên";
+        }else{
+            errors[0] = "";
+        }        
+        if(email=="" || validateEmail(email)==false){
+            errors[1] = "Email không đúng định dạng.";
+        }else{
+            errors[1] = "";
+        }
+        if(phone==""){
+            errors[2] = "Vui lòng nhập số phone.";
+        }else{
+            errors[2] = "";
+        }
+        if(phone==""){
+            errors[3] = "Vui lòng nhập địa chỉ của bạn.";
+        }else{
+            errors[3] = "";
+        }
+        if(message==""){
+            errors[4] = "Vui lòng nhập nội dung.";
+        }else{
+            errors[4] = "";
+        }
+        var i;
+        var html = "<ul>";
+        for(i = 0; i < errors.length; i++){
+            if(errors[i] != ""){
+                html +='<li>'+errors[i]+'</li>';
+                error_count += 1;
+            }
+        }               
+        if(error_count>0){
+            html += "</ul>";            
+            new PNotify({
+                title: 'Lỗi dữ liệu ('+error_count+')',
+                text: html,                         
+                hide: true,
+                delay: 6000,
+            });
+        }else{
+            $("#contact-page .frm-contact").append('<div class="loadding"><img src="'+location.protocol + "//" + location.host+'/public/images/loading_red.gif" alt="loadding..."/></div>')
+            $.ajax({
+                type:'POST',            
+                url:$(".frm-contact").attr("action"),
+                cache: false,
+                data:{
+                    '_token': _token,
+                    'name': name,                    
+                    'email': email,
+                    'phone': phone,
+                    'address': address,
+                    'message': message
+                },
+            }).done(function(data) {
+                $(".frm-contact .loadding").remove();
+                if(data!="error"){
+                    $(".frm-contact #frm-name input").val("");                    
+                    $(".frm-contact #frm-email input").val("");
+                    $(".frm-contact #frm-phone input").val("");
+                    $(".frm-contact #frm-address input").val("");
+                    $(".frm-contact #frm-message textarea").val("");
+                    errors = [];            
+                    error_count = 0;                        
+                    new PNotify({
+                        title: 'Gửi thành công',
+                        text: data,
+                        type: 'success',
+                        hide: true,
+                        delay: 2000,
+                    });
+                }else{
+                    new PNotify({
+                        title: 'Trình duyệt không hỗ trợ javascript.',
+                        text: error,                            
+                        hide: true,
+                        delay: 2000,
+                    });
+                }                   
+            });
+        }   
+        return false;
+    });
+});
+//validate email
+function validateEmail($email) {
+  var emailReg = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/;
+  return emailReg.test( $email );
+}

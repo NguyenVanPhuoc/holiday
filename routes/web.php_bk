@@ -1,0 +1,178 @@
+<?php
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
+|
+*/
+//resize image
+Route::get('image/{scr}/{w}/{h}', function($src, $w=100, $h=100){
+	$caheimage = Image::cache(function($image) use ($src, $w, $h){
+		return $image->make('public/uploads/'.$src)->resize($w, $h);
+	}, 10, true);
+	$extention = explode(".", $src);
+	return $caheimage->response($extention[1]);
+});
+
+Route::get('/', ['as'=>'home','uses'=>'PagesController@index']);
+Route::get('/about-us', 'PagesController@aboutus');
+Route::get('/contact', 'PagesController@contact');
+Route::get('/khach-hang-thuong-xuyen', ['as'=>'regularCustomer','uses'=>'PagesController@regularCustomer']);
+Route::get('/khach-hang-to-chuc', ['as'=>'organizationCustomer','uses'=>'PagesController@organizationCustomer']);
+Route::get('/dang-nhap', ['as'=>'login','uses'=>'AuthController@login']);
+Route::post('/dang-nhap', ['as'=>'postLogin','uses'=>'AuthController@postLogin']);
+Route::get('/dang-xuat', ['as'=>'logout','uses'=>'AuthController@logout']);
+Route::get('/dang-ky', ['as'=>'register','uses'=>'AuthController@register']);
+Route::post('/dang-ky', ['as'=>'postRegister','uses'=>'AuthController@postRegister']);
+Route::post('/tra-cuu-ma-ve', ['as'=>'checkTicket','uses'=>'OrderCarController@checkTicket']);
+Route::get('/tra-cuu-ma-ve/{slug}', ['as'=>'detailTicket','uses'=>'OrderCarController@ticketDetail']);
+/**
+ * account
+ */
+Route::group(['prefix'=>'tai-khoan'],function(){
+	Route::get('/',['as'=>'account', 'uses'=>'AuthController@account']);
+	Route::get('/cap-nhat',['as'=>'accountEdit', 'uses'=>'AuthController@editAccount']);
+	Route::post('/cap-nhat',['as'=>'accountUpdate', 'uses'=>'AuthController@updateAccount']);
+	Route::get('/doi-mat-khau',['as'=>'accountEditPassword', 'uses'=>'AuthController@editPassword']);
+	Route::post('/doi-mat-khau',['as'=>'accountUpdatePassword', 'uses'=>'AuthController@updatePassword']);	
+	Route::get('/thu-vien',['as'=>'accountMedia', 'uses'=>'AuthController@mediaAccount']);
+	Route::get('/thu-vien/them',['as'=>'accountStoreMedia', 'uses'=>'AuthController@storeMediaAccount']);	
+	Route::get('/thu-vien/xoa/{id}',['as'=>'accountDeleteMedia', 'uses'=>'AuthController@deleteMediaAccount']);
+	Route::post('/library',['as'=>'addLibrary', 'uses'=>'MediaController@index']);
+	Route::post('/library/load',['as'=>'loadLibrary', 'uses'=>'MediaController@load']);
+	Route::post('/delete-library',['as'=>'deleteLibrary','uses'=>'MediaController@delete']);
+	Route::get('/quan-ly-chuyen',['as'=>'accountOrders', 'uses'=>'OrderCarController@getOrders']);	
+	Route::get('/trang-thai/{status}',['as'=>'filterStatusOrder', 'uses'=>'OrderCarController@filterStatus']);
+	Route::post('/tim-kiem',['as'=>'searchOrder', 'uses'=>'OrderCarController@searchTitle']);
+	Route::post('/thoi-gian',['as'=>'filterDateOrder', 'uses'=>'OrderCarController@filterDate']);
+	Route::get('/chuyen/{slug}',['as'=>'getDetailOrder', 'uses'=>'OrderCarController@getDetailOrder']);
+	Route::post('/chuyen/{slug}',['as'=>'updateOrder', 'uses'=>'OrderCarController@updateOrder']);
+});
+//order car
+Route::group(['prefix'=>'dat-xe'],function(){
+	Route::get('/',['as'=>'orderCar','uses'=>'OrderCarController@index']);
+	Route::post('/loai-xe',['as'=>'carType','uses'=>'OrderCarController@carType']);
+	Route::post('/check-price',['as'=>'checkPriceCar','uses'=>'OrderCarController@checkPrice']);	
+	Route::get('/thong-tin-khach-hang',['as'=>'customerInfo','uses'=>'OrderCarController@customerInfo']);
+	Route::post('/hoan-tat',['as'=>'bookCar','uses'=>'OrderCarController@bookCar']);
+	Route::get('/hoan-tat',['as'=>'ticket','uses'=>'OrderCarController@ticket']);
+});
+
+Route::group(['prefix'=>'admin','middleware'=>'adminLogin'],function(){	
+	//pages
+	Route::group(['prefix'=>'page'],function(){
+		Route::get('/','PageAdminController@index');
+		Route::get('/them/','PageAdminController@store');
+		Route::post('/them/','PageAdminController@create');
+		Route::get('/sua/{slug}','PageAdminController@edit');
+		Route::post('/sua/{slug}','PageAdminController@update');
+		Route::post('/slug/{slug}','PageAdminController@updateSlug');
+		Route::get('/xoa/{id}','PageAdminController@delete');
+	});
+
+	//shoppers	
+	Route::group(['prefix'=>'khach-hang'],function(){
+		Route::get('/',['as'=>'customersAdmin','uses'=>'CustomerAdminController@index']);		
+		Route::get('/them',['as'=>'storeCustomerAdmin','uses'=>'CustomerAdminController@store']);
+		Route::post('/them',['as'=>'addCustomerAdmin','uses'=>'CustomerAdminController@create']);
+		Route::get('/sua/{slug}',['as'=>'editCustomerAdmin','uses'=>'CustomerAdminController@edit']);
+		Route::post('/sua/{slug}',['as'=>'updateCustomerAdmin','uses'=>'CustomerAdminController@update']);
+		Route::post('/slug/{slug}',['as'=>'updateSlugCustomerAdmin','uses'=>'CustomerAdminController@updateSlug']);
+		Route::get('/xoa/{id}',['as'=>'deleteCustomerAdmin','uses'=>'CustomerAdminController@delete']);
+	});
+	
+	//shippers	
+	Route::group(['prefix'=>'tai-xe'],function(){
+		Route::get('/',['as'=>'indexShipper','uses'=>'ShipperAdminController@index']);		
+		Route::get('/them','ShipperAdminController@store');
+		Route::post('/them',['as'=>'addShipper','uses'=>'ShipperAdminController@create']);
+		Route::get('/sua/{slug}',['as'=>'editShipper','uses'=>'ShipperAdminController@edit']);
+		Route::post('/sua/{slug}',['as'=>'updateShipper','uses'=>'ShipperAdminController@update']);
+		Route::post('/slug/{slug}',['as'=>'updateSlugShipper','uses'=>'ShipperAdminController@updateSlug']);
+		Route::get('/xoa/{id}',['as'=>'deleteShipper','uses'=>'ShipperAdminController@delete']);		
+	});
+
+	//users
+	Route::get('/',['as'=>'indexAdmin','uses'=>'OrderAdminController@index']);
+	Route::group(['prefix'=>'ban-quan-tri'],function(){
+		Route::get('/',['as'=>'admins','uses'=>'UserController@index']);		
+		Route::get('/them',['as'=>'storeAdmin','uses'=>'UserController@store']);
+		Route::post('/them',['as'=>'addAdmin','uses'=>'UserController@create']);		
+		Route::get('/sua/{slug}',['as'=>'editAdmin','uses'=>'UserController@edit']);
+		Route::post('/sua/{id}',['as'=>'updateAdmin','uses'=>'UserController@update']);		
+		Route::post('/slug/{slug}',['as'=>'editSlugUser','uses'=>'UserController@updateSlug']);
+		Route::get('/xoa/{id}',['as'=>'deleteAdmin','uses'=>'UserController@delete']);
+		Route::post('/media',['as'=>'userMedia','uses'=>'UserController@media']);
+	});
+
+	//prices
+	Route::group(['prefix'=>'prices'],function(){
+		Route::get('/',['as'=>'indexPrice','uses'=>'PriceAdminController@index']);		
+		Route::get('/them',['as'=>'storePrice','uses'=>'PriceAdminController@store']);
+		Route::post('/them',['as'=>'createPrice','uses'=>'PriceAdminController@create']);		
+		Route::get('/sua/{slug}',['as'=>'editPrice','uses'=>'PriceAdminController@edit']);
+		Route::post('/sua/{slug}',['as'=>'updatePrice','uses'=>'PriceAdminController@update']);		
+		Route::post('/slug/{slug}',['as'=>'slugPrice','uses'=>'PriceAdminController@updateSlug']);
+		Route::get('/xoa/{id}',['as'=>'deletePrice','uses'=>'PriceAdminController@delete']);
+		Route::post('/xoa-meta/{id}',['as'=>'deleteMetaPrice','uses'=>'PriceAdminController@deleteMeta']);
+	});
+
+	//group metas
+	Route::group(['prefix'=>'group-meta'],function(){
+		Route::get('/','GroupMetaController@index');		
+		Route::get('/them','GroupMetaController@store');
+		Route::post('/them','GroupMetaController@create');		
+		Route::get('/sua/{slug}','GroupMetaController@edit');
+		Route::post('/sua/{slug}','GroupMetaController@update');		
+		Route::post('/slug/{slug}','GroupMetaController@updateSlug');
+		Route::get('/xoa/{id}','GroupMetaController@delete');
+		Route::post('/xoa-meta/{id}','GroupMetaController@deleteMeta');
+	});
+
+	//Reviewers
+	Route::group(['prefix'=>'review'],function(){
+		Route::get('/',['as'=>'review','uses'=>'ReviewerAdminController@index']);
+		Route::get('/them',['as'=>'reviewStore','uses'=>'ReviewerAdminController@store']);
+		Route::post('/them',['as'=>'reviewCreate','uses'=>'ReviewerAdminController@create']);		
+		Route::get('/sua/{slug}',['as'=>'reviewEdit','uses'=>'ReviewerAdminController@edit']);
+		Route::post('/sua/{slug}',['as'=>'reviewUpdate','uses'=>'ReviewerAdminController@update']);
+		Route::post('/media',['as'=>'reviewMedia','uses'=>'ReviewerAdminController@media']);		
+		Route::post('/slug/{slug}',['as'=>'reviewSlug','uses'=>'ReviewerAdminController@updateSlug']);
+		Route::get('/xoa/{id}',['as'=>'reviewDelete','uses'=>'ReviewerAdminController@delete']);				
+	});
+
+	//System
+	Route::group(['prefix'=>'setting'],function(){
+		Route::get('/option',['as'=>'setting','uses'=>'OptionsAdminController@index']);
+		Route::get('/social-media',['as'=>'settingSocial','uses'=>'OptionsAdminController@socialMedia']);
+		Route::post('/edit-system',['as'=>'editSytem','uses'=>'OptionsAdminController@updateSystem']);
+		Route::post('/edit-social',['as'=>'editSocial','uses'=>'OptionsAdminController@updateSocial']);
+		Route::post('/media',['as'=>'systemMedia','uses'=>'OptionsAdminController@media']);
+	});
+
+	//Media file
+	Route::group(['prefix'=>'media'],function(){
+		Route::get('/','MediaAdminController@index');
+		Route::get('/them',['as'=>'addMedia', 'uses'=>'MediaAdminController@store']);
+		Route::post('/them',['as'=>'createMedia', 'uses'=>'MediaAdminController@create']);
+		Route::get('/xoa/{id}','MediaAdminController@delete');
+	});
+
+	//delete media with ajax
+	Route::post('/delete-media',['as'=>'deleteMediaSingle','uses'=>'MediaAdminController@deleteMediaSingle']);
+	Route::post('/loadMedia',['as'=>'loadMedia','uses'=>'MediaAdminController@loadMedia']);
+
+	//orders
+	Route::group(['prefix'=>'don-hang'],function(){
+		Route::get('/',['as'=>'ordersAdmin', 'uses'=>'OrderAdminController@index']);		
+		Route::post('/trang-thai',['as'=>'updateOrderAdmin', 'uses'=>'OrderAdminController@update']);
+		Route::get('/trang-thai/{status}',['as'=>'filterStatusOrderAdmin', 'uses'=>'OrderAdminController@filterStatus']);
+		Route::post('/tim-kiem',['as'=>'searchOrderAdmin', 'uses'=>'OrderAdminController@search']);
+		Route::post('/thoi-gian',['as'=>'filterDateOrderAdmin', 'uses'=>'OrderAdminController@filterDate']);
+	});
+});

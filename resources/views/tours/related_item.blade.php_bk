@@ -1,0 +1,20 @@
+@php
+/*
+* template item related tour
+* @param request : $tour
+*/
+$slug_country = get_slug_country_of_tour($tour->id);
+@endphp
+<div class="item">
+	<div class="octagonal">
+    	<div class="wrap-octagonal">
+        	<div class="image">
+                <a class="thumb" href="{{route('tour', ['slug_country'=>$slug_country,'slug'=>$tour->slug])}}">
+                    {!! image($tour->image, 490, 300, $tour->title) !!}
+                </a>
+                <a href="{{route('tour', ['slug_country'=>$slug_country,'slug'=>$tour->slug])}}" class="title flex-list center-item"><span>{{$tour->title}}</span></a>
+                <a href="#" class="btn-view flex-list center-item"><span>View tour</span></a>
+            </div>
+        </div>
+    </div>
+</div>

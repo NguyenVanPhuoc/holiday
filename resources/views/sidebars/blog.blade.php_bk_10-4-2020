@@ -1,0 +1,81 @@
+@php 
+	$categories = get_categories();
+	$articleMostView = getMostViewArticle(5);
+	$cat_slug = empty($cat)? '' : $cat->slug;
+	$countries = getAllMainCountry();
+    $country_slug = empty($country) ? '' : $country->slug;	
+@endphp
+@desktop
+@if($categories)
+<aside id="sb-categories">
+	<h3 class="sb-title white">Discover</h3>
+	<div class="desc">
+		<ul class="list-cat no-list-style text-center">
+			@foreach($categories as $item)
+			<li <?php if($cat_slug == $item->slug) echo ' class="active"';?>><a href="#"<?php if($item->slug == $cat_slug) echo ' class="active"';?>>{{$item->title}}</a></li>
+			@endforeach
+		</ul>
+	</div>
+</aside>
+@endif
+@if($articleMostView)
+<aside id="sb-view">
+	<h3 class="sb-title white">Most popular</h3>
+	<div class="desc">
+		<ul class="list no-list-style">
+			@foreach($articleMostView as $item)
+			<li class="flex content-between">
+				<a class="thumb" href="{{ $item->getPermalink() }}">{!!image($item->image,60,60,$item->title)!!}</a>
+				<h4><a href="{{ $item->getPermalink() }}">{{str_limit($item->title, 35,'')}}</a></h4>
+			</li>
+			@endforeach
+		</ul>
+	</div>
+</aside>
+@endif
+<aside id="sb-contact">
+	<div class="language-title right">
+		<h5>Get in touch & create your dream trip</h5>
+	</div>
+	<a href="#" class="thumb"><img src="{{asset('public/images/temp/base_fill_flip.png')}}" alt="bigg_icon"></a>
+</aside>
+<aside id="sb-fanpage">
+	<div class="fanpage-inner">
+		<iframe src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fsonasiaholiday%2F&tabs=timeline&width=340&height=500&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId=2051454905170722" width="340" height="500" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowTransparency="true" allow="encrypted-media"></iframe>
+	</div>
+</aside>
+@elsedesktop
+@if($countries)
+    <div class="mobi-discover light-graynvp">
+        <h2 class="title-menu pink text-center">DISCOVER</h2>
+        <div class="row">
+            @foreach($countries as $item)
+                <div class="col-sm-6 col-xs-6 item text-center">
+                    <a class="thumb_img" href="{{route('blogCall',$item->slug)}}">
+                    	{!!image($item->image,120,120,$item->title)!!}
+                    	<h3>{!!$item->title!!}</h3>
+                    </a>
+                </div>
+            @endforeach
+        </div>
+    </div>
+@endif
+@if($categories)
+    <div class="mobi-discover light-graynvp blog_topics">
+        <h2 class="title-menu pink text-center">BLOG TOPICS</h2>
+        <div class="row">
+            @foreach($categories as $item)
+                <div class="col-sm-6 col-xs-6 item text-center">
+                    <a class="thumb_img" href="{{route('blogCall',$item->slug)}}">
+                    	{!!image($item->image,120,120,$item->title)!!}
+                    	<h3>{!!$item->title!!}</h3>
+                    </a>
+                </div>
+            @endforeach
+        </div>
+    </div>
+@endif
+
+@enddesktop
+
+

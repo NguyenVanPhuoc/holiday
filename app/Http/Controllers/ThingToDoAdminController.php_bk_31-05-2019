@@ -1,0 +1,131 @@
+<?php
+namespace App\Http\Controllers;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use App\Http\Requests;
+use App\Guides;
+use App\Media;
+use App\Seo;
+use App\TableContentDetails;
+use App\TableContents;
+
+class ThingToDoAdminController extends Controller
+{
+	public function index(){    	
+    	$guides = Guides::orderBy('created_at', 'desc')->where('post_type', 'thing_to_do')->paginate(14);
+    	return view('backend.thingsToDo.list',['guides'=>$guides]);
+    }
+
+    public function store(){ 
+    	return view('backend.thingsToDo.create');
+    }
+
+    public function create(Request $request){
+    	$msg = 'error';
+        if($request->ajax()){
+            $guide = new Guides;
+            $guide->short_title = $request->shortTitle;
+            $guide->long_title = $request->longTitle;
+            $guide->title_tag = $request->title_tag;
+            $guide->slug = $request->longTitle;
+            $guide->desc = $request->desc;
+            $guide->post_type = 'thing_to_do';
+            $guide->image = $request->image;
+            $guide->white_icon = $request->white_icon;
+            $guide->yellow_icon = $request->yellow_icon;
+            $guide->gray_icon = $request->gray_icon;
+            if(isset($request->country) && $request->country != '')
+                $guide->country_id = $request->country;
+            if($guide->save()){
+                //seo
+                $seo = new Seo;
+                $seo->key = $request->metaKey;
+                $seo->value = $request->metaValue;
+                $seo->type = "guide";
+                $seo->post_id = $guide->id;
+                $seo->save(); 
+
+                $msg = 'success';
+            }
+            $msg = 'success';
+        }
+        return $msg;
+    }
+
+    public function edit($slug){
+        $guide = Guides::findBySlug($slug);
+        return view('backend.thingsToDo.edit', ['guide'=>$guide]);
+    }
+
+    public function update($slug, Request $request){
+    	if($request->ajax()){
+            $guide = Guides::findBySlug($slug);
+            $guide->short_title = $request->shortTitle;
+            $guide->long_title = $request->longTitle;
+            $guide->title_tag = $request->title_tag;
+            $guide->slug = $request->slug;
+            $guide->desc = $request->desc;
+            $guide->post_type = 'thing_to_do';
+            $guide->image = $request->image;
+            $guide->white_icon = $request->white_icon;
+            $guide->yellow_icon = $request->yellow_icon;
+            $guide->gray_icon = $request->gray_icon;
+            if(isset($request->country) && $request->country != '')
+                $guide->country_id = $request->country;
+            if($guide->save()){
+                //seo
+                $seo = Seo::where('post_id',$guide->id)->where('type','guide')->first();
+                if(!$seo){
+                    $seo = new Seo;
+                }
+                $seo->key = $request->metaKey;
+                $seo->value = $request->metaValue;                
+                $seo->type = 'guide';
+                $seo->post_id = $guide->id;
+                $seo->save(); 
+            }
+            return response()->json(['msg'=>'success', 'redirect'=>route('editThingToDoAdmin', $guide->slug) ]);
+        }
+        return response()->json(['msg'=>'error']);
+    }
+
+    public function delete($id){
+        $seo = Seo::where('post_id',$id)->where('type','guide');
+        if($seo) $seo->delete();
+        $guide = Guides::find($id);
+        $guide->delete();
+        return redirect()->route('thingsToDoAdmin')->with('success', 'Delete successfull.');
+    }
+
+    //deleteAll
+    public function deleteAll(Request $resquest){
+        $msg = "error";
+        if($resquest->ajax()){
+            $items = json_decode($resquest->items);
+            if(count($items)>0){
+                foreach($items as $id){
+                    $seo = Seo::where('post_id',$id)->where('type','guide');
+                    if($seo) $seo->delete();
+                }
+                Guides::destroy($items);
+            }
+            $msg = "success";
+        }
+        return $msg;
+    }
+
+    public function search(Request $request){
+        $s = $request->s;
+        $country_id = $request->country_id;
+        $guides = Guides::query();
+        if($s != ''){
+            $guides = $guides->where('long_title','like','%'.$s.'%');
+        }
+        if($country_id != ''){
+            $guides = $guides->where('country_id', $country_id);
+        }
+        $guides = $guides->where('post_type', 'thing_to_do')->orderBy('created_at', 'desc')->paginate(14);
+        return view('backend.thingsToDo.list',['guides'=>$guides, 's'=>$s, 'country_id'=>$country_id]);
+    }
+
+}

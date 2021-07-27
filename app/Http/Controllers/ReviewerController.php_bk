@@ -1,0 +1,128 @@
+<?php 
+namespace App\Http\Controllers;
+use Illuminate\Http\Request;
+use App\Reviewers;
+use App\GroupType;
+use App\Countries;
+use App\CategoryTour;
+use App\Article;
+use App\Pages;
+use DB;
+class ReviewerController extends Controller
+{
+	public function index(){
+		$page = Pages::find(29);
+        $seo = get_seo(29,'page');
+		$limit = 2;
+		$list_destination = getAllMainCountry();
+        $list_tour_style = getListTourStyle();
+        $list_group_type = GroupType::orderBy('title', 'asc')->get();
+        $list_review = Reviewers::limit($limit)->get();
+        //dd($list_review);
+        $count_review = Reviewers::count();
+		$data = [
+			'page' => $page,
+			'seo' => $seo,
+			'list_destination' => $list_destination,
+			'list_tour_style' => $list_tour_style,
+			'list_group_type' => $list_group_type,
+			'list_review' => $list_review,
+			'limit' => $limit,
+			'count_review' => $count_review,
+		];
+		return view('reviewers.list', $data);
+	}
+	public function filter(Request $request){
+		$array_param = [];
+		$array_country_id = ($request->array_country_id) ? $request->array_country_id : [];
+		$array_tourstyle_id = ($request->array_tourstyle_id) ? $request->array_tourstyle_id : [];
+		$group_type_id = ($request->group_type_id) ? $request->group_type_id : NULL;
+		$limit = ($request->limit) ? $request->limit : NULL;
+		$skip = ($request->skip) ? $request->skip : 0;
+		$array_param['array_country_id'] =  $array_country_id;
+		$array_param['array_tourstyle_id'] =  $array_tourstyle_id;
+		$array_param['group_type_id'] =  $group_type_id;
+		$array_param['limit'] =  $limit;
+		$array_param['skip'] =  $skip;
+		$array_filter = filterReviewFront($array_param);
+		$list_review = $array_filter['list_review'];
+		$total = $array_filter['total'];
+		$html = '';
+			if($skip > 0){
+				if(count($list_review) > 0){
+					foreach($list_review as $item){
+						$html .= view('reviewers.item', ['item' => $item])->render();
+					}
+				}
+			}else{
+				if(count($list_review) > 0){
+					$html .= '<div class="list-item row">';
+						foreach($list_review as $item){
+							$html .= view('reviewers.item', ['item' => $item])->render();
+						}
+					$html .= '</div>';
+				}else
+					$html .= 'No result';
+			}
+		if($skip == 0 && $total > ($skip + $limit)){
+			$html .= '<div class="text-center wrap-readmore">
+                        <a href="javascript:void(0)" class="view-more"> <span>View more</span></a>
+                    </div>';
+		}
+		$view_more = 'hide';
+		if($total > ($skip + $limit)) 
+            	$view_more = 'show';
+		return response()->json(['msg' => 'success', 'html' => $html, 'view_more' => $view_more, 'total' => $total]);
+	}
+	public function detail($slug){
+		$review = Reviewers::findBySlugOrFail($slug);
+		$seo = get_seo($review->id, 'review'); 
+		$array_cityID = ($review->list_city != '') ? explode(",", $review->list_city) : [];
+		$list_city = Countries::join('highlights', 'countries.id', '=', 'highlights.country_id')
+								->whereIn('countries.id', $array_cityID)
+								->orderBy(DB::raw("FIELD(countries.id,".join(',',$array_cityID).")"))
+								->select('countries.id', 'countries.title', 'countries.slug', 'countries.parent_id')
+								->distinct()->get();
+        $list_group_type = GroupType::orderBy('title', 'asc')->get();
+        $title_style = explode(',',$review->list_tour_style);
+        $list_title_style=CategoryTour::whereIn('id',$title_style)->select('id','title')->get();
+        $list_otherReviews = Reviewers::where('id', '<>', $review->id)->limit(3)->get();
+        $list_blog = Article::orderBy('created_at', 'asc')->paginate(6);
+        //dd($list_city);
+		$data = [
+			'review' => $review,
+			'seo' => $seo,
+			'list_city' => $list_city,
+			'list_group_type' => $list_group_type,
+			'list_otherReviews' => $list_otherReviews,
+			'list_title_style' => $list_title_style,
+			'list_blog' => $list_blog,
+		];
+		return view('reviewers.detail', $data);
+	}
+	public function filterOther(Request $request){
+		$array_param = [];
+		$array_country_id = ($request->array_country_id) ? $request->array_country_id : [];
+		$array_tourstyle_id = ($request->array_tourstyle_id) ? $request->array_tourstyle_id : [];
+		$group_type_id = ($request->group_type_id) ? $request->group_type_id : NULL;
+		$limit = 30;
+		$skip = ($request->skip) ? $request->skip : 0;
+		$array_param['array_country_id'] =  $array_country_id;
+		$array_param['array_tourstyle_id'] =  $array_tourstyle_id;
+		$array_param['group_type_id'] =  $group_type_id;
+		$array_param['current_id'] =  $request->current_id;
+		$array_param['limit'] =  $limit;
+		$array_param['skip'] =  $skip;
+		$array_filter = filterReviewFront($array_param);
+		$list_review = $array_filter['list_review'];
+		$html = '';
+		if(count($list_review) > 0){
+			foreach($list_review as $reviewer){
+				$html .= view('reviewers.item-medium', ['reviewer' => $reviewer])->render();
+			}
+		}else{
+			$html .= 'No result';
+		}
+		return response()->json(['msg' => 'success', 'html' => $html]);
+	}
+}

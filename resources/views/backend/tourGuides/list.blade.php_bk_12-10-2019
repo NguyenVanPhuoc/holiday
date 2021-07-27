@@ -1,0 +1,100 @@
+@extends('backend.layout.index')
+@section('title','Tour Guide')
+@section('content')
+@php
+	$key = isset($s)? $s:'';
+@endphp
+<div id="tour-guides" class="page">
+	<div class="head">
+		<h1 class="title">Tour Guide</h1>	
+		<a href="{{ route('storeTourGuideAdmin') }}" class="btn btn-add">Add</a>	
+	</div>
+	<div class="main">
+		<div class="search-form">
+			<form name="s" action="{{ route('searchConsultantAdmin') }}" method="GET">
+				<input type="hidden" name="type" value="tour_guide">
+				<div class="row">
+					<div id="frm-keyword" class="col-md-12"><input type="text" name="s" class="form-control" placeholder="Input key word..." value="{{ $key }}"></div>
+				</div>
+				<button type="submit" class="btn"><i class="fa fa-search" aria-hidden="true"></i></button>
+			</form>
+		</div>
+		<form action="#" method="post" class="dev-form list-consultants" data-delete="{{ route('deleteAllConsultantAdmin') }}">
+			{!!csrf_field()!!}
+			<div class="tb-results">
+				<table id="list-members" class="table table-striped">
+					<thead class="thead-dark">
+						<tr>
+							<th id="check-all" scope="col" class="check">
+								<div class="checkbox checkbox-success">
+									<input id="check" type="checkbox" name="checkAll[]" value="">
+									<label for="check"></label>
+								</div>
+							</th>
+							<th scope="col" class="stt">#</th>
+							<th scope="col" class="avatar">Avatar</th>
+							<th scope="col" class="title">Name</th>
+							<th scope="col" class="desc">Short Description</th>
+							<th scope="col" class="action"></th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach($consultants as $key => $c)
+						<tr id="item-{{$c->id}}">
+							<td class="check">
+								<div class="checkbox checkbox-success">
+									<input id="item-{{$c->id}}" type="checkbox" name="items[]" value="{{$c->id}}">
+									<label for="item-{{$c->id}}"></label>
+								</div>
+							</td>
+							<th scope="row">{{$key+1}}</th>
+							<td class="avatar"><a href="{{ route('editTourGuideAdmin', ['slug'=>$c->slug]) }}">{!!image($c->image, 50,50, $c->title)!!}</a></td>
+							<td class="title"><a href="{{ route('editTourGuideAdmin', ['slug'=>$c->slug]) }}">{{$c->title}}</a></td>
+							<td class="desc"><div class="text">{!! $c->short_desc !!}</div></td>
+							<td class="action">
+								@handheld<a href="#" data-value="{{$c->id}}" class="view"><i class="fa fa-eye" aria-hidden="true"></i></a>@endhandheld
+								<a href="{{ route('editTourGuideAdmin', ['slug'=>$c->slug]) }}" class="edit"><i class="fa fa-edit" aria-hidden="true"></i></a>
+								<a href="{{ route('deleteConsultantAdmin', ['id'=>$c->id]) }}" class="delete delete-item"><i class="fa fa-close" aria-hidden="true"></i></a>					
+							</td>
+						</tr>
+						@handheld
+						<tr class="item-{{$c->id}} detail">
+							<td colspan="7">					
+								<ul class="info">
+									<li>Name: <a href="#">{{$c->title}}</a></li>
+									<li>Tour Style: {{$c->tour_style}}</li>
+									<li>Country: {{$c->country}}</li>
+									<li>Short Description: <strong>{{$c->short_desc}}</strong></li>
+								</ul>
+								<a href="#" class="read-more"><i class="fa fa-angle-right" aria-hidden="true"></i>View</a>
+							</td>
+						</tr>
+						@endhandheld
+						@endforeach				
+					</tbody>
+				</table>
+			</div>
+		</form>
+	</div>
+</div>
+{!! $consultants->links() !!}
+@if(session('success'))
+<script type="text/javascript">
+	$(function(){
+		new PNotify({
+			title: 'Successfully',
+			text: '{{session('success')}}',
+			type: 'success',
+			hide: true,
+			delay: 2000,
+		});
+	})
+</script>
+@endif
+<script type="text/javascript">
+	$(function() {
+	//delete location
+	
+});	
+</script>
+@stop

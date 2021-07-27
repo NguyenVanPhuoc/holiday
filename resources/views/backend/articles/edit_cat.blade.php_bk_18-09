@@ -1,0 +1,161 @@
+@extends('backend.layout.index')
+@section('title','Sửa tuyến')
+@section('content')
+<?php 
+if($seo){
+	$key = $seo->key;
+	$value = $seo->value;
+}else{
+	$key = "";
+	$value = "";
+}?>
+<div id="edit-category" class="container page route">
+	<div class="head">
+		<a href="{{route('categoriesAdmin')}}" class="back-icon"><i class="fa fa-angle-left" aria-hidden="true"></i> Tất cả</a>
+		<h1 class="title">Danh mục</h1>		
+	</div>
+	<div class="main">
+		<form action="{{route('updateCategoryAdmin',['id'=>$category->id])}}" class="frm-menu dev-form" method="POST" name="create_category" role="form">
+			{!!csrf_field()!!}
+			<div id="frm-title" class="form-group">
+				<label for="title">Tên tuyến<small class="required">(*)</small></label>
+				<input type="text" name="title" class="form-control" placeholder="Nhập tuyến xe" class="frm-input" value="{{$category->title}}">
+			</div>
+			<div id="frm-content" class="form-group">
+				<label for="content">Nội dung</label>
+				<textarea name="content" id="editor">{!!$category->content!!}</textarea>
+			</div>	
+			<div id="frm-metaKey" class="form-group">
+				<label for="metakey">Từ khóa</label>
+				<input type="text" name="metakey" class="form-control" placeholder="Nhập từ khóa SEO" class="frm-input" value="{{$key}}">
+			</div>
+			<div class="row">
+				<div class="col-md-9">
+					<div id="frm-metaValue" class="form-group">
+						<label class="metaValue">Nội dung SEO</label>
+						<textarea name="metaValue" placeholder="Nhập nội dung SEO" class="form-control">{{$value}}</textarea>
+					</div>
+				</div>
+				<div class="col-md-3">
+					<div id="frm-image" class="form-group img-upload">
+						<label for="name">Ảnh đại diện</label>
+						<div class="image">
+							<a href="{{ route('loadMedia') }}" class="library"><i class="fa fa-edit" aria-hidden="true"></i></a>
+							{!!image($category->image, 243,138, $category->title)!!}
+							<input type="hidden" name="image" class="thumb-media" value="{{$category->image}}">
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="group-action">
+				<a href="{{route('deleteCategoryAdmin',['id'=>$category->id])}}" class="btn btn-delete">Xóa</a>
+				<button type="submit" name="submit" class="btn">Lưu</button>
+				<a href="{{route('categoriesAdmin')}}" class="btn btn-cancel">Hủy</a>							
+			</div>
+		</form>				
+	</div>
+</div>
+<div id="library-op" class="modal single" tabindex="-1" role="dialog">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">			
+			<form action="{{ route('deleteMediaSingle')}}" name="media" method="post">
+				{!! csrf_field() !!}
+				<div class="modal-header">
+					<h5 class="modal-title">Mời chọn file</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div id="files" class="col-md-10"></div>
+						<div id="file-detail" class="col-md-2"></div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<span class="library-notify"></span>      	
+					<a href="#" class="btn btn-primary">Đồng ý</a>
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	ckeditor("editor");
+	$(function() {
+		$("#edit-category").on('click','form .group-action button',function(){
+			var _token = $("form input[name='_token']").val();
+			var title = $("#frm-title input").val();
+			var content = CKEDITOR.instances['editor'].getData();
+			var metaKey = $("#frm-metaKey input").val();
+			var metaValue = $("#frm-metaValue textarea").val();
+			var image = $("#frm-image input").val();
+			if(title==""){
+				new PNotify({
+					title: 'Lỗi',
+					text: 'Vui lòng nhập tuyến xe!.',
+					hide: true,
+					delay: 2000,
+				});
+			}else{
+				$.ajax({
+					type:'POST',            
+					url:'{{ route("updateCategoryAdmin",["id"=>$category->id]) }}',
+					cache: false,
+					data:{
+						'_token': _token,
+						'title': title,
+						'content': content,
+						'metaKey': metaKey,
+						'metaValue': metaValue,
+						'image': image,
+					},
+				}).done(function(data) {
+					if(data=="success"){						
+						new PNotify({
+							title: 'Thành công',
+							text: 'Sửa danh mục thành công.',
+							type: 'success',
+							hide: true,
+							delay: 2000,
+						});						
+					}else{
+						new PNotify({
+							title: 'Lỗi',
+							text: 'Trình duyệt không hỗ trợ javascript.',						    
+							hide: true,
+							delay: 2000,
+						});
+					}	           		
+				});
+			}       	
+			return false;
+		});
+		//delete location
+      	$("#edit-category .btn-delete").click(function(){
+      		var href = $(this).attr("href");
+      		(new PNotify({
+			    title: 'Xóa',
+			    text: 'Bạn muốn tuyến này?',
+			    icon: 'glyphicon glyphicon-question-sign',
+			    type: 'error',
+			    hide: false,
+			    confirm: {
+			        confirm: true
+			    },
+			    buttons: {
+			        closer: false,
+			        sticker: false
+			    },
+			    history: {
+			        history: false
+			    }
+			})).get().on('pnotify.confirm', function() {			    
+			    window.location.href = href;
+			});
+			return false;
+      	})
+	});	
+</script>
+@stop

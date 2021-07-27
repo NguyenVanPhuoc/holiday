@@ -1,0 +1,64 @@
+<?php
+namespace App\Http\Controllers;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use App\Http\Requests;
+use App\PostGuide;
+use App\Media;
+use App\Seo;
+use App\TableContentDetails;
+use App\TableContents;
+use App\Countries;
+use App\Tours;
+
+class GuideController extends Controller
+{
+	public function countryGuide($slug_country){
+        $country = Countries::findBySlug($slug_country);
+        if($slug_country == 'multi-country'){
+            $country = Countries::findBySlug('laos');
+            $guides = PostGuide::paginate(8); 
+        }
+        else if($slug_country == 'admin'){
+            $user = Auth::user();
+            $guides = PostGuide::orderBy('created_at', 'desc')->where('post_type', 'travel_tip')->paginate(14);
+            if($user && $user->level=="admin")
+                return view('backend.guides.list',['guides'=>$guides]);
+            else
+                return redirect('login');
+        }
+        else{
+            $guides = PostGuide::where('country_id', $country->id)->where('post_type', 'travel_tip')->orderBy('created_at', 'asc')->get();
+            $related_tours = Tours::whereRaw("find_in_set($country->id,country_id)")->get();
+        }
+        
+        return view('guides.country_guide', ['country'=>$country, 'guides'=>$guides, 'related_tours'=>$related_tours]);
+    }
+
+    //guide
+    public function guide($slug_country, $slug){
+
+        //if $slug is create in admin
+       /* $user = Auth::user();
+        if($slug === 'create' && $user && $user->level == 'admin'){
+            return view('backend.guides.create');
+        }*/
+        
+        $guide = PostGuide::findBySlug($slug);
+        $country = Countries::findBySlug($slug_country);
+        $related_guides = PostGuide::where('country_id', $country->id)
+                                ->where('post_type', 'travel_tip')
+                                ->orderBy('created_at', 'asc')->get();
+        $related_tours = Tours::whereRaw("find_in_set($country->id,country_id)")->get();
+        $list_consultants = getConsultantsByCountry($country->id);
+
+        $data = [];
+        $data['guide'] = $guide;
+        $data['related_guides'] = $related_guides;
+        $data['related_tours'] = $related_tours;
+        $data['list_consultants'] = $list_consultants;
+
+        return view('guides.guide', $data);
+    }
+    
+}

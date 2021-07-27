@@ -1,0 +1,43 @@
+<?php 
+use App\Tours;
+use APP\CountryTours;
+
+//get list tour order by title 
+if(!function_exists('getToursOrderByTitle')){
+	function getToursOrderByTitle(){
+		$tours = Tours::orderBy('title', 'asc')->get();
+		return $tours;
+	}
+}
+
+//get tour by Id
+if(!function_exists('getTourByID')){
+	function getTourByID($id){
+		$tour = Tours::find($id);
+		return $tour;
+	}
+}
+
+/**
+* get list tour by country
+* @param int $country_id, int $number_take, string $type_field (NULL or 'some')
+* @return list tour 
+*/
+if(! function_exists('getListTourByCountry')){
+	function getListTourByCountry($country_id, $number_take = NULL, $type_field = NULL){
+		$arrayID = getArrayIdChildOfCountry($country_id);
+		if($number_take != NULL)
+			$tour = Tours::join('country_tours', 'tours.id', '=', 'country_tours.tour_id')
+						->whereIn('country_tours.country_id', $arrayID)
+						->select('tours.*')
+						->distinct()
+						->take($number_take)->get();
+		else
+			$tour = Tours::join('country_tours', 'tours.id', '=', 'country_tours.tour_id')
+						->whereIn('country_tours.country_id', $arrayID)
+						->select('tours.*')
+						->distinct()
+						->get();
+		return $tour;
+	}
+}

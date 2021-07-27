@@ -1,0 +1,180 @@
+@font-face {
+    font-family:Roboto;
+    src: url('fonts/Roboto-Regular.woff');
+}@font-face {
+    font-family:RobotoBold;
+    src: url('fonts/Roboto-Bold.woff');
+}@font-face {
+    font-family:RobotoLight;
+    src: url('fonts/Roboto-Light.woff');
+}
+@font-face{
+  font-family: Montserrat;
+  src: url('fonts/Montserrat-Regular.otf');
+}
+@font-face{
+  font-family: Montserrat-Medium;
+  src: url('fonts/Montserrat-Medium.otf');
+}
+@font-face{
+  font-family: Montserrat-SemiBold;
+  src: url('fonts/Montserrat-SemiBold.otf');
+}
+@font-face{
+  font-family: Montserrat-Bold;
+  src: url('fonts/Montserrat-Bold.otf');
+}
+@font-face{
+  font-family: Montserrat-Light;
+  src: url('fonts/Montserrat-Light.otf');
+}
+@font-face{
+  font-family: Montserrat-Italic;
+  src: url('fonts/Raleway-Italic.ttf');
+}
+@font-face{
+  font-family: Montserrat-SemiBoldItalic;
+  src: url('fonts/Montserrat-SemiBoldItalic.otf');
+}
+@font-face{
+    font-family: AdventPro-Light;
+    src: url('fonts/adventpro-light.ttf');
+}
+@font-face{
+    font-family: AdventPro-ExtraLight;
+    src: url('fonts/adventpro-extralight.ttf');
+}
+@font-face{
+    font-family: AdventPro-Thin;
+    src: url('fonts/adventpro-thin.ttf');
+}
+@font-face{
+    font-family: AdventPro-Regular;
+    src: url('fonts/adventpro-regular.ttf');
+}
+@font-face{
+    font-family: AdventPro-Medium;
+    src: url('fonts/adventpro-medium.ttf');
+}
+@font-face{
+    font-family: AdventPro-SemiBold;
+    src: url('fonts/adventpro-semibold.ttf');
+}
+@font-face{
+    font-family: AdventPro-Bold;
+    src: url('fonts/adventpro-bold.ttf');
+}
+@font-face{
+    font-family: Abys-Regular;
+    src: url('fonts/Abys-Regular.otf');
+}
+
+@font-face{
+    font-family: LatoBlack;
+    src: url('fonts/Lato-Black.ttf');
+}
+@font-face{
+    font-family: LatoBold;
+    src: url('fonts/Lato-Bold.ttf');
+}
+@font-face{
+    font-family: LatoItalic;
+    src: url('fonts/Lato-Italic.ttf');
+}
+@font-face{
+    font-family: LatoLight;
+    src: url('fonts/Lato-Light.ttf');
+}
+@font-face{
+    font-family: LatoRegular;
+    src: url('fonts/Lato-Regular.ttf');
+}
+@font-face{
+    font-family: LatoThin;
+    src: url('fonts/Lato-Thin.ttf');
+}
+body{
+    font-family:LatoRegular;
+    margin: 0;
+    padding: 0;
+    font-size:16px; 
+    line-height: 26px; 
+    color: #555;    
+}
+img{max-width: 100%;}
+.container{max-width: 1170px;}
+a{color: #666}
+a:hover, a:focus{
+    text-decoration: none; 
+    color: var(--pink);
+    outline: none;
+    outline-offset: 0;
+}
+strong{font-family: Montserrat-SemiBold}
+#wrapper{overflow: hidden;}
+p{margin-bottom: 5px;}
+button, button:hover, button:focus{ outline: none;}
+#library-op {
+    z-index: 30000;
+    width: 98%;
+    margin: 0 auto;
+}
+#library-op .modal-dialog {
+    max-width: 100%;
+    width: 100%;
+}
+.list-media {
+    list-style: none;
+    padding: 0;
+}
+.list-media li {
+    float: left;
+    width: 10%;
+    margin: 8px;
+    height: 100px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+}
+.list-media li img {
+    cursor: pointer;
+    width: 100%;
+}
+a.come-back{
+    background: #dddddd;
+    color: #333;
+}
+.container{max-width: 100%;}
+select, textarea{
+    cursor: pointer;
+    width: 100%;
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #555;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+    -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+    transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+}
+#backtotop {
+    width: 40px;
+    height: 40px;
+    background: #fff;
+    border: 1px solid #E5E5E5;
+    line-height: 35px;
+    text-align: center;
+    border-radius: 3px;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    cursor: pointer;
+    z-index: 99;
+}
+#backtotop img.img_bktop {
+    width: 15px;
+}

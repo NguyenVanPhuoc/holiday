@@ -1,0 +1,150 @@
+<?php
+namespace App\Http\Controllers;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Requests;
+use App\User;
+use App\Media;
+
+class UserController extends Controller
+{
+	public function index(){
+        $users = User::where('level','=','admin')->latest()->paginate(14);
+    	return view('backend.user.list',['users'=>$users]);
+    }
+
+	public function getDangnhap(){
+    	return view('backend.login');
+    }
+
+    public function postDangnhap(Request $request){
+    	$this->validate($request,[
+    		'phone'=>'required',
+    		'password'=>'required|min:3|max:32'
+	    	],[
+    		'phone.required'=>'Vui lòng số điện thoại',
+    		'password.required'=>'Mật khẩu không được rỗng',
+    		'password.min'=>'Mật khẩu ít nhất ký tự',
+    		'password.max'=>'Mật khẩu tối đa 32 ký tự'
+	    	]);
+    	if(Auth::attempt(['phone'=>$request['phone'], 'password'=>$request['password']])){
+    		return redirect('admin/blog');
+    	}else{
+    		$request->session()->flash('thongbao', 'Đăng nhập không thành công');
+    		return redirect('admin/dang-nhap');
+    	}
+    }
+
+    //logout
+   	public function dangxuat(){
+   		Auth::logout();
+   		return redirect('/');
+   	}
+
+    //view all
+    public function getDanhSach(){
+    	$user = User::where('level', '=', 'admin')->orderBy('updated_at', 'desc')->paginate(14);;
+    	return view('backend.user.list',['user'=>$user]);
+    }
+
+   //add user
+    public function store(){
+    	return view('backend.user.create');
+    }
+
+    public function create(Request $request){
+    	$this->validate($request,[
+    		'name'=>'required',
+            'email'=>'required|email|unique:users,email',
+    		'phone'=>'required|unique:users,phone',
+    		'password'=>'required|min:3|max:32',
+    		'confirmPassword'=>'required|same:password'
+    	],[
+    		'name.required'=>'Bạn chưa nhập họ & tên',
+    		'email.required'=>'Bạn chưa nhập email',
+    		'email.email'=>'Email không đúng định dạng(ví dụ: lqviet.it@gmail.com)',
+            'email.unique'=>'Email đã tồn tại',
+            'phone.required'=>'Nhập số điện thoại',
+    		'phone.unique'=>'Số điện thoại đã tồn tại',
+    		'password.required'=>'Bạn chưa nhập mật khẩu',
+    		'password.min'=>'Mật khẩu ít nhất 3 kí tự',
+    		'password.max'=>'Mật khẩu tối đa 32 kí tự',
+    		'confirmPassword.required'=>'Bạn chưa nhập lại mật khẩu',
+    		'confirmPassword.same'=>'Mật khẩu nhập lại chưa khớp'
+    	]);
+        // var_dump($request->phone);
+    	$user = new User;
+        $user->name = $request->name;
+    	$user->slug = $request->name;
+    	$user->phone = $request->phone;
+    	$user->email = $request->email;
+    	$user->sex = $request->sex;
+    	$user->password = bcrypt($request->password);
+    	$user->level = 'admin';
+        if($request->image!="") $user->image = $request->image;
+    	$user->save();    	
+    	$request->session()->flash('success', 'Thêm thành công');
+    	return view('backend.user.create');
+    }
+
+    //edit user
+    public function edit($id){
+    	$user = User::find($id);
+    	return view('backend.user.edit',['user'=>$user]);    	
+    }
+
+    public function update(Request $request, $id){
+    	$this->validate($request,[
+    		'name'=>'required',
+    	],[
+    		'name.required'=>'Bạn chưa nhập họ & tên',
+    	]);
+    	$user = User::find($id);
+    	$user->name = $request->name;
+    	$user->phone = $request->phone;
+    	$user->email = $request->email;
+    	$user->sex = $request->sex;	
+    	if($request->changePassword=="on"){
+    		$this->validate($request,[
+	    		'password'=>'required|min:3|max:32',
+	    		'confirmPassword'=>'required|same:password'
+	    	],[
+	    		'password.required'=>'Bạn chưa nhập mật khẩu',
+	    		'password.min'=>'Mật khẩu ít nhất 3 kí tự',
+	    		'password.max'=>'Mật khẩu tối đa 32 kí tự',
+	    		'confirmPassword.required'=>'Bạn chưa nhập lại mật khẩu',
+	    		'confirmPassword.same'=>'Mật khẩu nhập lại chưa khớp'
+	    	]);
+			$user->password = bcrypt($request->password);
+    	}                
+        if($request->image!="") $user->image = $request->image;
+    	$user->save();    	
+    	$request->session()->flash('success', 'Sửa thành công');
+    	return redirect('/admin/ban-quan-tri/edit/'.$user->id);
+    }
+
+    public function media(Request $request){
+        if($request->ajax()){
+            $html = media();
+            return json_encode($html);
+        }
+        return 'error';
+    }
+
+    //update slug
+    public function updateSlug(Request $request){
+       if($request->ajax()){
+            $user = User::find($request->id);
+            $user->slug = $request->slug;
+            $user->save();
+            return $user->slug;
+        }
+        return 'error';
+    }
+    //delete user
+    public function delete($id){
+    	$user = User::find($id);
+    	$user->delete();
+    	return redirect('admin/ban-quan-tri')->with('success','Xóa thành công');
+    }
+}

@@ -1,0 +1,107 @@
+@php
+    $bg_img = getImgUrl($blog->image);
+    $title_tag = ($blog->title_tag != '') ? $blog->title_tag : $blog->title;
+    $meta_key = (!empty($seo) && $seo->key != '') ? $seo->key : $blog->title;
+    $meta_value = (!empty($seo) && $seo->value != '') ? $seo->value : $blog->title;
+@endphp
+
+@extends('templates.masterBlog')
+@section('title', $title_tag)
+@section('description', $meta_value)
+@section('keywords', $meta_key)
+@section('content')
+@php
+    set_view($blog->id);
+    $slugCountry = getSlugCountryOfBlog($blog->id);
+@endphp
+<div id="blog-detail" class="page blog-single blog">
+    <div class="main-bottom">
+        <div class="container">
+            {!! Breadcrumbs::render('blogDetail', $blog) !!}
+            <div class="row">
+                <div id="content" class="col-md-9">
+                    <figure class="banner" >
+                        {!!image($blog->image,785,350,$blog->title)!!}
+                        <div class="inner-title flex item-center flex-col">
+                            <p class="name-cat">@if($blog->cat_id) {{get_category($blog->cat_id)->title}} @endif</p>
+                            <h4 class="title">{{$blog->title}}</h4>
+                            <p class="top-desc text-center">
+                                <span class="date">{{dateMonthFirst($blog->created_at)}}</span>
+                                @if($blog->blogger_id != '')
+                                <span>, by <a href="#">{{ $blog->blogger->title }}</a></span>
+                                @endif
+                            </p>
+                        </div>
+                    </figure>
+                    <div class="description">
+                        @if ($blog->desc)
+                            <div class="excerpt">{!! $blog->desc !!}</div>
+                        @endif
+                        
+                        @if ($blog->sort_list)
+                            <div class="menu-wrap">
+                                <h2>Table of content 
+                                    <span class="expand hidden"><a href="javascript:void(0)">[Show]</a></span>
+                                    <span class="collap"><a href="javascript:void(0)">[Hide]</a></span>
+                                </h2>
+                                <ul class="collapse fade in list-unstyled">{!! $blog->sort_list!!}</ul>
+                            </div>
+                        @endif
+                        @if ($blog->content)
+                            <div class="content-dec">
+                                {!! $blog->content !!}
+                            </div>
+                        @endif
+
+                        @if($blog->blogger_id != '')
+                            @php
+                                $author_img = getImgUrl($blog->blogger->image);
+                            @endphp
+                            <div class="author">
+                                <a class="thumb" href="#" style="background-image: url({{ $author_img }});">
+                                    
+                                </a>
+                                <div class="desc">
+                                    <div class="top-title">
+                                        <h4 class="title">
+                                            <a href="#">{{ $blog->blogger->title }}</a>
+                                        </h4>
+                                        <ul class="list-unstyled socials">
+                                            <li class="facebook"><a href="#"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
+                                            <li class="twitter"><a href="#"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="text">{!! $blog->blogger->short_desc !!}</div>
+                                    <a href="#" class="view-more">Read more</a>
+                                </div>
+                            </div>
+                        @endif
+
+                        <div class="fb-comments" data-href="{{ $blog->getPermalink() }}" data-width="100%" data-height="100px" data-numposts="5"></div>
+                    </div>
+
+
+
+                    
+                </div>
+                <div id="sidebar" class="col-md-3">@include('sidebars.blog_detail')</div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $('ul.pagination').hide();
+    $(function() {
+        $('.infinite-scroll').jscroll({
+            autoTrigger: true,
+            loadingHtml: '<img class="center-block" src="/public/images/loading_red.gif" alt="Loading..." />',
+            padding: 0,
+            nextSelector: '.pagination li.active + li a',
+            contentSelector: 'div.infinite-scroll',
+            callback: function() {
+                $('ul.pagination').remove();
+            }
+        });
+    });
+</script>
+@stop

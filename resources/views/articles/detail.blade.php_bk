@@ -1,0 +1,85 @@
+@extends('templates.master')
+@section('title', $blog->title)
+@section('description', $seo->value)
+@section('keywords', $seo->key)
+@section('content')
+<?php set_view($blog->id);?>
+<div id="blog-detail" class="page blog-single blog">
+    {{-- {{ Breadcrumbs::render('blogDetail', $blog) }} --}}
+    <div class="blog-title text-center">
+        <p class="name-cat">{{get_category($blog->cat_id)->title}}</p>
+        <div class="desc">
+            <div class="container">
+                <h4 class="title">{{$blog->title}}</h4>
+                <p class="top-desc text-center">
+                    <span class="date">{{dateMonthFirst($blog->created_at)}}</span>
+                    <span>, by <span>{{getUser($blog->user_id)->name}}</span></span>
+                </p>
+                <button class="btn-share">
+                    <img class="no-active" src="{{asset('public/images/temp/icons/share.png')}}" alt="icon">
+                    <img class="active" src="{{asset('public/images/temp/icons/share_red.png')}}" alt="icon">
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="main">
+            <div class="row">
+                <div id="content" class="col-md-9">
+                    <figure class="image">
+                        {!!image($blog->image,785,505,$blog->title)!!}
+                    </figure>
+                    <div class="description">{!! $blog->content !!}</div>
+                    <div class="social-share">
+                        <ul>
+                            <li class="ic-bor"><a href="#" class="save"><i class="fas fa-plus"></i>Lưu tin</a></li>
+                            <li class="ic-bor"><a href="#" class="comment"><i class="fas fa-comment-alt"></i>Bình luận</a></li>
+                            {!!socialShare(route('blogDetail',['slug'=>$blog->slug]),$blog->title)!!}
+                        </ul>
+                    </div>
+                    <div class="fb-comments" data-href="{{route('blogDetail',['slug'=>$blog->slug])}}" data-width="848" data-numposts="5"></div>
+                    <div id="others" class="list-other">
+                        <h3 class="sec-title"><i class="far fa-newspaper"></i>Có thể bạn sẽ thích</h3>
+                        @if($otherArticles)
+                            <div class="list-item infinite-scroll">
+                                @foreach($otherArticles as $item)
+                                <?php $author = getUser($item->user_id);?>
+                                    <div class="item">                            
+                                        <a href="{{route('blogDetail',['slug'=>$item->slug])}}" class="thumb">{!!image($item->image,135,102,$item->title)!!}</a>
+                                        <div class="desc">                                                             
+                                            <h3><a href="{{route('blogDetail',['slug'=>$item->slug])}}">{{$item->title}}</a></h3>                                
+                                            <p class="price"><a href="{{route('blogDetail',['slug'=>$item->slug])}}">748.000.000<small>đ</small></a></p>
+                                            <ul class="meta">
+                                                @if($author)<li class="author"><i class="fas fa-user"></i>{{$author->name}}</li>@endif
+                                                <li class="type"></li>
+                                                <li class="time"><i class="far fa-clock"></i>1p trước - <i class="far fa-eye"></i>0</li>
+                                            </ul>                                
+                                        </div>
+                                    </div>
+                                @endforeach
+                                {!!$otherArticles->links()!!}
+                            </div>                    
+                        @endif
+                    </div>
+                </div>
+                <div id="sidebar" class="col-md-3">@include('sidebars.blog_detail')</div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $('ul.pagination').hide();
+    $(function() {
+        $('.infinite-scroll').jscroll({
+            autoTrigger: true,
+            loadingHtml: '<img class="center-block" src="/public/images/loading_red.gif" alt="Loading..." />',
+            padding: 0,
+            nextSelector: '.pagination li.active + li a',
+            contentSelector: 'div.infinite-scroll',
+            callback: function() {
+                $('ul.pagination').remove();
+            }
+        });
+    });
+</script>
+@stop

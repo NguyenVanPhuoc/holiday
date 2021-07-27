@@ -1,0 +1,9 @@
+<div class="image-header" style="background-image: url(<?php echo $bg_img; ?>);">
+    <div class="wrap">
+        <div class="container">
+            {!! imageAuto($country->icon, $country->title) !!}
+            <h1 class="title-banner">{{$country->title}} practical info</h1>
+            {{ Breadcrumbs::render('detailTravelTip', $country, $guide->short_title) }}
+        </div>
+    </div>
+</div>

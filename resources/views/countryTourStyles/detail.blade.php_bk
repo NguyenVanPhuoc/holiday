@@ -1,0 +1,262 @@
+@php
+	$meta_key = $meta_value = '';
+	$seo = $seo = get_seo($country_tourStyle->id,'country_tour_style');
+	if($seo){
+		$meta_key = $seo->key;
+		$meta_value = $seo->value;
+	}	
+
+	$bg_img =  getImgUrl($country_tourStyle->image); 
+	$icon_top = getImgUrl($tour_style->white_icon);
+	$breadcrumb = Breadcrumbs::render('countryTourStyle', $country, $tour_style->title);
+	$include_searchBox = 'countryTourStyles.search-box';
+	$list_content = json_decode($country_tourStyle->list_content);
+	$title_top_h1 = $country_tourStyle->title;
+@endphp
+
+@extends('templates.master')
+@section('content')
+@section('title', $country_tourStyle->title_tag)
+@section('description', $meta_value)
+@section('keywords', $meta_key)
+@section('image_url', $bg_img)
+
+<div class="country-tour-style single-tour" id="tour-style">
+    <div class="image-header" style="background-image: url(<?php echo $bg_img; ?>);">
+	    <div class="wrap">
+	        <div class="container">
+	        	@if(isset($breadcrumb))
+	                {!! $breadcrumb !!}
+	            @endif
+	            <div class="title_nvp">
+		            <span class="title-banner-2">- {{ $country->title }} Tour Plan -</span>
+		            @if(isset($title_top_h1))
+		                <h1 class="title-banner-1">{{ $title_top_h1 }}</h1>
+		            @endif
+	            </div>
+	            
+	        </div>
+	    </div>
+	</div>
+	<div class="container section">
+		<div class="top-intro text-center">
+            {!! $country_tourStyle->desc !!}
+		</div>
+	</div>
+	@if(isset($list_tour) && count($list_tour) > 0)
+	<div class="section">
+		<div class="container">
+			<div class="p-x-100 title-sec text-center">
+				<h2 class="title-page pink text-center">
+					<img src="{{ asset('public/images/icons/all/tour-pink.png') }}" alt="icon">
+					<span>
+						Our {{ $country->tite }} <span class="text-lowercase">{{ $tour_style->title }}</span> packages
+					</span>
+				</h2>
+				<p>{{ $country_tourStyle->text_tour }}</p>
+			</div>
+			<div class="wrap-filter">
+				<div class="gr-filter">
+					<form action="{{ route('filterTour2') }}" method="POST">
+					{{ csrf_field() }}
+					<input type="hidden" name="current_country_id" value="{{ $country->id }}">
+					<input type="hidden" name="current_tourstyle_id" value="{{ $tour_style->id }}">
+					<input type="hidden" name="type_result" value="slide">
+					<span class="filter-title pinkbg">
+						Filter
+						<span class="icon"><img src="{{ asset('public/images/icons/filter/filter.png') }}" alt="icon-filter"></span>
+					</span>
+					<div class="list-filter">
+						<div class="box-item region">
+							<span class="title">Region</span>
+							<ul class="list-unstyled">
+								@foreach($list_region as $region)
+									<li>
+										<label for="region-{{ $region->id }}">
+											<input type="checkbox" class="filter-value" id="region-{{ $region->id }}" name="array_country_id[]" value="{{ $region->id }}">
+											{{ $region->title }}
+										</label>
+									</li>
+								@endforeach
+							</ul>
+						</div>
+						<div class="box-item duration single-value">
+							<span class="title">Duration</span>
+							<ul class="list-unstyled">
+								@foreach($list_duration as $duration)
+									<li>
+										<label for="duration-{{ $duration->id }}">
+											<input type="radio" class="filter-value" id="duration-{{ $duration->id }}" name="duration_id" value="{{ $duration->id }}">
+											{{ $duration->title }}
+										</label>
+									</li>
+								@endforeach
+							</ul>
+						</div>
+					</div>
+					<a href="#" class="btn-reset graybg">
+						<span class="icon"><img src="{{ asset('public/images/icons/filter/reset2-black.png') }}" alt="icon-filter"></span>
+						Reset
+					</a>
+					</form>
+				</div>
+				<div class="slide-style list-tour-2 related-tours pink list-result">
+					@foreach($list_tour as $tour)
+						@include('tours.related_item')
+					@endforeach
+				</div>
+			</div>
+			<div class="text-center">
+				<a href="#" class="btn-page pinkbg">
+					<span>View all {{ $country->title }} packages tour</span>
+				</a>
+			</div>
+		</div>
+	</div>
+	@endif
+	
+	@if($list_content)
+	<div class="section list-content-sec">
+		<div class="container">
+			<h2 class="title-page green text-center">
+				<img src="{{ asset('public/images/icons/country-tour-style/features-green.png') }}" alt="icon">
+				<span>
+					Why {{ $country->title }} is the destination for <span class="text-lowercase">'{{ $tour_style->title }}'</span>	
+				</span>
+			</h2>
+			<div class="content-sec">
+				<div class="row">
+					<div class="col-md-6">
+						<div class="list-content">
+							@foreach($list_content as $item)
+							<div class="item">
+								<h4 class="title green">{{ $item->title }}</h4>
+								<div class="desc">{!! $item->content !!}</div>
+							</div>
+							@endforeach
+						</div>
+						<a href="javascript:void(0)" class="readmore font-semibold pink">Read more</a>
+						<a href="javascript:void(0)" class="collap-btn font-semibold pink">Collapse</a>
+					</div>
+					<div class="col-md-6">
+						<div class="img-content">
+							{!! image($country_tourStyle->image_content, 620, 620, $country_tourStyle->title) !!}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	@endif
+	
+
+	@if(isset($list_topCity))
+	@php
+		$list_fourItem2 = $list_topCity; 
+	@endphp
+	<div class="section">
+		<div class="conatainer">
+			<div class="p-x-100 title-sec text-center">
+				<h2 class="title-page yellow text-center">
+					<img src="{{ asset('public/images/icons/all/highlights-yellow.png') }}" alt="icon">
+					<span>
+						Popular places in {{ $country->title }} for <span class="text-lowercase">'{{ $tour_style->title }}'</span>
+					</span>
+				</h2>
+				<p>{{ $country_tourStyle->text_city }}</p>
+			</div>
+			<div class="has-bg-under">
+				<div class="bg-under light-graybg yellow-right"></div>
+				<div class="container">
+					<div class="list-four-sec">
+						@include('layouts.section-four-item-2')
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	@endif
+	
+	@if(isset($list_reviewer))
+	<div class="section">
+		<div class="container">
+			<div class="p-x-100">
+				<div class="title-sec text-center">
+					<h2 class="title-page pink text-center">
+						<img src="{{ asset('public/images/icons/all/feedback-pink.png') }}" alt="icon">
+						<span>
+							They enjoy our {{ $country->title }} <span class="text-lowercase">{{ $tour_style->title }}</span>
+						</span>
+					</h2>
+					<p>{!! $country_tourStyle->text_review !!}</p>
+				</div>
+				<div class="slide-one-item pink list-reviewer">
+					@foreach($list_reviewer as $reviewer)
+						@include('reviewers.item')
+					@endforeach
+				</div>
+			</div>
+		</div>
+	</div>
+	@endif
+
+	@if(isset($list_tour_style))
+	<div class="section">
+		<div class="container">
+			<div class="p-x-100">
+				<h2 class="title-page green text-center">
+					<img src="{{ asset('public/images/icons/all/itinerary-green.png') }}" alt="icon">
+					<span>
+						Check out the other {{ $country->title }} tour styles	
+					</span>
+				</h2>
+				<div class="list-box-gray">
+					<div class="row">
+					@foreach($list_tour_style as $item)
+						<div class="col-md-4">
+							<div class="item">
+								<div class="icons">
+									<img src="{{ getImgUrl($item->gray_icon) }}" alt="icon" class="icon" />
+									<img src="{{ getImgUrl($item->green_icon) }}" alt="icon" class="icon hover" />
+								</div>
+								<h4 class="title gray green-hover">
+									<a href="#">{{ $item->title }}</a>
+								</h4>
+							</div>
+						</div>
+					@endforeach
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	@endif
+
+	@if(isset($list_consultants))
+	<div class="section">
+		<div class="container">
+		@php
+			(count($list_consultants) > 1) ? $class_consultant = 'slide-consultants ' : $class_consultant = '';
+		@endphp
+			<div class="p-x-100">
+				<div class="consultants-country consultants counsultant-at-bot flex-list center-item light-graybg m-t-40">
+					<div class="title font-semibold text-center">
+						Meet our <br> {{ $country->title }} travel <br> consultants
+					</div>
+					<div class="consultant-content {{ $class_consultant }}">
+						@foreach($list_consultants as $item)
+							@include('consultants.item-slide')
+						@endforeach
+					</div>
+					<a class="button flex-list center-item graybg" href="#">
+						{!! imageAuto($country->icon, $country->title) !!}
+						<span>View {{ $country->title }} tours</span>
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	@endif
+</div>
+
+@stop

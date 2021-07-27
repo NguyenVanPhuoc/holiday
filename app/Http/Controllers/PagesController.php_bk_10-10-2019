@@ -1,0 +1,91 @@
+<?php
+namespace App\Http\Controllers;
+use Illuminate\Http\Request;
+use App\Http\Requests;
+use App\Pages;
+use Mail;
+use App\Metas;
+use App\SlideDetail;
+use App\ArticleCat;
+use App\Article;
+use App\Countries;
+use App\CategoryTour;
+use App\Tours;
+use App\Overview;
+use DB;
+
+class PagesController extends Controller
+{
+    public function index(){
+        $page = Pages::find(1);   
+        $objectMetas = new \stdClass();
+        $objectMetas->icon_country = Metas::find(62)->content;
+        $objectMetas->title_country = Metas::find(63)->content;
+        $objectMetas->desc_country = Metas::find(64)->content;
+        $objectMetas->image_reasons = Metas::find(65)->content;
+        $objectMetas->icon_reasons = Metas::find(66)->content;
+        $objectMetas->title_reasons = Metas::find(67)->content;
+        $objectMetas->desc_reasons = Metas::find(71)->content;
+        $objectMetas->content_reason_1 = Metas::find(72)->content;
+        $objectMetas->content_reason_2 = Metas::find(73)->content;
+        $objectMetas->content_reason_3 = Metas::find(74)->content;
+
+        $objectMetas->icon_video = Metas::find(77)->content;
+        $objectMetas->title_video = Metas::find(78)->content;
+        $objectMetas->desc_video = Metas::find(79)->content;
+        $objectMetas->link_video = Metas::find(94)->content;
+        $objectMetas->text_video_1 = Metas::find(95)->content;
+        $objectMetas->text_video_2 = Metas::find(96)->content;
+        $objectMetas->text_video_3 = Metas::find(97)->content;
+        $objectMetas->embed_1 = Metas::find(98)->content;
+        $objectMetas->embed_2 = Metas::find(100)->content;
+        $objectMetas->embed_3 = Metas::find(101)->content;
+
+        $objectMetas->image_responsible = Metas::find(102)->content;
+        $objectMetas->icon_responsible = Metas::find(103)->content;
+        $objectMetas->title_responsible = Metas::find(104)->content;
+        $objectMetas->desc_responsible = Metas::find(105)->content;
+        $objectMetas->content_responsible_1 = Metas::find(106)->content;
+        $objectMetas->content_responsible_2 = Metas::find(107)->content;
+        $objectMetas->content_responsible_3 = Metas::find(108)->content;
+
+        $objectMetas->title_tour = Metas::find(109)->content;
+        $objectMetas->image_tour = Metas::find(110)->content;
+        $objectMetas->icon_tour = Metas::find(111)->content;
+
+        $objectMetas->title_blog = Metas::find(112)->content;
+        $objectMetas->image_blog = Metas::find(113)->content;
+        $objectMetas->icon_blog = Metas::find(114)->content;
+
+
+        $articlesVip = Article::latest()->limit(8)->get();
+        $articlesNew = Article::latest()->paginate(15);        
+        $homeSlide = Countries::join('overviews', 'countries.id', '=', 'overviews.country_id')
+                            ->where('countries.parent_id', 0)
+                            ->select('countries.image', 'countries.title', 'countries.desc', 'overviews.icon_flag_gray', 'overviews.icon_flag')
+                            ->distinct()
+                            ->get(); 
+
+        $seo = get_seo($page->id,'page');  
+
+        $destination = Countries::where('parent_id', 0)->orderBy('position', 'asc')
+                                ->select('title', 'image', 'flag')
+                                ->limit(5)->get();
+        $tours = Tours::orderBy('created_at', 'desc')->paginate(15);
+
+        return view('index',['page'=>$page, 'homeSlide'=>$homeSlide, 'destination'=>$destination, 'tours'=>$tours, 'seo'=>$seo, 'articlesNew'=>$articlesNew, 'objectMetas'=>$objectMetas]);
+    }        
+    public function page($slug){
+        $page = Pages::findBySlug($slug);
+        $seo = get_seo($page->id,'page');
+        if($page->id!=15)
+           return view("page",['page'=>$page, 'seo'=>$seo]);
+        else
+            return view("contact",['page'=>$page, 'seo'=>$seo]);
+    }
+    
+    public function createFaq(){
+        return view('faq.index');
+    }
+
+}

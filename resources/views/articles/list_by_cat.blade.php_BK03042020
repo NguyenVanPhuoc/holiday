@@ -1,0 +1,58 @@
+@php
+    $bg_img = getImgUrl($cat->image);
+    $title_top_h1 = '#Blog' .' #' . $cat->title;
+    $title_tag = ($cat->title_tag) ? $cat->title_tag : $cat->title;
+
+    if(!$seo){
+        $meta_key = $cat->title;
+        $meta_value = $cat->title;
+    }else{
+        $meta_key = $seo->key;
+        $meta_value = $seo->value;
+    }
+@endphp
+
+@extends('templates.masterBlog')
+@section('title', $cat->title_tag)
+@section('description', $meta_value)
+@section('keywords', $meta_key)
+@section('image_url', $bg_img)
+@section('content')
+<div id="cat" class="page blog imgbg imgbg-bottom-left">
+    <div class="container">
+        {!! Breadcrumbs::render('categoryBlog', $cat->title) !!}
+        <div class="main-top text-center">
+            <div class="banner flex item-center content-center" style="background-image: url('{{$bg_img}}')">
+                <h1 class="title">{{ $title_top_h1 }}</h1>
+            </div>
+            <div class="excerpt">{!! $cat->content !!}</div>
+        </div>
+        <div class="main-bottom">
+            <div class="row">
+                <div id="content" class="col-md-9">
+                    <div class="description"> 
+                        @if($list_blog)
+                            <div class="list-blog">
+                                <div class="row wrap">
+                                    @foreach($list_blog as $item) 
+                                        @php 
+                                            $author = getUser($item->user_id); 
+                                            $slugCountry = '#';
+                                        @endphp
+                                        <div class="col-md-6 inner-wrap">
+                                            @include('articles.item')
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                            {!! $list_blog->render('custom_view') !!}
+                        @endif
+                    </div>
+                </div>
+                <div id="sidebar" class="col-md-3">@include('sidebars.blog')</div>
+            </div>
+           
+        </div>
+    </div>
+</div>
+@stop

@@ -1,0 +1,95 @@
+@php
+	if($page):
+	    $bg_img = getImgUrl($page->image);
+	    $title_tag = ($page->title_tag != '') ? $page->title_tag : $page->title;
+	    $meta_key = (!empty($seo) && $seo->key != '') ? $seo->key : $page->title;
+	    $meta_value = (!empty($seo) && $seo->value != '') ? $seo->value : $page->title;
+	else:
+		$bg_img = asset('public/images/temp/nature and adventure.jpg');
+		$title_tag = 'Blog BiiG Holiday';
+		$meta_key = 'Blog BiiG Holiday';
+		$meta_value = 'Blog BiiG Holiday';
+	endif
+@endphp
+@extends('templates.masterBlog')
+@section('title', $title_tag)
+@section('description', $meta_value)
+@section('keywords', $meta_key)
+@section('content')
+<div id="blog" class="page blog imgbg imgbg-bottom-left imgbg-bottom-right">
+	@handheld
+		<div class="image-header" style="background-image: url('{{ $bg_img }}');">
+			<div class="wrap bottom">
+				<div class="container">
+					<h1 class="title-banner top">SONASIA BLOG</h1>
+				</div>
+			</div>	
+		</div>
+    @endhandheld
+	<div class="container">
+		<div class="main-top">
+			<h1 class="slogan text-center">"Sonasia Blog gather usefull information and interesting articles about traveling in Indochina! It is an open space in which everyone is invisted to contribute"</h1>
+			<div id="blog-slide">
+				<div class="carousel-inner list">
+					@foreach($blogSlide as $item)	
+						@php
+							$list_country = $item->fathestCountries();
+						@endphp	
+						<div class="item" style="background-image: url('{{getImgUrl($item->image)}}')">
+							<div class="item-inner flex item-center flex-col content-center">
+								<p class="name-cat">
+									@if(!empty($item->category))
+										{{ $item->category->title }}
+									@endif
+								</p>
+								<h3 class="title">
+									<a href="#">{{ $item->title }}</a>
+								</h3>
+								@if($list_country)
+								<ul class="list-unstyled list-flag-country">
+									@foreach($list_country as $country)
+										<li><img src="{{getImgUrl($country->flag)}}" alt="{{ $country->title }}"></li>
+									@endforeach
+								</ul>
+								@endif
+							</div>
+						</div>			 
+					@endforeach			
+				</div>
+			</div>
+		</div>
+		<div class="main-bottom">
+			<div class="row">
+				<div id="content" class="col-md-9">
+					<div class="description">
+						@if($list_blog)
+							<div class="list-blog">
+								<div class="row wrap">
+									@foreach($list_blog as $key => $item)
+										@php
+											$slugCountry = getSlugCountryOfBlog($item->id);
+										@endphp
+                                        @include('articles.item')
+									@endforeach
+								</div>
+								@if($total > 1)
+									<div id="load-more">
+										{{ csrf_field() }}
+										<input type="hidden" name="total" value="{{ $total }}">
+										<input type="hidden" name="current" value="1">
+										<a class="view-more" href="javascript:void(0)" data-href="{{ route('loadMoreBlog') }}">View more</a>
+									</div>
+								@endif
+							</div>
+						@endif
+					</div>
+				</div>
+				<div id="sidebar" class="col-md-3">@include('sidebars.blog')</div>
+			</div>
+		</div>
+	</div>
+@handheld
+    @include('mobile.item-mobile-blog')
+@endhandheld
+</div>
+@stop

@@ -1,0 +1,290 @@
+@php
+	$meta_key = $meta_value = '';
+	$seo = $seo = get_seo($country_tourDuration->id,'country_tour_style');
+	if($seo){
+		$meta_key = $seo->key;
+		$meta_value = $seo->value;
+	}	
+
+	$bg_img =  getImgUrl($country_tourDuration->image); 
+	$icon_top = getImgUrl($country_tourDuration->duration->white_icon);
+	//$breadcrumb = Breadcrumbs::render('countryTourStyle', $country, $country_tourDuration->title);
+	$title_top_h1 = $country_tourDuration->title;
+	$post_type_active = 'tour';
+
+	$list_content = json_decode($country_tourDuration->list_content);
+@endphp
+
+@extends('templates.master')
+@section('content')
+@section('title', $country_tourDuration->title_tag)
+@section('description', $meta_value)
+@section('keywords', $meta_key)
+@section('image_url', $bg_img)
+
+<div id="country-tour-duration">
+	@include('layouts.top_banner')
+    @include('countries.groupTopButton')
+    <div class="container">
+		<div class="top-intro text-center font-semibold">
+			{!! $country_tourDuration->desc !!}
+		</div>
+	</div>
+
+	@if(isset($list_tour) && count($list_tour) > 0)
+	<div class="section">
+		<div class="container">
+			<div class="p-x-100 title-sec text-center">
+				<h2 class="title-page pink text-center">
+					<img src="{{ asset('public/images/icons/all/loupe-pink.png') }}" alt="icon">
+					<span>
+						Our collection of {{ $country_tourDuration->title }}
+					</span>
+				</h2>
+				<p>{{ $country_tourDuration->text_tour }}</p>
+			</div>
+			<div class="wrap-filter">
+				<div class="gr-filter">
+					<form action="{{ route('filterTour2') }}" method="POST">
+					{{ csrf_field() }}
+					<input type="hidden" name="current_country_id" value="{{ $country->id }}">
+					<input type="hidden" name="duration_id" value="{{ $country_tourDuration->duration_id }}">
+					<input type="hidden" name="type_result" value="slide">
+					<span class="filter-title pinkbg">
+						Filter
+						<span class="icon"><img src="{{ asset('public/images/icons/filter/filter.png') }}" alt="icon-filter"></span>
+					</span>
+					<div class="list-filter">
+						<div class="box-item region">
+							<span class="title">Region</span>
+							<ul class="list-unstyled">
+								@foreach($list_region as $region)
+									<li>
+										<label for="region-{{ $region->id }}">
+											<input type="checkbox" class="filter-value" id="region-{{ $region->id }}" name="array_country_id[]" value="{{ $region->id }}">
+											{{ $region->title }}
+										</label>
+									</li>
+								@endforeach
+							</ul>
+						</div>
+						<div class="box-item tour-style">
+							<span class="title">Tour style</span>
+							<ul class="list-unstyled">
+								@foreach($list_tourstyle as $tour_style)
+									<li>
+										<label for="duration-{{ $tour_style->id }}">
+											<input type="radio" class="filter-value" id="duration-{{ $tour_style->id }}" name="array_tourstyle_id[]" value="{{ $tour_style->id }}">
+											{{ $tour_style->title }}
+										</label>
+									</li>
+								@endforeach
+							</ul>
+						</div>
+					</div>
+					<a href="#" class="btn-reset graybg">
+						<span class="icon"><img src="{{ asset('public/images/icons/filter/reset2-black.png') }}" alt="icon-filter"></span>
+						Reset
+					</a>
+					</form>
+				</div>
+				<div class="slide-style list-tour-2 related-tours pink list-result">
+					@foreach($list_tour as $tour)
+						@include('tours.related_item')
+					@endforeach
+				</div>
+			</div>
+			<div class="text-center">
+				<a href="#" class="btn-page pinkbg">
+					<span>View all {{ $country->title }} packages tour</span>
+				</a>
+			</div>
+		</div>
+	</div>
+	@endif
+
+	@if($list_content)
+	<div class="section">
+		<div class="container">
+			<div class="p-x-100 title-sec text-center">
+				<h2 class="title-page green text-center">
+					<img src="{{ asset('public/images/icons/all/itinerary-green.png') }}" alt="icon">
+					<span>
+						Recommendations for {{ $country->title }} plan within <span class="text-lowercase">{{ $country_tourDuration->duration->title }}</span>
+					</span>
+				</h2>
+				<p>{{ $country_tourDuration->text_list_content }}</p>
+			</div>
+			<div class="list-content">
+				@foreach($list_content as $item)
+				<div class="item">
+					<div class="desc">
+						<h4 class="title">{{ $item->title }}</h4>
+						<div class="text">{!! $item->content !!}</div>
+						<a href="javascript:void(0)" class="readmore font-semibold pink">Read more</a>
+						<a href="javascript:void(0)" class="collap-btn font-semibold pink">Collapse</a>
+					</div>
+					<div class="map">
+						{!! $item->map !!}
+					</div>
+				</div>
+				@endforeach
+			</div>
+		</div>
+	</div>
+	@endif
+	
+	@if(isset($list_thingToDo))
+	@php
+		$list_fourItem2 = $list_thingToDo;
+	@endphp
+	<div class="section">
+		<div class="container">
+			<div class="title-sec text-center small-w">
+				<h2 class="title-page yellow text-center">
+					<img src="{{ asset('public/images/icons/all/things-to-do-yellow.png') }}" alt="icon" />
+					<span>
+						Top things to do in {{ $country->title }} in <span class="text-lowercase">{{ $country_tourDuration->duration->title }}</span>
+					</span>
+				</h2>
+				<p>{{ $country_tourDuration->text_thing_to_do }}</p>
+			</div>
+		</div>
+		<div class="has-bg-under">
+			<div class="bg-under light-graybg yellow-right"></div>
+			<div class="container">
+				<div class="list-four-sec">
+					@include('layouts.section-four-item-2')
+				</div>
+			</div>
+		</div>
+		<div class="container">
+			<div class="text-center">
+				<a href="#" class="btn-page yellowbg">
+					<span>View all things to do in {{ $country->title }}</span>
+				</a>
+			</div>
+		</div>
+	</div>
+	@endif
+
+	@if(isset($list_travelTip))
+	@php
+		$list_fourItem = $list_travelTip;
+	@endphp
+	<div class="section">
+		<div class="container">
+			<div class="title-sec text-center small-w">
+				<h2 class="title-page green text-center">
+					<img src="{{ asset('public/images/icons/tips/tips-green.png') }}" alt="icon" />
+					<span>
+						{{ $country->title }} travel tips & guide
+					</span>
+				</h2>
+				<p>Before packing your luggages and fly off to {{ $country->title }}, just have a look at our practical info to get informed about visa, weather, vaccinations and many more</p>
+			</div>
+		</div>
+		<div class="has-bg-under">
+			<div class="bg-under light-graybg pink-right"></div>
+			<div class="container">
+				<div class="list-four-sec">
+					@include('layouts.section-four-item')
+				</div>
+			</div>
+		</div>
+		<div class="container">
+			<div class="text-center">
+				<a href="#" class="btn-page greenbg">
+					<span>View all {{ $country->title }} tips & guide</span>
+				</a>
+			</div>
+		</div>
+	</div>
+	@endif
+
+
+	@if(isset($list_reviewer))
+	<div class="section">
+		<div class="container">
+			<div class="p-x-100">
+				<div class="title-sec text-center">
+					<h2 class="title-page pink text-center">
+						<img src="{{ asset('public/images/icons/all/feedback-pink.png') }}" alt="icon">
+						<span>
+							What our clients say about us
+						</span>
+					</h2>
+					<p>{!! $country_tourDuration->text_review !!}</p>
+				</div>
+				<div class="slide-one-item pink list-reviewer">
+					@foreach($list_reviewer as $reviewer)
+						@include('reviewers.item')
+					@endforeach
+				</div>
+			</div>
+		</div>
+	</div>
+	@endif
+
+	@if(isset($list_consultants))
+	<div class="section">
+		<div class="container">
+		@php
+			(count($list_consultants) > 1) ? $class_consultant = 'slide-consultants ' : $class_consultant = '';
+		@endphp
+			<div class="p-x-100">
+				<div class="consultants-country consultants counsultant-at-bot flex-list center-item light-graybg m-t-40">
+					<div class="title font-semibold text-center">
+						Meet our <br> {{ $country->title }} travel <br> consultants
+					</div>
+					<div class="consultant-content {{ $class_consultant }}">
+						@foreach($list_consultants as $item)
+							@include('consultants.item-slide')
+						@endforeach
+					</div>
+					<a class="button flex-list center-item graybg" href="#">
+						{!! imageAuto($country->icon, $country->title) !!}
+						<span>View {{ $country->title }} tours</span>
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	@endif
+
+</div>
+
+<script type="text/javascript">
+	
+	$('#country-tour-duration .list-content .item .readmore').click(function(e){
+		e.preventDefault();
+		$(this).closest('.item').removeClass('collap');
+	});
+
+	$('#country-tour-duration .list-content .item .collap-btn').click(function(e){
+		e.preventDefault();
+		$(this).closest('.item').addClass('collap');
+	});
+
+	if($('#country-tour-duration .list-content .item').length){
+        $('#country-tour-duration .list-content .item').each(function(){
+            var height_text = $(this).find('.desc .text').outerHeight(); 
+            if(height_text > 456)
+                $(this).addClass('collap');
+            else{
+                $(this).find('.collap-btn').hide();
+            }
+        });
+        $('.#country-tour-duration .list-content .item .readmore').click(function(e){
+            e.preventDefault();
+            $(this).closest('.item').find('.desc').removeClass('collap');
+        });
+        $('#country-tour-duration .list-content .item .collap-btn').click(function(e){
+            e.preventDefault();
+            $(this).closest('.item').find('.desc').addClass('collap');
+        });
+    }
+
+</script>
+@endsection
+

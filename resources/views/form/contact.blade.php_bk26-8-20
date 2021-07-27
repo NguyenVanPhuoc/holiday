@@ -1,0 +1,187 @@
+@extends('templates.master')
+@section('title','Contact us')
+@section('content')
+
+<div id="contact-page" class="page form-page bg-gray">
+	<div class="image-header" style="background-image: url('{{asset('public/images/temp/contact_us.jpg')}}');">
+		<div class="wrap bottom">
+			<div class="container">
+				<img src="{{asset('public/images/temp/icons/contact_us.png')}}" alt="Contact Us">
+				<h1 class="title-banner"> CONTACT US</h1>
+			</div>
+		</div>	
+	</div>
+	<div class="container">
+		<div class="form">
+			<div class="box">
+					<div class="desc text-center">
+						<p>You have a question, remark or travel ideals ? Just reach us through the form below or alternatively drop us an email at the following address:</p>
+						<p class="email-info"><a href="mailto:info@biig-holiday.com">info@biig-holiday.com</a></p>
+						<p>One of our customer care agent will reply you back within 48 hours.</p>
+					</div>	
+				<form id="contact-frm" autocomplete="off" action="#" method="POST" data-toggle="validator" role="form" name="contact" class="dev-form frm-contact">
+					{!!csrf_field()!!}
+					<input type="hidden" autocomplete="false" name="url-frm" value="{{route('updateContact')}}">
+					<h4 class="desc-contact text-center">Personal information</h4>
+					<div class="row">
+						<div id="frm-title"  class="form-group col-md-2 has-feedback">
+							<label for="title" class="control-label">Title</label>
+							<div class="wrap-select">
+								<select class="form-control" name="title" id="title" data-error="Not a valid title!" required>
+									<option value="Mr.">Mr.&nbsp;</option>
+									<option value="Mrs.">Mrs.&nbsp;</option>
+									<option value="Ms.">Ms.&nbsp;</option>
+								</select>
+							</div>
+							<div class="help-block with-errors"></div>
+						</div>
+						<div if="frm-firstName" class="form-group col-md-5 has-feedback">
+							<label for="firstName" class="control-label">First name</label>
+							<input type="text" class="form-control" name="firstName" id="firstName" data-error="Not a valid first name!" placeholder="First name" required>
+							<div class="help-block with-errors"></div>
+						</div>
+						<div if="frm-lastName" class="form-group col-md-5 has-feedback">
+							<label for="lastName" class="control-label">Last name</label>
+							<input type="text" class="form-control" name="lastName" id="lastName" data-error="Not a valid last name!" placeholder="Last name" required>
+							<div class="help-block with-errors"></div>
+						</div>
+					</div>
+					<div class="row">
+						<div id="frm-email" class="form-group col-md-6 has-feedback">
+							<label for="email" class="control-label">Email</label>
+							<input type="email" class="form-control" name="email" id="email" data-error="Not a valid email address!" placeholder="Email" required>
+							<div class="help-block with-errors"></div>
+						</div>
+						<div id="frm-phone" class="form-group col-md-6">
+							<label for="areaCode" class="control-label"><span>Phone</span><span> - Option</span></label>
+							<div class="input-group">
+								<div class="input-group-btn">
+									<div class="wrap-select">
+										<select class="form-control" name="areaCode" id="areaCode" required>
+											{!!option_country_code()!!}
+										</select>
+									</div>
+								</div>
+								<input type="text" class="form-control" name="numberPhone" id="numberPhone" data-error="Not a valid phone number!" required>
+							</div>
+							<div class="help-block with-errors"></div>
+						</div>
+					</div>
+					<div class="row">
+						<div id="frm-ageGroup" class="form-group col-md-6">
+							<label for="ageGroup" class="control-label">Age group</label>
+							<div class="input-group">
+								<span class="input-group-addon">Select range</span>
+								<select name="ageGroup" id="ageGroup" class="js-select2 form-control">
+									<option value="18-25" selected>18-25</option>
+									<option value="26-30">26-30</option>
+									<option value="31-35">31-35</option>
+									<option value="36-40">36-40</option>
+									<option value="41-45">41-45</option>
+									<option value="46-50">46-50</option>
+									<option value="51-55">51-55</option>
+									<option value="56-60">56-60</option>
+									<option value="61-65">61-65</option>
+									<option value="65-up">66-up</option>
+								</select>
+							</div>
+						</div>
+						<div id="frm-country" class="form-group col-md-6 has-feedback">
+							<label for="country" class="control-label">Country</label>
+							<div class="wrap-select">
+								<select name="country" id="country" class="form-control chose-country" data-error="Not a valid country" required>
+									{!!option_country_ncode()!!}
+								</select>
+							</div>
+							<div class="help-block with-errors"></div>
+						</div>                    
+					</div>
+					<h4 class="desc-contact text-center">Your message</h4>
+					<div id="frm-subject" class="form-group has-feedback">
+						<label for="subject" class="control-label">Subject</label>
+						<div class="wrap-select">
+							<select name="subject" id="subject" class="form-control" data-error="Not a valid subject" required> 
+								<option value="1">Customer service</option>
+								<option value="2">Trip plan</option>
+								<option value="3">Ongoing file</option>
+								<option value="4">Media/Partnership</option>
+								<option value="5">Miscellaneous</option>
+								<option value="6">BiiG Club</option>
+							</select>
+						</div>
+						<div class="help-block with-errors"></div>
+					</div>
+					<div id="frm-message" class="form-group has-feedback">
+						<label for="message" class="control-label">Message</label>
+						<textarea name="message" id="message" class="form-control" rows="10" data-error="Not a valid message" placeholder="Type in your message here" required></textarea>
+						<div class="help-block with-errors"></div>
+					</div>
+					<div id="frm-newsletter" class="form-group">
+						<label for="newsletter" class="control-label">Newsletter</label>
+						<div class="newsletter-wrap">
+							<label class="checkbox checkbox-2">
+							<input type="checkbox" name="newsletter" id="newsletter" checked><span class="checkmark"></span>I want to receive BiiG Holiday news & promotions (once or twice per month)
+							</label>
+						</div>
+					</div>
+					<div id="frm-sponsor" class="form-group">
+						<label for="sponsor" class="control-label"><span>Sponsor</span><span> - Optional</span></label>
+						<p>If you are recommended by an existing Sonasia Holiday customer, please specify his/her name</p>
+						<div class="row">
+							<div id="frm-titleIntro"  class="col-md-2 form-group">
+								<div class="wrap-select">
+									<select class="form-control" name="titleIntro" id="titleIntro">
+										<option value="">Title</option>
+										<option value="Mr.">Mr.&nbsp;</option>
+										<option value="Mrs.">Mrs.&nbsp;</option>
+										<option value="Ms.">Ms.&nbsp;</option>
+									</select>
+								</div>
+							</div>
+							<div id="frm-firstNameIntro" class="col-md-5 form-group">
+								<input type="text" class="form-control" name="firstNameIntro" id="firstNameIntro" placeholder="First name">
+							</div>
+							<div id="frm-lastNameIntro" class="col-md-5 form-group">
+								<input type="text" class="form-control" name="lastNameIntro" id="lastNameIntro" placeholder="Last name">
+							</div>
+						</div>
+					</div>
+					 <div class="g-recaptcha" data-sitekey="6LdNwNEUAAAAAAw5m1Nu-Ua9t5YZOe0BYU_womGv" ></div> 
+					<h3 class="text-center ">Good to go ?</h3>
+					<div class="text-center wrap-btn"><button type="submit" class="btn-page-2"><i class="fa fa-paper-plane" aria-hidden="true"></i>Send</button></div>
+					<p class="text-center">By submitting this form, you agree to our privacy policy.<a href="http://sonasia-holiday.com/privacy-policy"><strong>Privacy policy</strong></a> </p>
+					</div>
+				</form>
+				<script src='https://www.google.com/recaptcha/api.js'></script>
+			</div>
+		</div>
+	</div>
+	<!-- Modal -->
+	<div id="errorForm" class="modal fade alertForm" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-body">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<img src="{{asset('public/images/bee/base_fill.png')}}" alt=""/>
+					<h3>Oops!</h3>
+					<p>Please fill in the required information.</p>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="successForm" class="modal fade alertForm" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-body">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<img src="{{asset('public/images/bee/base_fill.png')}}" alt=""/>
+					<h3>Thank you for your interest !!</h3>
+                    <p>We have well received your request. <br/> One of our consultant will reply you shortly.</p>
+					<p>For any further question, feel free to contact us at <a href="mailto:info@biig-holiday.com">info@biig-holiday.com</a></p>
+					<div class="text-center wrap-btn"><a href="{{route('home')}}" class="btn-page-2"><i class="fa fa-home" aria-hidden="true"></i>Homepage</a></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+@stop

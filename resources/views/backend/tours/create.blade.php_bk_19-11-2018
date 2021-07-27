@@ -1,0 +1,307 @@
+@extends('backend.layout.index')
+@section('title','Add tour')
+@section('content')
+<div id="create-tour" class="page news-page route">
+	<div class="head">
+		<a href="{{route('tourAdmin')}}" class="back-icon"><i class="fa fa-angle-left" aria-hidden="true"></i> All</a>
+		<h1 class="title">Add tour</h1>		
+	</div>	
+	<div class="main">
+		<form action="{{route('createTourAdmin')}}" class="frm-menu dev-form" method="POST" name="create_tour" role="form">
+			{!!csrf_field()!!}
+			<div class="row">
+				<div class="col-md-10 content">
+					<div id="frm-title" class="form-group">
+						<label for="title">Title<small class="required">(*)</small></label>
+						<input type="text" name="title" class="form-control" placeholder="Input title" class="frm-input">
+					</div>
+					<div id="frm-title-tag" class="form-group">
+						<label for="title_tag">Title tag</label>
+						<input type="text" name="title_tag" maxlength="60" class="form-control" placeholder="Title tag" class="frm-input">
+					</div>
+					<div id="frm-content" class="form-group">
+						<label for="content">Content</label>
+						<textarea name="content" id="editor"></textarea>
+					</div>
+					<div id="frm-must-see-1" class="form-group frm-must-see">
+						<label for="must_see_1">Must see 1</label>
+						<textarea name="must_see_1" id="must_see_1"></textarea>
+					</div>
+					<div id="frm-must-see-2" class="form-group frm-must-see">
+						<label for="must_see_2">Must see 2</label>
+						<textarea name="must_see_2" id="must_see_2"></textarea>
+					</div>
+					<div id="frm-must-see-3" class="form-group frm-must-see">
+						<label for="must_see_3">Must see 3</label>
+						<textarea name="must_see_3" id="must_see_3"></textarea>
+					</div>
+					<div id="frm-must-see-4" class="form-group frm-must-see">
+						<label for="must_see_4">Must see 4</label>
+						<textarea name="must_see_4" id="must_see_4"></textarea>
+					</div>
+					<div id="frm-map" class="form-group">
+						<label for="map">Map</label>
+						<textarea name="map" id="map" class="form-control" rows="5"></textarea>
+					</div>
+					<div id="frm-itinerary" class="form-group">
+						<label for="itinerary">Itinerary</label>
+						<textarea name="itinerary" id="itinerary" class="form-control" rows="5"></textarea>
+					</div>
+					<div id="frm-gallery" class="form-group img-upload">
+						<label for="itinerary">Gallery</label>
+						<div class="wrap-gallery">
+							
+						</div>
+						<div class="bot-wrap">
+							<a href="{{ route('loadMedia') }}" class="btn btn-default library-gallery">Add to gallery</a>
+							<input type="hidden" name="gallery" class="thumb-media" value="">
+						</div>
+					</div>
+					<div id="frm-schedule" class="form-group">
+						<label for="itinerary">Schedule</label>
+						<table class="field row-style">
+							<tbody></tbody>
+						</table>
+						<a href="#" class="btn btn-default add-chedule">Add row</a>
+					</div>	
+
+					
+					<div id="frm-metaKey" class="form-group">
+						<label for="metakey">Keyword (SEO)</label>
+						<input type="text" name="metakey" class="form-control" placeholder="Input keyword (SEO)" class="frm-input">
+					</div>
+					<div id="frm-metaValue" class="form-group">
+						<label class="metaValue">Meta Description (SEO)</label>
+						<span class="count-characters"></span>
+						<textarea name="metaValue" placeholder="Input meta description (SEO)" class="form-control"></textarea>
+					</div>					
+				</div>
+				<div class="col-md-2 sidebar">
+					<div class="gr-not-fixed">
+						<section id="frm-code" class="box-wrap">
+							<h2 class="title">Code tour</h2>
+							<input type="text" name="code" class="form-control" placeholder="Input code" class="frm-input">
+						</section>
+						<section id="sb-country" class="box-wrap">
+							<h2 class="title">Country</h2>
+							<div class="desc list">
+	                            <ul class="no-list-style list-item">
+	                                {!! getListCheckCountry(0, 0) !!}
+	                            </ul>						
+							</div>		
+						</section>
+						<?php $categories = get_categories_tour();?>
+						@if(!$categories->isEmpty())
+						<section id="sb-categories" class="box-wrap">
+							<h2 class="title">Tour Style</h2>
+							<div class="desc list">
+	                            @if($categories)
+	                                <ul class="no-list-style list-item">
+	                                    @foreach($categories as $item)
+	                                    <li class="checkbox checkbox-success">
+	                                    	<input value="{{$item->id}}" type="checkbox" name="categories[]" id="cat-{{$item->id}}">
+	                                    	<label for="cat-{{$item->id}}">{{$item->title}}</label>
+	                                    </li>
+	                                    @endforeach
+	                                </ul>
+	                            @endif			
+							</div>						
+						</section>
+						@endif
+
+						@php $durations = get_list_duration(); @endphp
+						@if(!$durations->isEmpty())
+						<section id="sb-duration" class="box-wrap">
+							<h2 class="title">Duration</h2>
+							<div class="desc list">
+								<div class="dropdown vs-drop">
+		                            <a class="dropdown-toggle" href="#" role="button" id="dropdown-duration" data-toggle="dropdown">Duration</a>
+		                            @if($durations)
+		                            <div class="dropdown-menu" aria-labelledby="dropdown-duration">
+		                                <ul class="list-item">
+		                                    @foreach($durations as $item)
+		                                    <li><a href="#{{$item->slug}}" data-value="{{$item->id}}">{{$item->title}}</a></li>
+		                                    @endforeach
+		                                </ul>
+		                            </div>
+		                            @endif
+		                        </div>							
+							</div>						
+						</section>
+						@endif
+
+						<section id="sb-image" class="box-wrap">
+							<h2 class="title">Featured Image</h2>
+							<div id="frm-image" class="desc img-upload">							
+								<div class="image">
+									<a href="{{ route('loadMedia') }}" class="library"><i class="fa fa-edit" aria-hidden="true"></i></a>
+									{!!image('', 150,150, 'Ảnh đại diện')!!}
+									<input type="hidden" name="image" class="thumb-media" value="" />
+								</div>
+							</div>
+						</section>
+						<section id="sb-pdf" class="box-wrap">
+							<h2 class="title">PDF</h2>
+							<div id="frm-pdf" class="img-upload">
+								<a href="{{ route('loadMedia') }}" class="btn library">Add file</a>
+								<input type="hidden" name="pdf" class="thumb-media" value="" />
+							</div>
+							
+						</section>
+					</div>
+					<div class="group-fixed">
+						<section id="sb-action">
+							<div class="group-action">
+								<button type="submit" name="submit" class="btn">Save</button>
+								<a href="{{route('tourAdmin')}}" class="btn btn-cancel">Cancel</a>									
+							</div>
+						</section>
+					</div>
+				</div>
+				<!-- <div class="col-md-10">
+					<div class="group-action">
+						<button type="submit" name="submit" class="btn">Lưu</button>
+						<a href="{{route('tourAdmin')}}" class="btn btn-cancel">Hủy</a>									
+					</div>
+				</div> -->
+			</div>			
+		</form>				
+	</div>
+	@include('backend.media.library')
+</div>
+
+<script type="text/javascript">
+	ckeditor("editor");
+	ckeditor("must_see_1");
+	ckeditor("must_see_2");
+	ckeditor("must_see_3");
+	ckeditor("must_see_4");
+
+	$(function(){
+		$("#create-tour").on('click','form .group-action button[type=submit]',function(e){
+			e.preventDefault();
+			var _token = $("form input[name='_token']").val();
+	       	var title = $("form #frm-title input").val();
+	       	var title_tag = $("form #frm-title-tag input").val();
+	       	var image = $("#frm-image input").val();
+	       	var pdf = $("#frm-pdf input").val();
+       		var content = CKEDITOR.instances['editor'].getData();
+       		var metaKey = $("#frm-metaKey input").val();
+	       	var metaValue = $("#frm-metaValue textarea").val();
+       		var must_see_1 = CKEDITOR.instances['must_see_1'].getData();
+       		var must_see_2 = CKEDITOR.instances['must_see_2'].getData();
+       		var must_see_3 = CKEDITOR.instances['must_see_3'].getData();
+       		var must_see_4 = CKEDITOR.instances['must_see_4'].getData(); 
+       		var map = $('#frm-map textarea').val();
+       		var duration_id = $("#sb-duration .dropdown-toggle").attr("data-value");
+       		var itinerary = $('#frm-itinerary textarea').val();
+       		var array_gallery = $('#frm-gallery .thumb-media').val(); 
+       		//get schedule
+       		var array_schedule = new Array();
+       		$('#frm-schedule table tr.add').each(function(){
+       			var array_temp = {};
+       			var array_meal = new Array();
+       			var array_sch_gallery = $(this).find('.bot-wrap .thumb-media').val(); 
+       			var name_brief = $(this).find('.sch-brief textarea').attr('name');
+       			var name_content = $(this).find('.sch-content textarea').attr('name'); 
+       			array_temp.title = $(this).find('.sch-title input').val();
+       			array_temp.gallery = array_sch_gallery;
+       			array_temp.brief = CKEDITOR.instances[name_brief].getData(); 
+       			array_temp.content = CKEDITOR.instances[name_content].getData(); 
+	       		$(this).find('.sch-meal input[name="meal[]"]:checked').each(function(){
+	       			array_meal.push($(this).val());
+	       		});
+	       		array_temp.meal = array_meal;
+       			array_schedule.push(array_temp);
+       		});
+
+       		var code = $('form #frm-code input').val();
+       		var array_country = new Array();
+       		$('form #sb-country .list-item li input:checked').each(function(){
+       			array_country.push($(this).val());
+       		});
+       		var array_cat = new Array();
+       		$('form #sb-categories .list-item li input:checked').each(function(){
+       			array_cat.push($(this).val());
+       		});
+
+       		var errors = new Array();
+	       	var error_count = 0;
+	       	if(title==""){
+	       		errors[0] = "Please input title";
+	       	}
+       		var i;
+	   		var html = "<ul>";
+	       	for(i = 0; i < errors.length; i++){
+	       		if(errors[i] != ""){
+	       			html +='<li>'+errors[i]+'</li>';
+	       			error_count += 1;
+	       		}
+	       	}   
+	       	if(error_count>0){
+		       	html += "</ul>";	       	
+		       	new PNotify({
+					title: 'Error data ('+error_count+')',
+					text: html,						    
+					hide: true,
+					delay: 6000,
+				});
+	       	}
+	       	else{
+	       		$.ajax({
+					type:'POST',            
+					url:'{{ route("createTourAdmin") }}',
+					cache: false,
+					data:{
+						'_token': _token,
+						'title': title,
+						'title_tag': title_tag,
+						'image': image,
+						'metaKey': metaKey,
+						'metaValue': metaValue,
+						'pdf': pdf,
+						'content': content,
+						'metaKey': metaKey,
+						'metaValue': metaValue,
+						'must_see_1': must_see_1,
+						'must_see_2': must_see_2,
+						'must_see_3': must_see_3,
+						'must_see_4': must_see_4,
+						'map': map,
+						'duration_id': duration_id,
+						'itinerary': itinerary,
+						'array_gallery': array_gallery,
+						'array_schedule': array_schedule,
+						'code': code,
+						'array_country': array_country,
+						'array_cat': array_cat,
+					},
+				}).done(function(data) {
+					if(data=="success"){
+						categories = [];
+				       	errors = [];
+				       	error_count = 0;				       					       	
+						new PNotify({
+							title: 'Successfully',
+							text: 'Add to success.',
+							type: 'success',
+							hide: true,
+							delay: 2000,
+						});
+						location.reload();						
+					}else{
+						new PNotify({
+							title: 'Error',
+							text: 'Browser not support javascript.',						    
+							hide: true,
+							delay: 2000,
+						});
+					}	           		
+				});
+	       	}
+
+		});
+	});
+		
+</script>
+@stop

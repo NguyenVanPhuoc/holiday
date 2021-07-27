@@ -1,0 +1,396 @@
+@php
+	$seo = get_seo($country->id, 'country');
+	$meta_key = ($seo && $seo->value != null) ? $seo->key : '';
+	$meta_value = ($seo && $seo->value != null) ? $seo->value : '';	
+	$list_quickInfo = json_decode($country->list_quick_info);
+	$list_trip = json_decode($country->list_trip_planning);
+	//$best_things_to_do = getListPostGuideByStrCatID('thing_to_do', $country->best_things_to_do, $country->id); 
+	$best_things_to_do = $country->listPostGuide('thing_to_do', 5);
+	$list_whatToEat = json_decode($country->what_to_eat);
+
+	$bg_img = getImgUrl($country->image); 
+	$icon_top = getImgUrl($country->icon);
+	$breadcrumb = Breadcrumbs::render('overviewCountry', $country->title);
+	$title_top_h1 = $country->title . ' travel';
+	$post_type_active = 'overview';
+@endphp
+
+@extends('templates.master')
+@section('content')
+@section('title', $country->title_tag)
+@section('description', $meta_value)
+@section('keywords', $meta_key)
+@section('image_url', $bg_img)
+
+<div id="overview" class="overview-page">
+	@include('layouts.top_banner')
+	@include('countries.groupTopButton')
+	<div class="container">
+		<p class="top-intro text-center font-semibold">{{ $country->desc }}</p>
+	</div>
+
+	@if($list_quickInfo)
+	<div class="section quick-info-sec">
+		<div class="container">
+			<div class="title-sec text-center small-w">
+				<h2 class="title-page pink text-center">
+					<img src="{{ asset('public/images/icons/all/information-pink.png') }}" alt="icon" />
+					<span>
+						{{ $country->title }} quick infomation
+					</span>
+				</h2>
+				<p>{{ $country->text_quick_info }}</p>
+			</div>
+			<!-- <div class="list-row-reverse-2">
+				@foreach($list_quickInfo as $item)
+					<div class="item">
+						<div class="desc">
+							<h3 class="title">{{ $item->title }}</h3>
+							<div class="text">{!! $item->content !!}</div>
+							<a href="javascript:void(0)" class="readmore font-semibold pink">Read more</a>
+							<a href="javascript:void(0)" class="collap-btn font-semibold pink">Collapse</a>
+						</div>
+						<div class="thumb">
+							{!! image($item->image, 410, 410, $item->title) !!}
+						</div>
+					</div>
+				@endforeach
+			</div> -->
+			<div class="list-row-reverse-3">
+				@foreach($list_quickInfo as $item)
+					<div class="item">
+						<div class="thumb">
+							{!! image($item->image, 350, 250, $item->title) !!}
+						</div>
+						<div class="desc">
+							<h3 class="title pink">{{ $item->title }}</h3>
+							<div class="text">{!! $item->content !!}</div>
+							<a href="javascript:void(0)" class="readmore font-semibold pink">Read more</a>
+							<a href="javascript:void(0)" class="collap-btn font-semibold pink">Collapse</a>
+						</div>
+					</div>
+				@endforeach
+			</div>
+			<div class="text-center">
+				<a href="javascrip:void(0)" class="btn-page pinkbg">
+					<span>View all {{ $country->title }} cultural insight</span>
+				</a>
+			</div>
+		</div>
+	</div>
+	@endif
+
+	@if($country->map != '')
+	<div class="section map-sec">
+		<div class="container">
+			<div class="title-sec text-center small-w">
+				<h2 class="title-page yellow text-center">
+					<img src="{{ asset('public/images/icons/all/map-yellow.png') }}" alt="icon" />
+					<span>
+						{{ $country->title }} map
+					</span>
+				</h2>
+				<p>{{ $country->text_map }}</p>
+			</div>
+			<div class="map">{!! $country->map !!}</div>
+		</div>
+	</div>
+	@endif
+
+	@if($list_trip)
+	<div class="section">
+		<div class="container">
+			<div class="title-sec text-center small-w">
+				<h2 class="title-page green text-center">
+					<img src="{{ asset('public/images/icons/all/trip-green.png') }}" alt="icon" />
+					<span>
+						{{ $country->title }} trip planning
+					</span>
+				</h2>
+				<p>{{ $country->text_trip_planning	 }}</p>
+			</div>
+			<div class="list-row-reverse-3">
+				@foreach($list_trip as $item)
+					<div class="item">
+						<div class="thumb">
+							{!! image($item->image, 350, 250, $item->title) !!}
+						</div>
+						<div class="desc">
+							<h3 class="title pink">{{ $item->title }}</h3>
+							<div class="text">{!! $item->content !!}</div>
+							<a href="javascript:void(0)" class="readmore font-semibold pink">Read more</a>
+							<a href="javascript:void(0)" class="collap-btn font-semibold pink">Collapse</a>
+						</div>
+					</div>
+				@endforeach
+			</div>
+			<div class="text-center">
+				<a href="javascrip:void(0)" class="btn-page greenbg">
+					<span>View all {{ $country->title }} tips & guide</span>
+				</a>
+			</div>
+		</div>
+	</div>
+	@endif
+
+	@if($top_highlight)
+	<div class="section">
+		<div class="container">
+			<div class="title-sec text-center small-w">
+				<h2 class="title-page pink text-center">
+					<img src="{{ asset('public/images/icons/all/location2-pink.png') }}" alt="icon" />
+					<span>
+						Highlighted destinations in {{ $country->title }} ?
+					</span>
+				</h2>
+				<p>{{ $country->text_where_to_go }}</p>
+			</div>
+			<div class="p-x-100">
+				<div class="p-15 m-y-50 graybg search-highlights search-overview text-center">
+					<div class="search-box pink">
+						{!!csrf_field()!!}
+						<input type="text" name="keyword" class="pink" placeholder="<?php echo __('Type in a place to visit in').' '.$country->title; ?>" data-action="{{ route('loadHighlight', $country->slug) }}" />
+						<div class="list-result list-place light-graybg ">
+							<ul>
+								@foreach($list_highlight as $item)
+									<li><a href="#">{{ $item->title }}</a></li>
+								@endforeach
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="top-highligts has-bg-under">
+			<div class="bg-under light-graybg pink-right"></div>
+			<div class="container">
+				<div class="list-four-sec">
+					<div class="row">
+						<div class="col-md-4">
+							@if($top_highlight[0])
+								<div class="item">
+									<a class="thumb">
+										{!! image($top_highlight[0]->image, 350, 650, $top_highlight[0]->title) !!}
+									</a>
+									<a href="#" class="title">
+										{{$top_highlight[0]->title}}								
+									</a>
+								</div>
+							@endif
+						</div>
+						<div class="col-md-8">
+							<div class="row">
+								@for($i = 1; $i < 3; $i++)
+									@if($top_highlight[$i])
+										<div class="col-md-6">
+											<div class="item">
+												<a class="thumb">
+													{!! image($top_highlight[$i]->image, 350, 320, $top_highlight[$i]->title) !!}
+												</a>
+												<a href="#" class="title">
+													{{$top_highlight[$i]->title}}								
+												</a>
+											</div>
+										</div>
+									@endif
+								@endfor
+
+								@if(isset($top_highlight[3]))
+									<div class="col-md-12">
+										<div class="item">
+											<a class="thumb">
+												{!! image($top_highlight[3]->image, 710, 320, $top_highlight[3]->title) !!}
+											</a>
+											<a href="#" class="title">
+												{{$top_highlight[3]->title}}								
+											</a>
+										</div>
+									</div>
+								@endif
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="text-center">
+			<a href="javascrip:void(0)" class="btn-page pinkbg">
+				<span>View all {{ $country->title }} destinations</span>
+			</a>
+		</div>
+	</div>
+	@endif
+	
+	@if(isset($best_things_to_do))
+	<div class="section">
+		<div class="container">
+			<div class="title-sec text-center small-w">
+				<h2 class="title-page yellow text-center">
+					<img src="{{ asset('public/images/icons/all/what-to-do-yellow.png') }}" alt="icon" />
+					<span>
+						Things to do in {{ $country->title }}
+					</span>
+				</h2>
+			</div>
+			<div class="list-row-reverse-3">
+				@foreach($best_things_to_do as $item)
+					<div class="item">
+						<div class="thumb">
+							{!! image($item->image, 350, 250, $item->title) !!}
+						</div>
+						<div class="desc limit">
+							<h3 class="title yellow"><a href="#">{{ $item->title }}</a></h3>
+							{!! str_limit($item->desc, 500) !!}
+							<a href="{{ $item->getPermalink() }}" class="font-semibold yellow">Read more</a>
+						</div>
+					</div>
+				@endforeach
+			</div>
+
+			<div class="text-center">
+				<a href="#" class="btn-page yellowbg">
+					<span>View all things to do in {{ $country->title }}</span>
+				</a>
+			</div>
+		</div>
+	</div>
+	@endif
+	
+	@if($list_highlight && count($list_highlight) > 0)
+		<div class="section">
+			<div class="container">
+				<div class="title-sec text-center small-w">
+					<h2 class="title-page pink text-center">
+						<img src="{{asset('public/images/icons/all/stay-pink.png')}}" alt="icon">
+						<span>
+							Where to stay in {{ $country->title }} ?					
+						</span>
+					</h2>
+					<p>{{ $country->text_where_to_stay }}</p>
+				</div>
+				<div class="p-15 m-y-50 graybg search-highlights text-center">
+					<div class="search-box pink">
+						{!!csrf_field()!!}
+						<input type="text" name="keyword" class="pink" placeholder="Type in a destination name in {{ $country->title }}" data-action="{{ route('loadHighlightHotel', $country->slug) }}" />
+						<div class="list-result list-place light-graybg ">
+							<ul>
+								@foreach($list_highlight as $item)
+									<li><a href="#">{{ $item->title }}</a></li>
+								@endforeach
+							</ul>
+						</div>
+					</div>
+				</div>
+				<div class="slide-style list-highlight pink">
+					@foreach($list_highlight as $city)
+						@include('countries.highlights.highlight-hotel-item')
+					@endforeach
+				</div>
+				<div class="text-center">
+					<a href="#" class="btn-page pinkbg">
+						<span>View all accommodation in {{ $country->title }}</span>
+					</a>
+				</div>
+			</div>
+		</div>
+	@endif
+
+	@if($list_whatToEat)
+	<div class="section">
+		<div class="container">
+			<div class="title-sec text-center small-w">
+				<h2 class="title-page green text-center">
+					<img src="{{ asset('public/images/icons/all/eat-green.png') }}" alt="icon" />
+					<span>
+						What to eat in {{ $country->title }}
+					</span>
+				</h2>
+				<p>{{ $country->text_what_to_eat	 }}</p>
+			</div>
+			<div class="list-row-reverse-3">
+				@foreach($list_whatToEat as $item)
+					<div class="item">
+						<div class="thumb">
+							{!! image($item->image, 350, 250, $item->title) !!}
+						</div>
+						<div class="desc">
+							<h3 class="title pink">{{ $item->title }}</h3>
+							<div class="text">{!! $item->content !!}</div>
+							<a href="javascript:void(0)" class="readmore font-semibold pink">Read more</a>
+							<a href="javascript:void(0)" class="collap-btn font-semibold pink">Collapse</a>
+						</div>
+					</div>
+				@endforeach
+			</div>
+			<div class="text-center">
+				<a href="{{ $country->link_what_to_eat }}" class="btn-page greenbg">
+					<span>Read more on {{ $country->title }} cuisine</span>
+				</a>
+			</div>
+		</div>
+	</div>
+	@endif
+
+	@if($list_tourStyle)
+	<div class="section">
+		<div class="container">
+			<div class="title-sec text-center small-w">
+				<h2 class="title-page yellow text-center">
+					<img src="{{ asset('public/images/icons/all/tour-style-yellow.png') }}" alt="icon" />
+					<span>
+						Travel your way in {{ $country->title }}
+					</span>
+				</h2>
+				<p>{{ $country->tex_travel_your_way }}</p>
+			</div>
+			<div class="slide-style list-tour-style yellow">
+				@foreach($list_tourStyle as $tourStyle) 
+					@include('countryTourStyles.item-slide')
+				@endforeach
+			</div>
+		</div>
+	</div>
+	@endif
+
+	@if($related_articles)
+		<div class="section related-tours">
+			<div class="container">
+				<h2 class="title-page pink text-center">
+					<img src="{{asset('public/images/icons/all/blog-pink.png')}}" alt="icon">
+					<span>
+						{{ __('Our blog latest article about ') . $country->title }}					
+					</span>
+				</h2>
+
+				<div class="slide-style list-blog pink">
+					@foreach($related_articles as $article)
+						@include('articles.item')
+					@endforeach
+				</div>
+			</div>
+		</div>
+	@endif
+	
+	@if($list_ortherCountry)
+	<div class="section">
+		<div class="container">
+			<div class="title-sec text-center small-w">
+				<h2 class="title-page green text-center">
+					<img src="{{ asset('public/images/icons/all/where-next-green.png') }}" alt="icon" />
+					<span>
+						After {{ $country->title }}, where next ?
+					</span>
+				</h2>
+				<p>{!! $country->text_where_next !!}</p>
+			</div>
+			<div class="slide-style list-highlight green">
+				@foreach($list_ortherCountry as $overview)
+					@include('countries.overview-item')
+				@endforeach
+			</div>
+		</div>
+	</div>
+	@endif
+</div>
+
+@endsection

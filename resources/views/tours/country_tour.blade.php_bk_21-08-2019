@@ -1,0 +1,382 @@
+
+@php
+	$country_title = 'Multi country';
+	$bg_img = '';
+	$icon_banner = '';
+	if(isset($country)){
+		$country_title = $country->title;
+		$bg_img = getImgUrl($country->image);
+		$icon_banner = $country->icon;
+	}
+@endphp
+
+@extends('templates.master')
+@section('title', $country_title.' tours')
+@section('content')
+
+@php
+	$durations = get_list_duration();
+	$cats = get_categories_tour(); 
+	if(isset($country))
+		$country_id = isset($country) ? $country->id : ''; 
+	//dd($all_tours);
+
+@endphp
+
+<div class="package-tours tax-country tour-country">
+    <div class="image-header" style="background-image: url(<?php echo $bg_img; ?>);">
+        <div class="wrap bottom">
+            <div class="container">
+                {!! imageAuto($icon_banner, $country_title) !!}
+                <h1 class="title-banner">{{$country_title}} tours</h1>
+            </div>
+        </div>
+    </div>
+	<div class="gr-btn-top light-graybg text-center">
+		<div class="container">
+			<a href="#" class="btn-page-2"><i class="fa fa-eye" aria-hidden="true"></i><?php echo __('Overview'); ?></a>
+			<a href="#" class="btn-page-2"><i class="fa fa-map-marker" aria-hidden="true"></i><?php echo __('Tours'); ?></a>
+			<a href="#" class="btn-page-2"><i class="fa fa-star-o" aria-hidden="true"></i><?php echo __('Hightlights'); ?></a>
+			<a href="#" class="btn-page-2"><i class="fa fa-lightbulb-o" aria-hidden="true"></i><?php echo __('Travel tips'); ?></a>
+			<a href="#" class="btn-page-2"><i class="fa fa-bed" aria-hidden="true"></i><?php echo __('Accommodation'); ?></a>
+			<a href="#" class="btn-page-2"><i class="fa fa-bar-chart" aria-hidden="true"></i><?php echo __('Key facts'); ?></a>
+		</div>
+	</div>
+
+	<div class="container">
+		<h2 class="top-intro text-center font-semibold">Discover our exclusive selection of Laos package tours. If you are looking to explore the real authentic side of the country, you will not be disappointed by our off the beaten track tours</h2>
+		<div class="package-tours-content">
+			{!!csrf_field()!!}
+			@if(isset($country))
+				<input type="hidden" name="current_country" value="{{$country_id}}">
+			@endif
+			<div class="row">
+				<div class="col-md-3" id="sidebar">
+					@include('sidebars.list_tours')
+					<div class="design-trip sidebar-box light-graybg">
+						<div class="wrapper">
+							<h5>Design our trip</h5>
+							<div class="text-icon">
+								<img src="{{asset('/public/images/bee/base_fill.png')}}" alt="icon">
+								<p>Our expert will help <br> you to achieve <br> your dream</p>
+							</div>
+						</div>
+						<a href="#" class="btn"><i class="fas fa-suitcase yellow"></i> Create my trip</a>
+					</div>
+				</div>
+				<div class="col-md-9" id="content">
+					<div class="filter-top pink font-semibold text-center">
+						<div class="row">
+							<div class="col-md-6">
+								<div class="result">
+									<img src="{{ asset('public/images/icons/filter/results-found-pink.png') }}" alt="icon">
+									Results found 
+									<span class="gray value">
+										@if(isset($paging)) {{-- multi pram --}}
+											{{ count($all_tours) }}
+										
+										@else {{-- country tour page --}}
+											{{countTourInCountry($country->id)}}
+										@endif
+									</span>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="per-page has-select">
+									<img src="{{ asset('public/images/icons/filter/view-pink.png') }}" alt="icon">
+									View
+									<span class="gray value chose-value" data-value="8">8</span>
+									per page
+									<ul name="per-page" class="no-list-style gray popup-filter">
+										<li data-value="8">8</li>
+										<li data-value="16">16</li>
+										<li data-value="24">24</li>
+										<li data-value="32">32</li>
+										<li data-value="40">40</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</div>
+					@if($tours)
+					<div class="content-list-tour">
+						<div class="list-tour-2">
+							<div class="row">
+								@foreach($tours as $key => $item)
+									@php
+										$item = (object) $item;
+										$slug_country = get_slug_country_of_tour($item->id);
+									@endphp
+									<div class="col-md-6">
+										<div class="item">
+						                	<div class="gr-btn-tour">
+							                	<div class="btn-tour share-tour">
+							                    	<a href="#"></a>
+							                    	<div class="share-group graybg">
+							                    		<a target="_blank" href="http://www.facebook.com/sharer.php?u=&p[title]="><i class="fa fa-facebook" aria-hidden="true"></i></a>
+														<a target="_blank" href="http://twitter.com/share?text=&url="><i class="fa fa-twitter" aria-hidden="true"></i></a>
+														<a target="_blank" href="http://pinterest.com/pin/create/button/?url=&description="><i class="fa fa-pinterest-p" aria-hidden="true"></i></a>
+														<a target="_blank" href="https://plus.google.com/share?url="><i class="fa fa-google-plus" aria-hidden="true"></i></a>
+							                    	</div>
+							                    </div>
+							                    <div class="btn-tour view-tour">
+							                    	<a href="{{route('tour', ['slug_country'=>$slug_country,'slug'=>$item->slug])}}" class="btn-page-2 whitebg">View tour</a>
+							                    </div>
+							                    <div class="btn-tour add-wishlist">
+							                    	<a href="#"></a>
+							                    </div>
+						                    </div>
+						                	<div class="octagonal">
+							                	<div class="wrap-octagonal">
+								                	<div class="image">
+									                    <a class="thumb" href="{{route('tour', ['slug_country'=>$slug_country,'slug'=>$item->slug])}}">
+									                        {!! image($item->image, 490, 300, $item->title) !!}
+									                    </a>
+									                    <a href="{{route('tour', ['slug_country'=>$slug_country,'slug'=>$item->slug])}}" class="title"><span>{{$item->title}}</span></a>
+									                   	
+														<div class="icon-cat">{!! getIconCatOftour($item->id) !!}</div>
+
+								                    </div>
+							                    </div>
+							                </div>
+					                	</div>
+									</div>
+								@endforeach
+							</div>
+						</div>
+						@if(isset($paging))
+							<div class="text-right paginate-sec">{!! $paging->render('custom_view'); !!}</div>
+						@else
+							<div class="text-right paginate-sec">{!! $tours->render('custom_view'); !!}</div>
+						@endif
+
+					</div>
+					@endif
+				</div>
+			</div>
+		</div>
+
+		<!--Bottom Section-->
+		<div class="row">
+			<div class="col-md-3 sidebar"></div>
+			<div class="col-md-9 content">
+				<!--Section Bottom-->
+        		<div class="sec-bottom light-graybg text-center imgbg imgbg-top-right-2">
+        			<div class="title">
+        				<span>Additional tours</span>
+        			</div>
+        			<div class="content-bot">
+        				<div class="icon">
+        					{!! imageAuto($icon_banner, $country_title) !!}
+        				</div>
+        				<p>Discover our entire tour offer in {{$country_title}} with exclusive intineraries</p>
+        				<a href="#" class="btn-page greenbg">
+        					<span><?php echo __('Find out more') ?></span>
+        				</a>
+        			</div>
+        		</div>
+        		<!--End Section Bottom-->
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+	$(function(){
+		$('.package-tours-content').on('click', '#sidebar .list-filter-tour li, .filter-top .popup-filter li',function(e){ 
+			var _token = $('input[name=_token]').val();
+			var current_country = $('input[name=current_country]').val(); 
+			var region = new Array();
+			var cat = new Array();
+			var duration;
+
+			var all_region = new Array();
+			var all_duration = new Array();
+			var all_cat = new Array();
+
+			var per_page = $('.filter-top .chose-value').attr('data-value');
+
+			$('.sb-region .list-country ul li.active').each(function(){
+				region.push($(this).find('input').val());
+			});
+			duration = $('.sb-duration .list-duration ul li.active input').val();
+			$('.sb-cat .list-cat ul li.active').each(function(){
+				cat.push($(this).find('input').val());
+			});
+
+			$('.sb-region .list-country ul li').each(function(){
+				all_region.push($(this).find('input').val());
+			});
+			$('.sb-duration .list-duration ul li').each(function(){
+				all_duration.push($(this).find('input').val());
+			});
+			$('.sb-cat .list-cat ul li').each(function(){
+				all_cat.push($(this).find('input').val());
+			});
+
+			$.ajax({
+				type:'POST',            
+				url:'{{route('filterTour')}}',
+				cache: false,
+				data:{
+					'_token': _token,
+					'current_country': current_country,
+					'region': JSON.stringify(region),
+					'duration' : duration,
+					'cat': JSON.stringify(cat),
+					'all_region': JSON.stringify(all_region),
+					'all_duration': JSON.stringify(all_duration),
+					'all_cat': JSON.stringify(all_cat),
+					'per_page' : per_page,
+				},
+				beforeSend: function () { 
+	       			$('#overlay').fadeIn();
+	       			$('img.loading').fadeIn();
+	            },
+	            success:function(data){  
+	            	if(data != "error"){
+	            		var result = JSON.parse(data);
+	            		var count_region = JSON.parse(result.count_region);
+	            		var count_duration = JSON.parse(result.count_duration); 
+	            		var count_cat= JSON.parse(result.count_cat); 
+	            		var paginate = '';
+
+						$('#overlay').fadeOut();
+	       				$('img.loading').fadeOut();
+	       				window.history.pushState("object or string", "Title", result.url);
+	       				$('.package-tours-content .filter-top .result span').html(result.total_result);
+	       				$('.package-tours-content .content-list-tour .list-tour-2 .row').html(result.content);
+
+	       				if(result.paginate != '' && result.paginate != 'empty'){ 
+	       					paginate = result.paginate;
+	       				}
+	       				$('.paginate-sec').html(paginate);
+
+	       				//sidebar region
+	       				for(var i=0; i < count_region.length; i++){
+	       					$('.list-country li.region-'+ count_region[i]['id'] + ' .count-post').text('('+count_region[i]['count'] +')');
+	       				}
+
+	       				//sidebar duration
+	       				for(var i=0; i < count_duration.length; i++){
+	       					$('.list-duration li.duration-'+ count_duration[i]['id'] + ' .count-post').text('('+count_duration[i]['count'] +')');
+	       				}
+
+	       				//sidebar cat
+	       				for(var i=0; i < count_cat.length; i++){
+	       					$('.list-cat li.cat-'+ count_cat[i]['id'] + ' .count-post').text('('+count_cat[i]['count'] +')');
+	       				}
+					}	
+	            }
+			})
+		});
+	});
+
+	$('.package-tours-content').on('click', '.pagination .page-item',function(e){
+		e.preventDefault();
+		var page = 1;
+		if(!$(this).hasClass('active')){
+			if(!$(this).find('a').hasClass('page-arrow')){
+				page = $(this).find('.page-link').text();
+			}
+			else{
+				var cr_page = $('.pagination .page-item.active .page-link').text();
+				if($(this).find('a').hasClass('page-next')){
+					page = parseInt(cr_page) + 1;
+				}
+				else{
+					page = parseInt(cr_page) - 1;
+				}
+				
+			}
+
+			var _token = $('input[name=_token]').val();
+			var current_country = $('input[name=current_country]').val(); 
+			var region = new Array();
+			var cat = new Array();
+			var duration;
+
+			var all_region = new Array();
+			var all_duration = new Array();
+			var all_cat = new Array();
+
+			var per_page = $('.filter-top .chose-value').attr('data-value');
+
+			$('.sb-region .list-country ul li.active').each(function(){
+				region.push($(this).find('input').val());
+			});
+			duration = $('.sb-duration .list-duration ul li.active input').val();
+			$('.sb-cat .list-cat ul li.active').each(function(){
+				cat.push($(this).find('input').val());
+			});
+
+			$('.sb-region .list-country ul li').each(function(){
+				all_region.push($(this).find('input').val());
+			});
+			$('.sb-duration .list-duration ul li').each(function(){
+				all_duration.push($(this).find('input').val());
+			});
+			$('.sb-cat .list-cat ul li').each(function(){
+				all_cat.push($(this).find('input').val());
+			});
+
+			$.ajax({
+				type:'POST',            
+				url:'{{route('filterTour')}}',
+				cache: false,
+				data:{
+					'_token': _token,
+					'current_country': current_country,
+					'region': JSON.stringify(region),
+					'duration' : duration,
+					'cat': JSON.stringify(cat),
+					'all_region': JSON.stringify(all_region),
+					'all_duration': JSON.stringify(all_duration),
+					'all_cat': JSON.stringify(all_cat),
+					'per_page' : per_page,
+					'page' : page,
+				},
+				beforeSend: function () { 
+	       			$('#overlay').fadeIn();
+	       			$('img.loading').fadeIn();
+	            },
+	            success:function(data){ 
+	            	if(data != "error"){ 
+	            		var result = JSON.parse(data);
+	            		var count_region = JSON.parse(result.count_region);
+	            		var count_duration = JSON.parse(result.count_duration); 
+	            		var count_cat= JSON.parse(result.count_cat); 
+	            		var paginate = '';
+
+						$('#overlay').fadeOut();
+	       				$('img.loading').fadeOut();
+	       				window.history.pushState("object or string", "Title", result.url);
+	       				$('.package-tours-content .filter-top .result span').html(result.total_result);
+	       				$('.package-tours-content .content-list-tour .list-tour-2 .row').html(result.content);  
+	       				if(result.paginate != '' && result.paginate != 'empty'){ 
+	       					paginate = result.paginate;
+	       				}
+	       				
+	       				$('.paginate-sec').html(paginate);
+	       				//sidebar region
+	       				for(var i=0; i < count_region.length; i++){
+	       					$('.list-country li.region-'+ count_region[i]['id'] + ' .count-post').text('('+count_region[i]['count'] +')');
+	       				}
+
+	       				//sidebar duration
+	       				for(var i=0; i < count_duration.length; i++){
+	       					$('.list-duration li.duration-'+ count_duration[i]['id'] + ' .count-post').text('('+count_duration[i]['count'] +')');
+	       				}
+
+	       				//sidebar cat
+	       				for(var i=0; i < count_cat.length; i++){
+	       					$('.list-cat li.cat-'+ count_cat[i]['id'] + ' .count-post').text('('+count_cat[i]['count'] +')');
+	       				}
+					}	
+	            }
+			})
+
+		}
+	});
+</script>
+@stop

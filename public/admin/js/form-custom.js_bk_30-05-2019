@@ -1,0 +1,183 @@
+$(document ).ready(function(){	
+	$('form.activity-form').submit(function(){ 
+        /* update value in ckeditor */
+        for ( instance in CKEDITOR.instances )
+            CKEDITOR.instances[instance].updateElement();
+
+
+        //if have table content
+        if($('div[id=frm-tb-content]').length){
+            $('div[id=frm-tb-content]').each(function(){
+                //set content in input hiden
+                if($(this).find('.string-value').length){
+                    var tableContent = new Array();
+
+                    $(this).find(' > table > tbody > tr').each(function(key){ 
+                        var ob_lv1 = {};
+                        var title_lv1 = $(this).find('> td:nth-child(2) > .tb-title input').val();
+                        var id_content_lv1 = $(this).find('> td:nth-child(2) > .tb-content textarea').attr('id');
+                        var content_lv1 = CKEDITOR.instances[id_content_lv1].getData(); 
+                        var position_lv1 = $(this).attr('data-position');
+                        var arr_child_lv1 = new Array();
+                        //get array child lv 2
+                        if($(this).find('.sortable-lv-2 > tr').length){
+                            $(this).find('.sortable-lv-2 > tr').each(function(){
+                                var ob_lv2 = {};
+                                var title_lv2 = $(this).find('> td:nth-child(2) > .tb-title input').val();
+                                var id_content_lv2 = $(this).find('> td:nth-child(2) > .tb-content textarea').attr('id');
+                                var content_lv2 = CKEDITOR.instances[id_content_lv2].getData();
+                                var position_lv2 = $(this).attr('data-position');
+                                var arr_child_lv2 = new Array(); 
+                                //get array child lv 3
+                                if($(this).find('.sortable-lv-3 > tr').length){
+                                    $(this).find('.sortable-lv-3 > tr').each(function(){
+                                        var ob_lv3 = {};
+                                        var title_lv3 = $(this).find('> td:nth-child(2) > .tb-title input').val();
+                                        var id_content_lv3 = $(this).find('> td:nth-child(2) > .tb-content textarea').attr('id');
+                                        var content_lv3 = CKEDITOR.instances[id_content_lv3].getData();
+                                        var position_lv3 = $(this).attr('data-position');
+                                        ob_lv3.title = title_lv3;
+                                        ob_lv3.content = content_lv3;
+                                        ob_lv3.position = position_lv3;
+                                        arr_child_lv2.push(ob_lv3);
+                                    });
+                                }
+                                ob_lv2.title = title_lv2;
+                                ob_lv2.content = content_lv2;
+                                ob_lv2.position = position_lv2;
+                                ob_lv2.child = arr_child_lv2;
+                                arr_child_lv1.push(ob_lv2);
+                            });
+                        }
+                        if($(this).closest('#frm-tb-content').hasClass('has-thumb'))
+                            ob_lv1.image = $(this).find('input.thumb-media').val();
+                        ob_lv1.title = title_lv1; 
+                        ob_lv1.content = content_lv1;
+                        ob_lv1.position = position_lv1;
+                        if(!$(this).closest('#frm-tb-content').hasClass('just-level-1'))
+                            ob_lv1.child = arr_child_lv1; 
+                        tableContent.push(ob_lv1);
+                    });
+
+                    $(this).find('.string-value').val(JSON.stringify(tableContent));
+                }
+
+                //remove attribute name in input & textarea
+                $(this).find('input[type=text]').removeAttr('name');
+                $(this).find('textarea').removeAttr('name');
+            });  
+        }
+
+        //action to send ajax
+		var link = $(this).attr('action');
+		$('#overlay').show();
+        $('.loading').show(); 
+		$.ajax({
+            url: $(this).attr("action"),
+            type: "POST",
+            data: $(this).serialize(),
+            contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+            success: function (data) { 
+                $('#overlay').hide();
+                $('.loading').hide();
+                if(data.error) {
+                	var errors = data.error;
+                	var i;
+                	var error_count = 0;
+	        		var html = '<ul>';
+                	for(i = 0; i < errors.length; i++){
+			            if(errors[i] != ""){
+			                html +='<li>'+errors[i]+'</li>';
+			                error_count += 1;
+			            }
+			        }
+			        html += '</ul>';
+
+			        if(error_count>0){ 
+			            new PNotify({
+			                title: 'Error ('+error_count+')',
+			                text: html,
+			                hide: true,
+			                delay: 4000,
+			            });
+			        }
+                }
+                else{
+                	new PNotify({
+                        title: 'Successfully',
+                        text: data.success,
+                        type: 'success',
+                        hide: true,
+                        delay: 4000,
+                    });
+                    if(data.url){
+                        setTimeout(function(){
+                            window.location.href = data.url;
+                        }, 1000);
+                    }
+                }
+            },
+            error: function (data) {
+                var errors = $.parseJSON(data.responseText);
+                $.each(errors, function (key, value) {
+                    console.log(data.responseText);
+                });
+            }
+        });
+		return false;
+	});
+
+    $('form.activity-s-form').submit(function(e){
+        e.preventDefault();
+        $('#overlay').show();
+        $('.loading').show();
+        $.ajax({
+            url: $(this).attr('action'),
+            type: "GET",
+            data: $(this).serialize(),
+            contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+            dataType: "json",
+            success: function (data) { 
+                $('#overlay').hide();
+                $('.loading').hide();
+                if(data.html != undefined){
+                    $('#tb-result').html(data.html);
+                }
+            },
+            error: function (data) {
+                var errors = $.parseJSON(data.responseText);
+                $.each(errors, function (key, value) {
+                    console.log(data.responseText);
+                });
+            }
+        });
+    });
+
+    $('form.activity-s-form').on('click', '.pagination a', function(e){
+        e.preventDefault();
+        var page = $(this).attr("href").split("page=")[1];
+        var link = $(this).closest('form').attr('action');
+        $('#overlay').show();
+        $('.loading').show();
+        $.ajax({
+            url: link,
+            type: "GET",
+            data: $(this).closest('form').serialize()+'&page='+page,
+            contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+            dataType: "json",
+            success: function (data) { 
+                $('#overlay').hide();
+                $('.loading').hide();
+                if(data.html != undefined){ 
+                    $('#tb-result').html(data.html);
+                }
+            },
+            error: function (data) {
+                var errors = $.parseJSON(data.responseText);
+                $.each(errors, function (key, value) {
+                    console.log(data.responseText);
+                });
+            }
+        });
+    });
+});

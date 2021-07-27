@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="{{ app()->getLocale() }}">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Quản lý 5Ship">
+    <meta name="author" content="Vietsmiler">
+    <title>Admin - @yield('title')</title>
+    <link rel="shortcut icon" href="{{asset('public/images/favicon.png')}}">
+    <link rel="stylesheet" href="https://use.fontawesome.com/b2bcbfcb51.css">
+    <link rel="stylesheet" href="{{asset('public/css/bootstrap.min.css')}}">
+    <link rel="stylesheet" href="{{asset('public/css/bootstrap-datepicker.css')}}">
+    <link rel="stylesheet" href="{{asset('public/css/checkbox_radio.css')}}">    
+    <link href="{{asset('public/admin/css/dropzone.css')}}" type="text/css">
+    <link href="{{asset('public/admin/css/admin.css')}}" rel="stylesheet" type="text/css">       
+    <script src="{{asset('public/admin/js/jquery.min.js')}}" type="text/javascript"></script>        
+    <script src="{{asset('public/admin/js/popper.min.js')}}" type="text/javascript"></script>
+    <script src="{{asset('public/admin/js/bootstrap.min.js')}}" type="text/javascript"></script>
+    <script src="{{asset('public/js/bootstrap-datepicker.js')}}" type="text/javascript"></script>
+    <script src="{{ asset('public/admin/ckeditor/ckeditor.js') }}"></script>    
+    <script src="{{asset('public/admin/js/admin.js')}}" type="text/javascript"></script>
+    <script src="{{asset('public/admin/js/dropzone.js')}}" type="text/javascript"></script>
+    <script src="{{asset('public/js/validator.js')}}" type="text/javascript"></script>
+    <script src="{{asset('public/js/validator.min.js')}}" type="text/javascript"></script>
+    <script src="{{asset('public/js/jquery.scrollbar.js')}}" type="text/javascript"></script>
+    <script src="{{asset('public/js/cleave.min.js')}}" type="text/javascript"></script>
+    <script>
+        function ckeditor(name){
+            CKEDITOR.replace(name, {
+                filebrowserBrowseUrl: '{{ asset('public/admin/ckfinder/ckfinder.html') }}',
+                filebrowserImageBrowseUrl: '{{ asset('public/admin/ckfinder/ckfinder.html?type=Images') }}',
+                filebrowserFlashBrowseUrl: '{{ asset('public/admin/ckfinder/ckfinder.html?type=Flash') }}',
+                filebrowserUploadUrl: '{{ asset('public/admin/ckfinder/core/connector/php/connector.php?command=QuickUpload&type=Files') }}',
+                filebrowserImageUploadUrl: '{{ asset('public/admin/ckfinder/core/connector/php/connector.php?command=QuickUpload&type=Images') }}',
+                filebrowserFlashUploadUrl: '{{ asset('public/admin/ckfinder/core/connector/php/connector.php?command=QuickUpload&type=Flash') }}'
+            } );
+        }
+
+        //preview image
+        function filePreview(input, id){
+            if(input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#'+id+' .image img').attr('src',e.target.result);
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        $(document).ready(function(){
+            $(".img-upload .image input").change(function(){
+                var id = $(this).parents(".img-upload").attr("id");
+                $(this).parents(".img-upload").find(".thumb-media").val("");
+                filePreview(this, id);
+            });
+        })
+       /* function convertToSlug(text){       
+            text = text.toLowerCase();
+            return text.replace(/[^a-zA-Z0-9]+/g,'_');
+        }*/
+    </script>
+</head>
+<body>
+    <div id="wrapper">
+        <div id="sidebar">
+            <h1 id="logo"><a href="{{URL::to('/admin')}}">{!! getLogo() !!}</a></h1>
+            <nav id="menu" role="navigation">
+                <ul>                    
+                    <li class="has-children{{ Request::is('admin/page','admin/page/*')? ' active': '' }}">
+                        <a href="#"><i class="fa fa-home" aria-hidden="true"></i>Dashboad</a>
+                        <ul class="sub-menu">
+                            <li{{ Request::is('admin/page') ? ' class=active' : '' }}><a href="{{URL::to('/admin/page')}}">Tất cả</a></li>
+                            <li{{ Request::is('admin/page/them') ? ' class=active' : '' }}><a href="{{URL::to('/admin/page/them')}}">thêm mới</a></li>
+                        </ul>
+                    </li>
+                    <li class="has-children{{ Request::is('admin/don-hang','admin/don-hang/*')? ' active': '' }}">
+                        <a href="#"><i class="fa fa-list-alt" aria-hidden="true"></i>Đơn hàng</a>
+                        <ul class="sub-menu">
+                            <li{{ Request::is('admin/don-hang') ? ' class=active' : '' }}><a href="{{URL::to('/admin/don-hang')}}">Tất cả</a></li>
+                            <li{{ Request::is('admin/don-hang/them') ? ' class=active' : '' }}><a href="{{URL::to('/admin/don-hang/them')}}">Thêm mới</a></li>
+                        </ul>
+                    </li>
+                    <li class="has-children{{ Request::is('admin/khach-hang','admin/khach-hang/*')? ' active': '' }}">
+                        <a href="#"><i class="fa fa-shopping-cart" aria-hidden="true"></i>Khách hàng</a>
+                        <ul class="sub-menu">
+                            <li{{ Request::is('admin/khach-hang') ? ' class=active' : '' }}><a href="{{ route('indexShopper') }}">Tất cả</a></li>
+                            <li{{ Request::is('admin/khach-hang/them') ? ' class=active' : '' }}><a href="{{ route('addShopper') }}">thêm mới</a></li>
+                        </ul>
+                    </li>
+                    <li class="has-children{{ Request::is('admin/tai-xe','admin/tai-xe/*')? ' active': '' }}">
+                        <a href="#"><i class="fa fa-car" aria-hidden="true"></i>Tài xế</a>
+                        <ul class="sub-menu">
+                            <li{{ Request::is('admin/tai-xe') ? ' class=active' : '' }}><a href="{{ route('indexShipper') }}">Tất cả</a></li>
+                            <li{{ Request::is('admin/tai-xe/them') ? ' class=active' : '' }}><a href="{{ route('addShipper') }}">thêm mới</a></li>
+                        </ul>
+                    </li>
+                    <!-- <li><a href="#"><i class="fa fa-envelope" aria-hidden="true"></i>Phản hồi</a></li> -->
+                    <li class="has-children{{ Request::is('admin/user','admin/user/*')? ' active': '' }}">
+                        <a href="#"><i class="fa fa-users" aria-hidden="true"></i>Ban quản trị</a>
+                        <ul class="sub-menu">
+                            <li{{ Request::is('admin/user/danhsach') ? ' class=active' : '' }}><a href="{{URL::to('/admin/user/danhsach')}}">Tất cả</a></li>
+                            <li{{ Request::is('admin/user/them') ? ' class=active' : '' }}><a href="{{URL::to('/admin/user/them')}}">Thêm mới</a></li>
+                        </ul>
+                    </li>
+                    <li class="has-children{{ Request::is('admin/prices','admin/prices/*')? ' active': '' }}">
+                        <a href="#"><i class="fa fa-money" aria-hidden="true"></i>Bảng giá xe</a>
+                        <ul class="sub-menu">
+                            <li{{ Request::is('admin/prices') ? ' class=active' : '' }}><a href="{{route('indexPrice')}}">Tất cả</a></li>
+                            <li{{ Request::is('admin/prices/them') ? ' class=active' : '' }}><a href="{{route('storePrice')}}">Thêm mới</a></li>
+                        </ul>
+                    </li>                    
+                    <li class="has-children{{ Request::is('admin/review','admin/review/*')? ' active': '' }}">
+                        <a href="#"><i class="fa fa-thumbs-o-up"></i>Reviews</a>
+                        <ul class="sub-menu">
+                            <li{{ Request::is('admin/review') ? ' class=active' : '' }}><a href="{{route('review')}}">Tất cả</a></li>
+                            <li{{ Request::is('admin/review/them') ? ' class=active' : '' }}><a href="{{route('reviewStore')}}">Thêm mới</a></li>
+                        </ul>
+                    </li>
+                    <li class="has-children{{ Request::is('admin/group-meta','admin/group-meta/*')? ' active': '' }}">
+                        <a href="#"><i class="fa fa-th-large"></i>Meta field</a>
+                        <ul class="sub-menu">
+                            <li{{ Request::is('admin/group-meta') ? ' class=active' : '' }}><a href="{{URL::to('/admin/group-meta')}}">Tất cả</a></li>
+                            <li{{ Request::is('admin/group-meta/them') ? ' class=active' : '' }}><a href="{{URL::to('/admin/group-meta/them')}}">Thêm mới</a></li>
+                        </ul>
+                    </li>
+                    <li class="has-children{{ Request::is('admin/media','admin/media/*')? ' active': '' }}">
+                        <a href="#"><i class="fa fa-file-image-o" aria-hidden="true"></i></i>Thư viện</a>
+                        <ul class="sub-menu">
+                            <li{{ Request::is('admin/media') ? ' class=active' : '' }}><a href="{{URL::to('/admin/media')}}">Tất cả</a></li>
+                            <li{{ Request::is('admin/media/them') ? ' class=active' : '' }}><a href="{{URL::to('/admin/media/them')}}">Thêm mới</a></li>
+                        </ul>
+                    </li>
+                    <li class="has-children{{ Request::is('admin/setting','admin/setting/*')? ' active': '' }}">
+                        <a href="#"><i class="fa fa-cog"></i>Cài đặt</a>
+                        <ul class="sub-menu">
+                            <li{{ Request::is('admin/setting/option') ? ' class=active' : '' }}><a href="{{route('setting')}}">Hệ thống</a></li>
+                            <li{{ Request::is('admin/setting/socail') ? ' class=active' : '' }}><a href="{{route('settingSocial')}}">Socail Media</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>  
+        </div>
+        <div id="content">
+            <header>@include('backend.layout.header')</header>
+            <main>
+                @yield('content')
+            </main>
+            <footer>@include('backend.layout.footer')</footer>
+            <div class="loadding"><img src="{{URL::to('/public/images')}}/loading_red.gif" alt="loadding..."></div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,178 @@
+@extends('backend.layout.index')
+@section('title','Consultants')
+@section('content')
+@php
+	$tourStyles = get_categories_tour();
+	$countries = getListMainCountry();
+	$country_id = isset($country_id)? $country_id : '';
+
+	$countryTitle  = '-- Choose Country --';
+	if($country_id != ''){
+		if($country_id == 0) $countryTitle == 'Multi country';
+		else $countryTitle = getCountryById($country_id)->title;
+	}
+	$cat_tour_id = isset($cat_tour_id)? $cat_tour_id : '';
+	$catTourTitle = '-- Choose Tour Style --';
+	if($cat_tour_id != '')
+		$catTourTitle = get_category_tour($cat_tour_id)->title;
+	$key = isset($s)? $s:'';
+@endphp
+<div id="consultants" class="page">
+	<div class="head">
+		<h1 class="title">Consultants</h1>		
+	</div>
+	<div class="main">
+		<div class="search-form">
+			<form name="s" action="{{ route('searchConsultantAdmin') }}" method="GET">
+				<input type="hidden" name="type" value="consultant">
+				<div class="row">
+					<div class="col-md-4">
+						<div class="desc list">
+							<div class="dropdown vs-drop">
+	                            @if(isset($country_id))
+									<a class="dropdown-toggle" href="#" role="button" id="dropdown-parent" data-value="{{$country_id}}" data-toggle="dropdown">{{ $countryTitle }}</a>
+                            	@else
+                            		<a class="dropdown-toggle" href="#" role="button" id="dropdown-parent" data-value="" data-toggle="dropdown">-- Choose Country --</a>
+                            	@endif
+	                            <input type="hidden" name="country_id" class="value" value="{{$country_id}}">
+	                            @if($countries)
+	                            <div class="dropdown-menu" aria-labelledby="dropdown-cat">
+	                                <ul class="list-item no-padding">
+	                                    @foreach($countries as $item)
+	                                    <li><a href="#{{$item->slug}}" data-value="{{$item->id}}">{{$item->title}}</a></li>
+	                                    @endforeach
+	                                    <li><a href="#multi" data-value="0">Multi country</a></li>
+	                                </ul>
+	                            </div>
+	                            @endif
+	                        </div>							
+						</div>			
+					</div>
+					<div class="col-md-4">
+						<div class="desc list">
+							<div class="dropdown vs-drop">
+	                            @if(isset($cat_tour_id))
+									<a class="dropdown-toggle" href="#" role="button" id="dropdown-parent" data-value="{{$cat_tour_id}}" data-toggle="dropdown">{{ $catTourTitle }}</a>
+                            	@else
+                            		<a class="dropdown-toggle" href="#" role="button" id="dropdown-parent" data-value="" data-toggle="dropdown">-- Choose Tour Style --</a>
+                            	@endif
+	                            <input type="hidden" name="cat_tour_id" class="value" value="{{$cat_tour_id}}">
+	                            @if($tourStyles)
+	                            <div class="dropdown-menu" aria-labelledby="dropdown-cat">
+	                                <ul class="list-item">
+	                                    @foreach($tourStyles as $item)
+	                                    <li><a href="#{{$item->slug}}" data-value="{{$item->id}}">{{$item->title}}</a></li>
+	                                    @endforeach
+	                                </ul>
+	                            </div>
+	                            @endif
+	                        </div>							
+						</div>			
+					</div>
+					<div id="frm-keyword" class="col-md-4"><input type="text" name="s" class="form-control" placeholder="Input key word..." value="{{ $key }}"></div>
+				</div>
+				<button type="submit" class="btn"><i class="fa fa-search" aria-hidden="true"></i></button>
+			</form>
+		</div>
+		<form action="#" method="post" class="dev-form list-consultants" data-delete="{{ route('deleteAllConsultantAdmin') }}">
+			{!!csrf_field()!!}
+			<div class="tb-results">
+				<table id="list-members" class="table table-striped">
+					<thead class="thead-dark">
+						<tr>
+							<th id="check-all" scope="col" class="check">
+								<div class="checkbox checkbox-success">
+									<input id="check" type="checkbox" name="checkAll[]" value="">
+									<label for="check"></label>
+								</div>
+							</th>
+							<th scope="col" class="stt">#</th>
+							<th scope="col" class="avatar">Avatar</th>
+							<th scope="col" class="title">Name</th>
+							<th scope="col" class="tour-style">Tour Style</th>						
+							<th scope="col" class="country">Country</th>
+							<th scope="col" class="desc">Short Description</th>
+							<th scope="col" class="action"></th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach($consultants as $key => $c)
+						@php
+							$consultant_meta = getConsultantMeta($c->id);
+							
+							$category_title = '';
+							$country_title = '';
+							if($consultant_meta && $consultant_meta->tour_style != ''){
+								$category = get_category_tour($consultant_meta->tour_style);
+								$category_title = $category->title;
+							}
+							if($consultant_meta && $consultant_meta->country != ''){
+								if($consultant_meta->country == 0){
+									$country_title = 'Multi country';
+								}
+								else{
+									$country = getCountryById($consultant_meta->country);
+									$country_title = $country->title;
+								}
+							}
+						@endphp
+						<tr id="item-{{$c->id}}">
+							<td class="check">
+								<div class="checkbox checkbox-success">
+									<input id="item-{{$c->id}}" type="checkbox" name="items[]" value="{{$c->id}}">
+									<label for="item-{{$c->id}}"></label>
+								</div>
+							</td>
+							<th scope="row">{{$key+1}}</th>
+							<td class="avatar"><a href="{{ route('editConsultantAdmin', ['slug'=>$c->slug]) }}">{!!image($c->image, 50,50, $c->title)!!}</a></td>
+							<td class="title"><a href="{{ route('editConsultantAdmin', ['slug'=>$c->slug]) }}">{{$c->title}}</a></td>
+							<td class="tour-style">{{$category_title}}</td>
+							<td class="country">{{$country_title}}</td>
+							<td class="desc"><div class="text">{!! $c->short_desc !!}</div></td>
+							<td class="action">
+								@handheld<a href="#" data-value="{{$c->id}}" class="view"><i class="fa fa-eye" aria-hidden="true"></i></a>@endhandheld
+								<a href="{{ route('editConsultantAdmin', ['slug'=>$c->slug]) }}" class="edit"><i class="fa fa-edit" aria-hidden="true"></i></a>
+								<a href="{{ route('deleteConsultantAdmin', ['id'=>$c->id]) }}" class="delete delete-item"><i class="fa fa-close" aria-hidden="true"></i></a>					
+							</td>
+						</tr>
+						@handheld
+						<tr class="item-{{$c->id}} detail">
+							<td colspan="7">					
+								<ul class="info">
+									<li>Name: <a href="#">{{$c->title}}</a></li>
+									<li>Tour Style: {{$c->tour_style}}</li>
+									<li>Country: {{$c->country}}</li>
+									<li>Short Description: <strong>{{$c->short_desc}}</strong></li>
+								</ul>
+								<a href="#" class="read-more"><i class="fa fa-angle-right" aria-hidden="true"></i>View</a>
+							</td>
+						</tr>
+						@endhandheld
+						@endforeach				
+					</tbody>
+				</table>
+			</div>
+		</form>
+	</div>
+</div>
+{!! $consultants->links() !!}
+@if(session('success'))
+<script type="text/javascript">
+	$(function(){
+		new PNotify({
+			title: 'Successfully',
+			text: '{{session('success')}}',
+			type: 'success',
+			hide: true,
+			delay: 2000,
+		});
+	})
+</script>
+@endif
+<script type="text/javascript">
+	$(function() {
+	//delete location
+	
+});	
+</script>
+@stop

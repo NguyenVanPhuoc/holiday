@@ -1,0 +1,225 @@
+<?php
+namespace App\Http\Controllers;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use App\Http\Requests;
+use App\Hotels;
+use App\Media;
+use App\Seo;
+use App\CountryHotel;
+use App\AttractionHotels;
+use App\Attractions;
+use App\Facilities;
+
+class HotelAdminController extends Controller
+{
+	public function index(){    	
+    	$hotels = Hotels::orderBy('created_at', 'desc')->paginate(14);
+    	return view('backend.hotels.list',['hotels'=>$hotels]);
+    }
+
+    public function store(){
+        $list_attraction = Attractions::orderBy('title', 'asc')->get();
+        $list_facility = Facilities::orderBy('title', 'asc')->get();
+        $data = [
+            'list_attraction' => $list_attraction,
+            'list_facility' => $list_facility
+        ];
+    	return view('backend.hotels.create', $data);
+    }
+
+    public function create(Request $request){
+    	$msg = 'error';
+    	if($request->ajax()){
+
+    		$nearby = json_decode($request->nearby);
+    		$countries = $request->countries;
+
+    		$hotel = new Hotels;
+    		$hotel->title = $request->title;
+            $hotel->slug = $request->title;
+    		$hotel->title_tag = $request->title_tag;
+    		$hotel->desc = $request->desc;
+    		$hotel->map = $request->map;
+    		$hotel->gallery = $request->gallery;
+            $hotel->facilities = $request->list_facility;
+    		$hotel->image = $request->image;
+    		$hotel->star_rating_id = $request->star_rating;
+    		$hotel->location_id = $request->location;
+    		if($request->specials && $request->specials != NULL)
+    			$hotel->special_id = implode(",",$request->specials);
+    		if($hotel->save()){
+    			//seo
+    			$seo = new Seo;
+                $seo->key = $request->metaKey;
+                $seo->value = $request->metaValue;
+                $seo->type = "hotel";
+                $seo->post_id = $hotel->id;
+                $seo->save();
+
+    			//country hotel
+    			if($countries && $countries != NULL){
+    				foreach ($countries as $country_id) {
+    					$countryHotel = new CountryHotel;
+    					$countryHotel->hotel_id = $hotel->id;
+    					$countryHotel->country_id = $country_id;
+    					$countryHotel->save();
+    				}
+    			}
+
+    			//nearby
+    			if($nearby && $nearby != NULL){
+    				foreach ($nearby as $item) {
+    					$sumAttrHotel = AttractionHotels::where('hotel_id', $hotel->id)->count();
+    					$attrHotel = new AttractionHotels;
+    					$attrHotel->distance = $item->distance;
+    					$attrHotel->position = $sumAttrHotel + 1;
+    					$attrHotel->hotel_id = $hotel->id;
+    					$attrHotel->attraction_id = $item->attraction;
+    					$attrHotel->save();
+    				}
+    			}
+    		}
+    		$msg = 'success';
+    	}
+    	return $msg;
+    }
+
+    public function edit($slug){
+        $hotel = Hotels::findBySlug($slug);
+        $list_facility = Facilities::orderBy('title', 'asc')->get();
+        return view('backend.hotels.edit', ['hotel'=>$hotel, 'list_facility' => $list_facility]);
+    }
+
+    public function update($slug, Request $request){
+        if($request->ajax()){
+            $nearby = json_decode($request->nearby);
+            $countries = $request->countries;
+
+            $hotel = Hotels::findBySlug($slug);
+            $hotel->title = $request->title;
+            $hotel->slug = $request->title;
+            $hotel->title_tag = $request->title_tag;
+            $hotel->desc = $request->desc;
+            $hotel->map = $request->map;
+            $hotel->gallery = $request->gallery;
+            $hotel->facilities = $request->list_facility;
+            $hotel->image = $request->image;
+            $hotel->star_rating_id = $request->star_rating;
+            $hotel->location_id = $request->location;
+            if($request->specials && $request->specials != NULL)
+                $hotel->special_id = implode(",",$request->specials);
+            if($hotel->save()){
+                //seo
+                $seo = Seo::where('post_id',$hotel->id)->where('type','hotel')->first();
+                if(!$seo){
+                    $seo = new Seo;
+                }
+                $seo->key = $request->metaKey;
+                $seo->value = $request->metaValue;                
+                $seo->type = 'hotel';
+                $seo->post_id = $hotel->id;
+                $seo->save();
+
+                //country hotel
+                if($countries && $countries != NULL){
+                    foreach ($countries as $country_id) {
+                        $countryHotel = CountryHotel::where('hotel_id', $hotel->id)
+                                                    ->where('country_id', $country_id)->first();
+                        if(!$countryHotel){
+                            $countryHotel = new CountryHotel;
+                            $countryHotel->hotel_id = $hotel->id;
+                            $countryHotel->country_id = $country_id;
+                            $countryHotel->save();
+                        }
+                    }
+                    //check if country_id in list DB no exist in $countries -> delete
+                    $country_hotels = CountryHotel::where('hotel_id', $hotel->id)->get();
+                    foreach($country_hotels as $item){
+                        if(! in_array($item->country_id, $countries))
+                            $item->delete();
+                    }
+                }
+
+                //nearby
+                if($nearby && $nearby != NULL){
+                    foreach ($nearby as $item) {
+                        $attrHotel = new AttractionHotels;
+                        if($item->action == 'edit')
+                            $attrHotel = AttractionHotels::find($item->id);
+                        $attrHotel->distance = $item->distance;
+                        $attrHotel->position = $item->position;
+                        $attrHotel->hotel_id = $hotel->id;
+                        $attrHotel->attraction_id = $item->attraction;
+                        $attrHotel->save();
+                    }
+                }
+            }
+
+            return response()->json(['msg'=>'success', 'redirect' => route('editHotelAdmin', ['slug'=>$hotel->slug])]);
+        }
+        return response()->json(['msg'=>'error']);
+    }
+
+    public function delete($id){
+        $hotel = Hotels::find($id);
+        $hotel->delete();
+        return redirect()->route('hotelsAdmin')->with('success', 'Delete Success.');
+    }
+
+    //deleteAll
+    public function deleteAll(Request $resquest){
+        $message = "error";
+        if($resquest->ajax()){
+            $items = json_decode($resquest->items);
+            if(count($items)>0){
+                Hotels::destroy($items);
+            }
+            $message = "success";
+        }
+        return $message;
+    }
+
+    public function search(Request $request){
+        $s = $request->s;
+        $country_id = $request->country_id;
+        $hotels = Hotels::query();
+        if($s != ''){
+            $hotels = $hotels->join('country_hotels', 'hotels.id', '=', 'country_hotels.hotel_id')->select('hotels.*')
+                            ->where('hotels.title','like','%'.$s.'%');
+        }
+        if($country_id != ''){
+            $hotels = $hotels->where('country_hotels.country_id', $country_id);
+        }
+        $hotels = $hotels->orderBy('hotels.created_at', 'desc')->distinct()
+                            ->paginate(14); 
+        return view('backend.hotels.list',['hotels'=>$hotels, 's'=>$s, 'country_id'=>$country_id]);
+    }
+
+    public function deleteAttHotel(Request $request){
+        $msg = 'error';
+        if($request->ajax()){
+            $attrHotel = AttractionHotels::find($request->id);
+            if($attrHotel) $attrHotel->delete();
+            $msg = 'success';
+        }
+        return $msg;
+    }
+
+    //search from list
+    public function searchFromList(Request $request){
+        if($request->ajax()){
+            $html = '';
+            $hotels = Hotels::where('title', 'LIKE', '%'.$request->keyword.'%')->orderBy('title', 'asc')->get();
+            if($hotels){
+                foreach($hotels as $item){
+                    $html .= '<li class="item-'. $item->id .'" data-id="'. $item->id .'" title="'. $item->title .'">';
+                        $html .= $item->title;
+                    $html .= '</li>';
+                }
+            }
+            return response()->json(['msg'=>'success', 'html'=>$html]);
+        }
+        return response()->json(['msg'=>'error']);
+    }
+}

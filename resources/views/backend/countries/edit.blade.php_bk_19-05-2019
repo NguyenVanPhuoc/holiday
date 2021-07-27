@@ -1,0 +1,263 @@
+@extends('backend.layout.index')
+@section('title','Edit country')
+@section('content')
+@php
+	if($seo){ 
+		$meta_key = $seo->key; 
+		$meta_value = $seo->value;
+	}else{
+		$meta_key = "";
+		$meta_value = "";
+	}
+
+	$parent_id = isset($parent_id)? $parent_id : '';
+	$parentTitle  = '-- Choose Parent --';
+	if($parent_id != ''){
+		if($parent_id == 0) 
+			$parentTitle = 'None';
+		else
+			$parentTitle = getCountryById($parent_id)->title;
+	}
+	$key = isset($s)? $s:'';
+	$level = getLevelCountry($country->id); 
+@endphp
+<div id="edit-country" class="container page country-page route">
+	<div class="head">
+		<a href="{{ route('countryAdmin') }}" class="back-icon"><i class="fa fa-angle-left" aria-hidden="true"></i> All country</a>
+		<h1 class="title">Edit country</h1>		
+	</div>	
+	<div class="main">
+		<div class="search-form">
+			<form name="s" action="{{route('searchCountryAdmin')}}" method="GET">
+				<div class="row">
+					<div id="frm-parent" class="col-md-6">
+						<select class="form-control select2" name="parent_id">
+							<option value="">Choose Parent</option>
+							{!! getListOptionParentCountry(0, 0, true) !!}
+						</select>	
+					</div>
+					<div id="frm-keyword" class="col-md-6"><input type="text" name="s" class="form-control" placeholder="Input key word..." value="{{$key}}"></div>
+				</div>
+				<button type="submit" class="btn"><i class="fa fa-search" aria-hidden="true"></i></button>
+			</form>
+		</div>
+		<form action="{{route('createCountryAdmin')}}" class="frm-edit-country dev-form" method="POST" name="create_country" role="form">
+			{!!csrf_field()!!}
+			<div class="row">
+				<div class="col-md-9 content">
+					<div id="frm-title" class="form-group">
+						<label for="title">Title<small class="required">(*)</small></label>
+						<input type="text" name="title" class="form-control" placeholder="Input title" value="{{$country->title}}" class="frm-input">
+					</div>
+					<div id="frm-metaValue" class="form-group">
+						<label class="metaValue">Meta Description (SEO)</label>
+						<span class="count-characters">( {{strlen($meta_value)}} characters )</span>
+						<textarea name="metaValue" placeholder="Input meta description (SEO) 150-160 characters" class="form-control">{{$meta_value}}</textarea>
+					</div>	
+					<div id="frm-shortContent" class="form-group">
+						<label class="short-content">Description</label>
+						<textarea name="shortContent" placeholder="Input description" class="form-control">{{$country->desc}}</textarea>
+					</div>
+					<div id="frm-color" class="form-group">
+						<label>Color</label>
+						<div id="color" class="input-group colorpicker-component">
+						    <input type="text" value="{{$country->color}}" class="form-control" />
+						    <span class="input-group-addon"><i></i></span>
+						</div>	
+					</div>	
+					<div id="frm-map" class="form-group">
+						<label>Map</label>
+					    <textarea name="map" placeholder="" class="form-control">{{ $country->map }}</textarea>	
+					</div>	
+					<div class="row form-group">
+						<div class="col-md-3">
+							<label class="title">Icon</label>
+							<div id="frm-icon" class="desc img-upload">							
+								<div class="image">
+									<a href="{{ route('loadMedia') }}" class="library"><i class="fa fa-edit" aria-hidden="true"></i></a>
+									{!!image($country->icon,  211,139, $country->title)!!}
+									<input type="hidden" name="icon" value="{{$country->icon}}" class="thumb-media" value="" />
+								</div>
+							</div>
+						</div>
+						<div class="col-md-3">
+							<label class="title">Flag</label>
+							<div id="frm-flag" class="desc img-upload">							
+								<div class="image">
+									<a href="{{ route('loadMedia') }}" class="library"><i class="fa fa-edit" aria-hidden="true"></i></a>
+									{!!image($country->flag,  211,139, $country->title)!!}
+									<input type="hidden" name="flag" value="{{$country->flag}}" class="thumb-media" value="" />
+								</div>
+							</div>
+						</div>
+					</div>	
+
+					<div id="frm-bestTimeToVisit" class="form-group">
+						<label class="short-content">Best time to visit</label>
+						<textarea name="best_time_to_visit" id="best_time_to_visit" class="form-control">{{ $country->best_time_to_visit }}</textarea>
+					</div>
+					
+					<div class="m-t-20">
+						@if($level == 3)
+							@if($haveHighlight)
+								<a href="{{ route('editHighlightAdmin', $country->slug) }}" class="btn">Edit places to visit</a>
+							@else
+								<a href="{{ route('storeHighlightAdmin', ['country_id' => $country->id]) }}" class="btn">Add places to visit</a>
+							@endif
+						@endif
+					</div>
+
+				</div>
+				<div class="col-md-3 sidebar">
+					<div class="gr-not-fixed">
+						<section id="sb-parent" class="box-wrap">
+							<h2 class="title">Parent</h2>
+							<select class="form-control select2" name="parent_id">
+								<option value="">Choose Parent</option>
+								{!! getListOptionParentCountry(0, 0, false) !!}
+							</select>
+						</section>
+
+						<section id="sb-flag" class="box-wrap">
+							<h2 class="title">Image</h2>		
+							<div id="frm-image" class="desc img-upload">							
+								<div class="image">
+									<a href="{{ route('loadMedia') }}" class="library"><i class="fa fa-edit" aria-hidden="true"></i></a>
+									{!!image($country->image,  211,139, $country->title)!!}
+									<input type="hidden" name="image" value="{{$country->image}}" class="thumb-media" value="" />
+								</div>
+							</div>
+						</section>
+					</div>
+					<div class="group-fixed">
+						<section id="sb-action">
+							<div class="group-action">
+								<a href="{{ route('deleteCountryAdmin',['id'=>$country->id]) }}" class="btn btn-delete">Delete</a>
+								<button type="submit" name="submit" class="btn">Save</button>
+								<a href="{{route('countryAdmin')}}" class="btn btn-cancel">Cancel</a>										
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>			
+		</form>	
+	</div>
+</div>
+@include('backend.media.library')
+<script type="text/javascript">
+	ckeditor("best_time_to_visit");
+	$('#color').colorpicker();
+	$('#sb-parent select option[value="{{$country->parent_id }}"]').prop('selected', true);
+	//action
+	$(function(){
+		$('#edit-country').on('submit', 'form.frm-edit-country', function(e){
+			e.preventDefault();
+			var _token = $("form input[name='_token']").val();
+			var title = $("#frm-title input").val(); console.log(title);
+			var metaValue = $("#frm-metaValue textarea").val();
+			var shortContent = $("#frm-shortContent textarea").val();
+			var color = $('#frm-color input').val();
+			var map = $('#frm-map textarea').val();
+			var image = $('#frm-image input').val();
+			var icon = $('#frm-icon input').val();
+			var flag = $('#frm-flag input').val(); 
+			var best_time_to_visit = CKEDITOR.instances['best_time_to_visit'].getData();
+			var parent_id = $("#sb-parent select").val();
+			var errors = new Array();
+	       	var error_count = 0;
+	       	if(title==""){
+	       		errors[0] = "Please input title";
+	       	}else{
+				errors[0] = "";
+	       	}
+	       		var i;
+	   		var html = "<ul>";
+	       	for(i = 0; i < errors.length; i++){
+	       		if(errors[i] != ""){
+	       			html +='<li>'+errors[i]+'</li>';
+	       			error_count += 1;
+	       		}
+	       	}       	
+	       	if(error_count>0){
+		       	html += "</ul>";	       	
+		       	new PNotify({
+					title: 'Error ('+error_count+')',
+					text: html,						    
+					hide: true,
+					delay: 6000,
+				});
+	       	}else{
+	       		$('#overlay').show();
+	       		$('.loading').show();
+				$.ajax({
+					type:'POST',            
+					url:'{{ route("updateCountryAdmin", ["slug"=>$country->slug]) }}',
+					cache: false,
+					data:{
+						'_token': _token,
+						'title': title,
+						'metaValue': metaValue,
+						'shortContent': shortContent,
+						'color': color,
+						'map': map,
+						'image': image,
+						'icon': icon,
+						'flag': flag,
+						'parent_id': parent_id,
+						'best_time_to_visit': best_time_to_visit,
+					},
+				}).done(function(data) { 
+					$('#overlay').hide();
+	       			$('.loading').hide();
+					if(data.msg =="success"){				       					       	
+						new PNotify({
+							title: 'Successfully',
+							text: 'Update success.',
+							type: 'success',
+							hide: true,
+							delay: 2000,
+						});	
+						//location.reload();	
+						window.location.href = data.redirect;				
+					}else{
+						new PNotify({
+							title: 'Error',
+							text: 'Browser not support javascript.',						    
+							hide: true,
+							delay: 2000,
+						});
+					}	           		
+				});
+			}       	
+		});
+
+		//delete location
+      	/*$(".dev-form .btn-delete").click(function(){
+      		var href = $(this).attr("href");
+      		(new PNotify({
+			    title: 'Delete',
+			    text: 'Do you delete?',
+			    icon: 'glyphicon glyphicon-question-sign',
+			    type: 'error',
+			    hide: false,
+			    confirm: {
+			        confirm: true
+			    },
+			    buttons: {
+			        closer: false,
+			        sticker: false
+			    },
+			    history: {
+			        history: false
+			    }
+			})).get().on('pnotify.confirm', function() {			    
+			    window.location.href = href;
+			});
+			return false;
+      	});*/
+	});
+
+
+
+</script>
+@stop

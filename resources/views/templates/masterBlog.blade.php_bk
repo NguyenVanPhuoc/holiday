@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="{{ app()->getLocale() }}">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="google-site-verification" content="nue2yPo8zEhxFTqyvWcherHQKvZKV0hwAS04gkFBN2g" />
+    <meta name="robots" content="noindex" /> <!-- prevent google bot -->
+    <title>@yield('title')</title>
+    <meta http-equiv="Content-Language" content="vn"/>
+    <meta name="description" content="@yield('description')"/>
+    <meta name="keywords" content="@yield('keywords')"/><link rel="canonical" href="{{ URL::current() }}">
+
+    <!-- Google / Search Engine Tags -->
+    <meta itemprop="name" content="@yield('title')">
+    <meta itemprop="description" content="@yield('description')">
+    <meta itemprop="image" content="@yield('image_url')">
+
+    <!-- Facebook Meta Tags -->
+    <meta property="og:url" content="{{ URL::current() }}">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="@yield('title')">
+    <meta property="og:description" content="@yield('description')">
+    <meta property="og:image" content="@yield('image_url')">
+
+    <!-- Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('title')">
+    <meta name="twitter:description" content="@yield('description')">
+    <meta name="twitter:image" content="@yield('image_url')">
+    
+    <!-- Fonts -->                
+    <link rel="shortcut icon" href="{{favicon()}}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    
+    <link rel="stylesheet" href="{{asset('public/css/checkbox_radio.css')}}">          
+    <link rel="stylesheet" href="{{asset('public/css/all.min.css')}}">          
+    <link rel="stylesheet" href="{{asset('public/css/font-awesome.min.css')}}">          
+    <link rel="stylesheet" href="{{asset('public/css/owl.carousel.min.css')}}">
+    <link rel="stylesheet" href="{{asset('public/css/pnotify.custom.min.css')}}">    
+    <link rel="stylesheet" href="{{asset('public/css/jquery.datetimepicker.css')}}">  
+    <link rel="stylesheet" href="{{asset('public/css/bootstrap-datetimepicker.min.css')}}">  
+    <link rel="stylesheet" href="{{asset('public/css/select2.min.css')}}">  
+    <link href="{{asset('public/css/scrollbar.css')}}" rel="stylesheet" type="text/css">
+    <link href="{{asset('public/style.css')}}" rel="stylesheet" type="text/css">
+    <link href="{{asset('public/css/plus.css')}}" rel="stylesheet" type="text/css">
+    <link href="{{asset('public/css/main.css')}}" rel="stylesheet" type="text/css">  
+    <link href="{{asset('public/css/blog.css')}}" rel="stylesheet" type="text/css">  
+    <script src="{{asset('public/js/jquery.min.js')}}" type="text/javascript"></script>    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jscroll/2.3.7/jquery.jscroll.js"></script>    
+    <script src="{{asset('public/js/pnotify.custom.min.js')}}" type="text/javascript"></script>
+    <script src="{{asset('public/admin/js/popper.min.js')}}" type="text/javascript"></script>   
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="{{asset('public/js/jquery.datetimepicker.full.js')}}" type="text/javascript"></script> 
+    <script src="{{asset('public/js/bootstrap-datepicker.js')}}" type="text/javascript"></script> 
+    <script src="{{asset('public/js/jquery.scrollbar.js')}}" type="text/javascript"></script> 
+    <script src="{{asset('public/js/select2.min.js')}}" type="text/javascript"></script> 
+    <script src="{{asset('public/js/owl.carousel.min.js')}}" type="text/javascript"></script> 
+    <script src="{{asset('public/js/validator.min.js')}}" type="text/javascript"></script>     
+    <script src="{{asset('public/js/main.js')}}" type="text/javascript"></script>   
+    <script src="{{asset('public/js/plus.js')}}" type="text/javascript"></script> 
+    <script src="{{asset('public/js/plus1.js')}}" type="text/javascript"></script>   
+    <script src="{{asset('public/js/sliders.js')}}" type="text/javascript"></script>     
+    <script src="{{asset('public/js/profile.js')}}" type="text/javascript"></script>    
+    @handheld
+    <link rel="stylesheet" href="{{asset('public/css/responsive.css')}}">
+    <script src="{{asset('public/js/responsive.js')}}" type="text/javascript"></script>
+    @endhandheld
+
+</head>
+<body>
+    <div id="fb-root"></div>
+    <script>(function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = 'https://connect.facebook.net/vi_VN/sdk.js#xfbml=1&version=v3.0&appId=1849189082054776&autoLogAppEvents=1';
+      fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));</script>
+  <div id="wrapper" class="page-blog">
+    <?php $categories = get_categories();?>
+    <header class="header-blog"> 
+        @desktop
+        <div class="menu-top">
+            <div class="top">
+                <div class="container">
+                    <a href="{{route('home')}}"><img src="{{asset('public/images/Logo_sonasia_blog.png')}}" alt=""></a>
+                    {{-- <div class="language"><a href="#">FR</a></div> --}}
+                    @include('articles.search_form')
+                </div>
+            </div>
+            <div class="menu-blog">
+                <div class="container">
+                    <div class="wrap flex item-center content-between">
+                        {{-- @include('articles.search_form')                    --}}
+                        <div class="main-menu">
+                            @php
+                                $countries = getAllMainCountry();
+                                $country_slug = empty($country) ? '' : $country->slug;
+                            @endphp
+                            @if($countries)
+                                <nav class="main-nav contact-nav">
+                                    <ul>
+                                    @foreach($countries as $item)
+                                        @if ($item->parent_id == 0)
+                                            <li @if ($country_slug == $item->slug) class="active" @endif>
+                                                <a href="{{route('blogCall',$item->slug)}}">{!!$item->title!!}</a>
+                                            </li>
+                                        @endif
+                                    @endforeach
+                                    </ul>
+                                </nav>
+                            @endif
+                        </div>
+                        <a href="{{route('contact')}}" class="link-page">Contact us</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @elsedesktop
+        <div class="mobile-menu light-graynvp">
+            <div class="container">
+                <h1 id="logo-mobile">
+                    <a href="{{route('home')}}"><img src="{{asset('public/images/logo_blog.png')}}" alt=""></a>
+                </h1>
+                <div class="right-mobile">
+                    <span class="icon-phone icon"><i class="fa fa-phone"></i></span>
+                    <span class="icon-menu icon"><i class="fa fa-bars"></i></span>
+                </div>
+            </div>
+        </div>
+        @enddesktop
+    </header>
+    <main>
+        @yield('content')            
+    </main>
+    <footer class="footer-blog">
+        <!--List partner-->
+        <div class="list-partner graybg text-center">
+            <div class="container">
+                <div class="item">
+                    <a href="#" target="_blank">
+                        <img src="{{asset('public/images/temp/Tripadvisor-grey.png')}}" alt="image">
+                    </a>
+                </div>
+                <div class="item">
+                    <a href="#" target="_blank">
+                        <img src="{{asset('public/images/temp/Le routard.png')}}" alt="image">
+                    </a>
+                </div>
+                <div class="item">
+                    <a href="#" target="_blank">
+                        <img src="{{asset('public/images/temp/Petit fute.png')}}" alt="image">
+                    </a>
+                </div>
+                
+            </div>
+        </div>
+        <!--End List partner-->
+
+        <!--Subcribe news-->
+        <div class="subcribe-news light-graybg text-center">
+            <div class="container">
+                <div class="sec-title">
+                    <h3 class="pink">Stay update</h3>
+                    <p>Get the latest  news and promotions</p>
+                </div>
+                <div class="content-sec">
+                    <!-- Begin MailChimp Signup Form -->
+                    <link href="//cdn-images.mailchimp.com/embedcode/classic-10_7.css" rel="stylesheet" type="text/css">
+                    <div id="mc_embed_signup">
+                    <form action="https://developworld.us17.list-manage.com/subscribe/post?u=c95898232bc32d5dd0f89a68d&amp;id=9a245e47b6" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+                        <div id="mc_embed_signup_scroll">
+                            <div class="mc-field-group email-wrap">
+                                <input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL" placeholder="Email address" />
+                            </div>
+                            <div class="clear submit-wrap"><input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button"></div>
+                        </div>
+                    </form>
+                    </div>
+                    <script type='text/javascript' src='//s3.amazonaws.com/downloads.mailchimp.com/js/mc-validate.js'></script><script type='text/javascript'>(function($) {window.fnames = new Array(); window.ftypes = new Array();fnames[0]='EMAIL';ftypes[0]='email';fnames[1]='FNAME';ftypes[1]='text';fnames[2]='LNAME';ftypes[2]='text';fnames[3]='ADDRESS';ftypes[3]='address';fnames[4]='PHONE';ftypes[4]='phone';}(jQuery));var $mcj = jQuery.noConflict(true);</script>
+                    <!--End mc_embed_signup-->
+                </div>
+            </div>
+        </div>
+        <!--End Subcribe news-->
+         <?php 
+        $company_parent = get_parentMenu(9); $company_menu = get_menu(9);    
+        $help_parent = get_parentMenu(28); $help_menu = get_menu(28);
+        $menu_footer_mobile_blog = get_parentMenu(30); $menu_footer_mobile_blog = get_menu(30);?>
+        @desktop
+        <div class="info-ft">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-3 about-us">
+                        <a href="{{route('home')}}" id="logo-ft"><img src="{{asset('public/images/temp/logo-colorful.png')}}" alt="logo"></a>
+                        <p>We are in tune with you</p>
+                        <a href="{{route('setupCallPhone')}}" class="btn-page-2"><i class="far fa-clock"></i>Set up a phone call</a>
+                        <p>Our consultant will reach you at your convenience</p>
+                    </div>
+                    <div class="col-md-3 menu-ft">
+                        @if(!$company_menu->isEmpty())
+                        <h3>{{$company_parent->title}}</h3>
+                        <div class="desc">
+                            <ul class="discover font-semibold">
+                                @foreach($company_menu as $menu)
+                                    <?php $children_menu = get_childrenMenu($menu->id); $url = get_link($menu->id);?>
+                                    <li <?php if(count($children_menu)>0) echo ' class="has-children"';?>>
+                                    <a href="{{get_link($menu->id)}}"<?php if(URL::current()==$url) echo ' class="active"';?><?php if($menu->target!="_self") echo ' target="'.$menu->target.'"'?>>@if($menu->type=="home")<i class="fa fa-home" aria-hidden="true"></i>@endif{{$menu->title}}</a>
+                                    @if(!$children_menu->isEmpty())
+                                    <ul class="sub-menu">
+                                        @foreach($children_menu as $item)
+                                        <li><a href="{{get_link($item->id)}}"<?php if($item->target!="_self") echo 'target="'.$item->target.'"'?>>{{$item->title}}</a></li>
+                                        @endforeach
+                                    </ul>
+                                    @endif
+                                </li>    
+                                @endforeach
+                            </ul>
+                        </div>
+                        @endif 
+                    </div>
+                    <div class="col-md-3 find-us">
+                        <h3>Find us</h3>
+                        {!!address()!!}
+                    </div>  
+                    <div class="col-md-3 contact-us">
+                        <h3>Contact us</h3>
+                        <ul class="contact-info no-list-style">
+                            <li><img src="{{asset('public/images/icons/mail-grey.png')}}" alt="">{{mailSystem()}}</li>
+                            <li><img src="{{asset('public/images/icons/phone-contact.png')}}" alt="">{{phone()}}</li>
+                        </ul>
+                        <ul class="list-social list-social-2 no-list-style">
+                            <li>
+                                <a href="#">
+                                    <span class="icon">
+                                        <img class="not-hover" src="{{asset('public/images/icons/whatsapp.png')}}" alt="icon">
+                                        <img class="hover" src="{{asset('public/images/icons/whatsapp-red.png')}}" alt="icon">
+                                    </span>
+                                    <span class="title">WhatsApp</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <span class="icon">
+                                        <img class="not-hover" src="{{asset('public/images/icons/line.png')}}" alt="icon">
+                                        <img class="hover" src="{{asset('public/images/icons/line-red.png')}}" alt="icon">
+                                    </span>
+                                    <span class="title">Line</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <span class="icon">
+                                        <img class="not-hover" src="{{asset('public/images/icons/viber.png')}}" alt="icon">
+                                        <img class="hover" src="{{asset('public/images/icons/viber-red.png')}}" alt="icon">
+                                    </span>
+                                    <span class="title">Viber</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <span class="icon">
+                                        <img class="not-hover" src="{{asset('public/images/icons/messenger.png')}}" alt="icon">
+                                        <img class="hover" src="{{asset('public/images/icons/messenger-red.png')}}" alt="icon">
+                                    </span>
+                                    <span class="title">Messenger</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <span class="icon">
+                                        <img class="not-hover" src="{{asset('public/images/icons/skype.png')}}" alt="icon">
+                                        <img class="hover" src="{{asset('public/images/icons/skype-red.png')}}" alt="icon">
+                                    </span>
+                                    <span class="title">Messenger</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <span class="icon">
+                                        <img class="not-hover" src="{{asset('public/images/icons/google-duo.png')}}" alt="icon">
+                                        <img class="hover" src="{{asset('public/images/icons/google-duo-red.png')}}" alt="icon">
+                                    </span>
+                                    <span class="title">Google duo</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div> 
+                </div>
+            </div>
+        </div>
+        <div class="social-sec light-graybg text-center">
+            <div class="container">
+                <div class="sec-title">
+                    <h3 class="pink">Follow us on social media</h3>
+                </div>
+                {!! socialBlog() !!}
+            </div>
+        </div>
+        <div class="menu-ft-2 graybg text-center">
+            <div class="container">
+                @if(!$help_menu->isEmpty())
+                    <ul class="no-list-style">
+                        @foreach($help_menu as $menu)
+                        <?php $children_menu = get_childrenMenu($menu->id); $url = get_link($menu->id);?>
+                        <li <?php if(count($children_menu)>0) echo ' class="has-children"';?>>
+                            <a href="{{get_link($menu->id)}}"<?php if(URL::current()==$url) echo ' class="active"';?><?php if($menu->target!="_self") echo ' target="'.$menu->target.'"'?>>@if($menu->type=="home")<i class="fa fa-home" aria-hidden="true"></i>@endif{{$menu->title}}</a>
+                            @if(!$children_menu->isEmpty())
+                            <ul class="sub-menu">
+                                @foreach($children_menu as $item)
+                                <li><a href="{{get_link($item->id)}}"<?php if($item->target!="_self") echo 'target="'.$item->target.'"'?>>{{$item->title}}</a></li>
+                                @endforeach
+                            </ul>
+                            @endif
+                        </li>    
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+        </div>
+        <section class="copyright"><div class="container">{!! copyright() !!}</div></section>
+        @elsedesktop
+        <div class="social-sec text-center">
+            <div class="container">
+                {!! socialBlog() !!}
+            </div>
+        </div>
+        <div class="menu-ft-mobi light-graybg">
+            <div class="container">
+                @if(!$menu_footer_mobile_blog->isEmpty())
+                    <ul class="list-style-mobi">
+                        @foreach($menu_footer_mobile_blog as $menu)
+                        <?php $children_menu = get_childrenMenu($menu->id); $url = get_link($menu->id);?>
+                        <li <?php if(count($children_menu)>0) echo ' class="has-children"';?>>
+                            <a href="{{get_link($menu->id)}}"<?php if(URL::current()==$url) echo ' class="active"';?><?php if($menu->target!="_self") echo ' target="'.$menu->target.'"'?>>@if($menu->type=="home")<i class="fa fa-home" aria-hidden="true"></i>@endif{{$menu->title}}</a>
+                            @if(!$children_menu->isEmpty())
+                            <ul class="sub-menu">
+                                @foreach($children_menu as $item)
+                                <li><a href="{{get_link($item->id)}}"<?php if($item->target!="_self") echo 'target="'.$item->target.'"'?>>{{$item->title}}</a></li>
+                                @endforeach
+                            </ul>
+                            @endif
+                        </li>    
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+        </div>
+        <section class="copyright graybg"><div class="container">{!! copyright() !!}</div></section>
+        @enddesktop 
+    </footer>
+</div>
+<div id="overlay"></div>
+<img class="loading" src="{{asset('public/images/icons/loading-gif-smalll-size.gif')}}" alt="loading"></img>
+<div class="menu-mobi menu-blog-mobi">
+        <div class="mid light-graynvp">
+            <div class="main-menu">
+                <div class="top-mobi">
+                    <span class="back_nvp"><i class="fa fa-angle-left"></i></span>
+                    <h2 class="title-menu">MENU</h2>
+                    <span class="close-mobi"><i class="fa fa-times" aria-hidden="true"></i></span>
+                </div>
+                <nav class="main-nav-mobile contact-nav">
+                    <ul>
+                        <li>
+                            <a href="#"><span class="discover">DISCOVER <i class="fa fa-angle-right" aria-hidden="true"></i></span></a>
+                            @php
+                                $countries = getAllMainCountry();
+                                $country_slug = empty($country) ? '' : $country->slug;
+                            @endphp
+                            @if($countries)
+                            <div class="sub-discover">
+                                <div class="top-mobi">
+                                    <span class="back"><i class="fa fa-angle-left"></i></span>
+                                    <h2 class="title-menu">DISCOVER</h2>
+                                    <span class="close-mobi"><i class="fa fa-times" aria-hidden="true"></i></span>
+                                </div>
+                                <ul class="light-graynvp">
+                                    @foreach($countries as $item)
+                                        @if ($item->parent_id == 0)
+                                            <li @if ($country_slug == $item->slug) class="active" @endif>
+                                                <a href="{{route('blogCall',$item->slug)}}">{!!$item->title!!}</a>
+                                            </li>
+                                        @endif
+                                    @endforeach
+                                </ul>
+                            </div>
+                            @endif
+                        </li>
+                        <li>
+                            <a href="#"><span class="topics">TOPICS <i class="fa fa-angle-right" aria-hidden="true"></i></span></a>
+                            @php
+                                $categories = get_categories();
+                                $cat_slug = empty($cat)? '' : $cat->slug;   
+                            @endphp
+                            @if($categories)
+                            <div class="sub-topics">
+                                <div class="top-mobi">
+                                    <span class="back"><i class="fa fa-angle-left"></i></span>
+                                    <h2 class="title-menu">TOPICS</h2>
+                                    <span class="close-mobi"><i class="fa fa-times" aria-hidden="true"></i></span>
+                                </div>
+                                <ul class="light-graynvp">
+                                    @foreach($categories as $item)
+                                            <li @if ($cat_slug == $item->slug) class="active" @endif>
+                                                <a href="{{route('blogCall',$item->slug)}}">{!!$item->title!!}</a>
+                                            </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                             @endif
+                        </li>
+                        <li>
+                            <a href="#" class="search_tour">SEARCH</a>
+                            <div class="form-search-blog light-graynvp">
+                                <div class="top-mobi">
+                                    <span class="back"><i class="fa fa-angle-left"></i></span>
+                                    <h2 class="title-menu">SEARCH FOR AN ARTICLE</h2>
+                                    <span class="close-mobi"><i class="fa fa-times" aria-hidden="true"></i></span>
+                                </div>
+                                <form action="{{ route('searchBlog')}}" method="GET" class="search_blog">
+                                    <div class="form-group">
+                                        <input type="text" id="nameSearch" name="s" placeholder="Enter keywords">
+                                        <i class="fa fa-search" aria-hidden="true"></i>
+                                    </div>
+                                </form>
+                            </div>
+                        </li>
+                        <li>
+                            <a href="{{route('home')}}" >SONASIA HOLIDAY</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            <div class="contact-mobi">
+                <div class="top-mobi">
+                    <span class="back_nvp"><i class="fa fa-angle-left"></i></span>
+                    <h2 class="title-menu">Contact</h2>
+                    <span class="close-mobi"><i class="fa fa-times" aria-hidden="true"></i></span>
+                </div>
+                <form action="#" method="GET" class="form-contact-mobi">
+                    <div class="form-group">
+                        <label>Who we are</label>
+                        <input type="text" name="name" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>What our clients said...</label>
+                        <input type="text" name="clients" class="form-control">
+                    </div>
+                    <ul class="contact-info no-list-style">
+                        <li><i class="fas fa-map-marker-alt"></i>{{address()}}</li>
+                        <li><a href="tel:{{phone()}}"><i class="fas fa-phone"></i>{{phone()}}</a></li>
+                        <li><a href="mailto:{{mailSystem()}}"><i class="fas fa-envelope"></i>{{mailSystem()}}</a></li>
+                    </ul>
+                    <input class="btn btn-contact" type="submit" name="submit" value="Contact us">
+                </form>
+            </div>
+        </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,627 @@
+$(document ).ready(function(){
+    $('.scrollbar-inner').scrollbar();
+    
+    //add hexagon menu
+    /*var hex_color = $('.main-nav li .has-icon > span').attr('class');
+    var hex_html = '<span class="hexagon '+hex_color+'"></span>';
+
+    $('.main-nav li .my-trip').append('<span class="icon"><span class="hexagon '+hex_color+'"></span></span>');
+    $('.main-nav li .wish-list').append('<span class="icon"><span class="hexagon '+hex_color+'"></span></span>');
+    $('.main-nav li .all-tour').append('<span class="icon"><span class="hexagon '+hex_color+'"></span></span>');*/
+    if($('.main-nav').length){
+        $('.main-nav li .has-icon').each(function(){
+            var hex_color = $(this).find('span').attr('class'); 
+            var hex_html = '<span class="hexagon '+hex_color+'"></span>';
+            $(this).append('<span class="icon"><span class="hexagon '+hex_color+'"></span></span>');
+            $(this).parents('li').addClass(hex_color);
+        });
+    }
+    $('.main-nav > ul > li a .destinations').parents('li').mouseover(function(){
+        if($('.sub-destination .item').length){
+            var h_img = $('.sub-destination .col-md-2:first-child .item').outerHeight(); 
+            $('.sub-destination .col-md-2:last-child .thumb > img').css('min-height', h_img).css('width', 'auto');
+        }
+    });
+
+    $("header .sub-destination").detach().appendTo($(".main-menu .destinations").parents('li'));
+    $("header .sub-tour-style").detach().appendTo($(".main-menu .tour-style").parents('li'));
+    
+
+    // Hide Header on on scroll down menu
+    var didScroll;
+    var lastScrollTop = 0;
+    var delta = 5;
+    var navbarHeight = $('header').outerHeight();
+
+    $(window).scroll(function(event){
+        didScroll = true;
+    });
+
+    setInterval(function() {
+        if (didScroll) {
+            hasScrolled();
+            didScroll = false;
+        }
+    }, 250);
+
+    function hasScrolled() {
+        var st = $(this).scrollTop();
+        
+        // Make sure they scroll more than delta
+        if(Math.abs(lastScrollTop - st) <= delta)
+            return;
+        
+        // If they scrolled down and are past the navbar, add class .nav-up.
+        // This is necessary so you never see what is "behind" the navbar.
+        if (st > lastScrollTop && st > navbarHeight){
+            // Scroll Down
+            $('header').removeClass('nav-down').addClass('nav-up');
+            $('#sidebar .group-fixed').css('top', 50); //change position of group fixed sidebar
+        } else {
+            // Scroll Up
+            if(st + $(window).height() < $(document).height()) {
+                $('header').removeClass('nav-up').addClass('nav-down');
+                $('#sidebar .group-fixed').css('top', 165); //change position of group fixed sidebar
+            }
+        }
+        
+        lastScrollTop = st;
+        if(lastScrollTop > (123+28)){
+            $('header').addClass('sticky-header');
+        }
+        else{
+            $('header').removeClass('sticky-header');
+        }
+    }
+    //back to top
+    $('body').append('<div id="backtotop"><i class="fa fa-chevron-circle-up" aria-hidden="true"></i></div>');
+        $(window).scroll(function() {
+            if($(window).scrollTop() >200) {
+              $('#backtotop').fadeIn();
+              } else {
+              $('#backtotop').fadeOut();
+              }
+            });
+        $('#backtotop').click(function() {
+        $('html, body').animate({scrollTop:0},500);
+    });
+
+    //tab video hompage
+    $('.travel-experience .tab-content:first-child').show();
+    $('.travel-experience .tab-video li a').click(function(e){
+        e.preventDefault();
+        var tab_id = $(this).attr('href');
+        $('.travel-experience .tab-content').hide();
+
+        $('.travel-experience .tab-content').each(function(){
+            var iframe = $(this).find('iframe').attr('src');  
+            var temp = String(iframe).replace('?autoplay=1', '');
+            $(this).find('iframe').attr('src', temp);
+        });
+        var iframe_active = $('#'+tab_id).find('iframe').attr('src');
+        iframe_active += '?autoplay=1'; 
+        $('#'+tab_id).find('iframe').attr('src', iframe_active); //custom auto play embed youtube
+        $('#'+tab_id).fadeIn();
+        return false;
+    });    
+        
+    //check change password
+    $(".check-password input").change(function(){
+        if($(this).is(':checked')){
+            $(".change-password input").prop('disabled', false);
+            $(this).val("on");          
+        }else{
+            $(".change-password input").prop('disabled', true);
+            $(this).val("");                
+        }
+        $(".change-password").slideToggle(100);
+    });    
+    //dropdown
+    $(".dropdown-menu").on('click','.list-item a',function(){ console.log('sdfsd');
+        var value = $(this).attr("href").split("#");
+        var text = $(this).text();
+        $(this).parents('.dropdown-menu').find('li').removeClass('active');        
+        $(this).parents('.dropdown').find('.dropdown-toggle').attr("data-value",value[1]);
+        $(this).parents('.dropdown').find('.dropdown-toggle').text(text);
+        $(this).parent('li').addClass('active');
+    });    
+    //contact
+    $(".frm-contact").on('click', '.btn-group button',function(){        
+        var errors = new Array();
+        var error_count = 0;
+        var _token = $(".frm-contact input[name='_token']").val();        
+        var name = $(".frm-contact #frm-name input").val();
+        var email = $(".frm-contact #frm-email input").val();
+        var phone = $(".frm-contact #frm-phone input").val();
+        var address = $(".frm-contact #frm-address input").val();
+        var message = $(".frm-contact #frm-message textarea").val();
+        if(name==""){
+            errors[0] = "Vui lòng nhập họ tên";
+        }else{
+            errors[0] = "";
+        }        
+        if(email=="" || validateEmail(email)==false){
+            errors[1] = "Email không đúng định dạng.";
+        }else{
+            errors[1] = "";
+        }
+        if(phone==""){
+            errors[2] = "Vui lòng nhập số phone.";
+        }else{
+            errors[2] = "";
+        }
+        if(phone==""){
+            errors[3] = "Vui lòng nhập địa chỉ của bạn.";
+        }else{
+            errors[3] = "";
+        }
+        if(message==""){
+            errors[4] = "Vui lòng nhập nội dung.";
+        }else{
+            errors[4] = "";
+        }
+        var i;
+        var html = "<ul>";
+        for(i = 0; i < errors.length; i++){
+            if(errors[i] != ""){
+                html +='<li>'+errors[i]+'</li>';
+                error_count += 1;
+            }
+        }               
+        if(error_count>0){
+            html += "</ul>";            
+            new PNotify({
+                title: 'Lỗi dữ liệu ('+error_count+')',
+                text: html,                         
+                hide: true,
+                delay: 6000,
+            });
+        }else{
+            $("#contact-page .frm-contact").append('<div class="loadding"><img src="'+location.protocol + "//" + location.host+'/public/images/loading_red.gif" alt="loadding..."/></div>')
+            $.ajax({
+                type:'POST',            
+                url:$(".frm-contact").attr("action"),
+                cache: false,
+                data:{
+                    '_token': _token,
+                    'name': name,                    
+                    'email': email,
+                    'phone': phone,
+                    'address': address,
+                    'message': message
+                },
+            }).done(function(data) {
+                $(".frm-contact .loadding").remove();
+                if(data!="error"){
+                    $(".frm-contact #frm-name input").val("");                    
+                    $(".frm-contact #frm-email input").val("");
+                    $(".frm-contact #frm-phone input").val("");
+                    $(".frm-contact #frm-address input").val("");
+                    $(".frm-contact #frm-message textarea").val("");
+                    errors = [];            
+                    error_count = 0;                        
+                    new PNotify({
+                        title: 'Gửi thành công',
+                        text: data,
+                        type: 'success',
+                        hide: true,
+                        delay: 2000,
+                    });
+                }else{
+                    new PNotify({
+                        title: 'Trình duyệt không hỗ trợ javascript.',
+                        text: error,                            
+                        hide: true,
+                        delay: 2000,
+                    });
+                }                   
+            });
+        }   
+        return false;
+    });
+    //socical share buttons
+    var popupSize = {
+        width: 780,
+        height: 550
+    };
+    $(".social-share").on('click', 'ul li a', function(e){
+        var
+            verticalPos = Math.floor(($(window).width() - popupSize.width) / 2),
+            horisontalPos = Math.floor(($(window).height() - popupSize.height) / 2);
+
+        var popup = window.open($(this).prop('href'), 'social',
+            'width='+popupSize.width+',height='+popupSize.height+
+            ',left='+verticalPos+',top='+horisontalPos+
+            ',location=0,menubar=0,toolbar=0,status=0,scrollbars=1,resizable=1');
+
+        if (popup) {
+            popup.focus();
+            e.preventDefault();
+        }
+
+    });
+    //captcha
+    $('#frm-captcha i.fa-refresh').on('click', function(e){
+        e.preventDefault();     
+        var anchor = $(this);
+        var captcha = anchor.prev('img');     
+        $.ajax({
+            type: "GET",
+            url: '/ajax_regen_captcha',
+        }).done(function( msg ) {
+            captcha.attr('src', msg);
+        });
+    });
+
+    
+
+    /*
+    * Biig Holiday
+    */
+   //top filter content
+    $('body').click(function(e){
+        var target = $( e.target );
+        if(target.is('.chose-value')){
+            $('.popup-filter').removeClass('active');
+            target.parents('.has-select').find('.popup-filter').addClass('active');
+        }
+        else{
+            $('.popup-filter').removeClass('active');
+        }
+    });
+
+    //chose value top filter
+    $('.package-tours-content').on('click', '.filter-top .popup-filter li',function(){ 
+        var value = $(this).attr('data-value'); 
+        var text = $(this).text();
+        $(this).parents('.has-select').find('.value').attr('data-value', value);
+        $(this).parents('.has-select').find('.value').text(text);
+    });
+    
+    //filter tour by taxonomy
+    $('.package-tours-content').on('click', '#sidebar .list-filter-tour li',function(e){
+        e.preventDefault();
+        if($(this).parents('.list-filter-tour').hasClass('list-duration')){ 
+            if($(this).hasClass('active')){
+                $(this).removeClass('active');
+                $(this).find('input').prop('checked', false);
+            } 
+            else{
+                $('#sidebar .list-duration li').removeClass('active');
+                $('#sidebar .list-duration li input').prop('checked', false);
+                $(this).addClass('active');
+                $(this).find('input').prop('checked', true);
+            }
+            /*if($(this).find('input').is(':checked')){
+                $(this).find('input').prop('checked', false);
+            }
+            else{
+                $('#sidebar .list-duration li input').prop('checked', false);
+                $(this).find('input').prop('checked', true);
+            }*/
+        }
+        else{
+            if($(this).hasClass('active')){
+                $(this).removeClass('active');
+                $(this).find('input').prop('checked', false);
+            } 
+            else{
+                $(this).addClass('active');
+                $(this).find('input').prop('checked', true);
+            }
+        } 
+       
+    });
+    /*
+    * Single Tour
+    */
+   //schedule single tour
+    $('.list-schedule .item .view').click(function(){
+        $(this).parents('.col-md-6').addClass('active');
+        //$(this).parents('.item').find('.desc .brief').hide();
+        $(this).parents('.item').find('.desc .detail').addClass('is-show');
+        $(this).parents('.item').find('.list-icons').addClass('is-show');
+        $(this).hide();
+        $(this).parents('.item').find('.collapse').fadeIn();
+        
+        $('.list-schedule .col-md-6').each(function(){
+            var current_height = $(this).find('.item').outerHeight();
+            var element = $(this).index() + 1; 
+            var next_element = element + 1;
+            if($(this).is(':nth-child(2n+1)')){
+                $('.list-schedule .col-md-6:nth-child('+ next_element + ')').css('min-height', current_height + 180);
+                $('.list-schedule .col-md-6:nth-child('+ next_element + ') .item').css('margin-top', current_height - 150);
+            }
+        });
+        $([document.documentElement, document.body]).animate({
+            scrollTop: $(this).parents('.item').offset().top - 200
+        }, 500);
+
+    });
+
+    $('.list-schedule .item .collapse').click(function(){
+        $(this).parents('.col-md-6').removeClass('active');
+        $(this).parents('.item').find('.desc .detail').removeClass('is-show');
+        $(this).parents('.item').find('.list-icons').removeClass('is-show');
+        //$(this).parents('.item').find('.desc .brief').fadeIn();
+        $(this).hide();
+        $(this).parents('.item').find('.view').fadeIn();
+        
+        $('.list-schedule .col-md-6').each(function(){
+            var current_height = $(this).find('.item').outerHeight();
+            var element = $(this).index() + 1; 
+            var next_element = element + 1;
+            if($(this).is(':nth-child(2n+1)')){
+                $('.list-schedule .col-md-6:nth-child('+ next_element + ')').css('min-height', current_height + 180);
+                $('.list-schedule .col-md-6:nth-child('+ next_element + ') .item').css('margin-top', current_height - 150);
+            }
+        });
+        $([document.documentElement, document.body]).animate({
+            scrollTop: $(this).parents('.item').offset().top - 200
+        }, 500);
+    });
+
+    //expand all schedule tour
+    $('.detail-schedule-sec .expand-all').click(function(){
+        //$('.list-schedule .item .brief').hide();
+        $('.list-schedule .item .detail').addClass('is-show');
+        $('.list-schedule .item .list-icons').addClass('is-show');
+        $('.list-schedule .item .view').hide();
+        $('.list-schedule .item .collapse').fadeIn();
+        $(this).hide();
+        $('.detail-schedule-sec .collapse-all').fadeIn();
+        $('.list-schedule .col-md-6').each(function(){
+            var current_height = $(this).find('.item').outerHeight();
+            var element = $(this).index() + 1; 
+            var next_element = element + 1;
+            if($(this).is(':nth-child(2n+1)')){
+                $('.list-schedule .col-md-6:nth-child('+ next_element + ')').css('min-height', current_height + 180);
+                $('.list-schedule .col-md-6:nth-child('+ next_element + ') .item').css('margin-top', current_height - 150);
+            }
+        });
+    });
+    //collapse all schedule tour
+    $('.detail-schedule-sec .collapse-all').click(function(){
+      
+        $('.list-schedule .item .detail').removeClass('is-show');
+        $('.list-schedule .item .list-icons').removeClass('is-show');
+        //$('.list-schedule .item .brief').fadeIn();
+        $('.list-schedule .item .collapse').hide();
+        $('.list-schedule .item .view').fadeIn();
+        $(this).hide();
+        $('.detail-schedule-sec .expand-all').fadeIn();
+        $('.list-schedule .col-md-6').each(function(){
+            var current_height = $(this).find('.item').outerHeight();
+            var element = $(this).index() + 1; 
+            var next_element = element + 1;
+            if($(this).is(':nth-child(2n+1)')){
+                $('.list-schedule .col-md-6:nth-child('+ next_element + ')').css('min-height', current_height + 180);
+                $('.list-schedule .col-md-6:nth-child('+ next_element + ') .item').css('margin-top', current_height - 150);
+            }
+        });
+    });
+
+    
+
+    //back to start in list schedule tour
+    $('.detail-schedule-sec .back-to-start').click(function(){
+        $([document.documentElement, document.body]).animate({
+            scrollTop: $(".detail-schedule-sec").offset().top - 100
+        }, 1000);
+        return false;
+    });
+
+    //tour brief scroll to tour detail
+    $('.tour-brief table td a, .table-list-schedule ul li a').click(function(){ 
+        
+        var day = $(this).attr('href');
+        
+        //scroll to element of list schedule
+        $([document.documentElement, document.body]).animate({
+            scrollTop: $(".list-schedule "+day).offset().top - 200
+        }, 1000);
+            
+
+        $(".list-schedule "+day).find('.brief').hide();
+        $(".list-schedule "+day).find('.detail').fadeIn();
+        $(".list-schedule "+day).find('.view').hide();
+        $(".list-schedule "+day).find('.collapse').fadeIn();
+
+        $('.list-schedule .col-md-6').each(function(){
+            var current_height = $(this).find('.item').outerHeight();
+            var element = $(this).index() + 1; 
+            var next_element = element + 1;
+            if($(this).is(':nth-child(2n+1)')){
+                $('.list-schedule .col-md-6:nth-child('+ next_element + ')').css('min-height', current_height + 180);
+                $('.list-schedule .col-md-6:nth-child('+ next_element + ') .item').css('margin-top', current_height - 150);
+            }
+        });
+
+        /*$('.table-list-schedule ul li').each(function(){ 
+            console.log(index, $('.table-list-schedule ul li:first-child').outerHeight(true));
+            if(!$('.table-list-schedule ul li:first-child').is(':visible')){
+                $('.table-list-schedule ul li:first-child').css('visibility', 'visible');
+            }
+            if(($(this).index() + 2) < index) { h_scrollTo += $('.table-list-schedule ul li').eq(index-1).height(); }
+        });
+        console.log(h_scrollTo);*/
+    
+        return false;
+    });
+
+    //quick search sidebar
+    $('#sidebar .quick-search .box-item h5').click(function(){
+        if($(this).parents('.box-item').hasClass('active')){
+            $(this).parents('.box-item').removeClass('active');
+        }
+        else{
+            $(this).parents('.box-item').addClass('active');
+        }
+        $(this).parents('.box-item').find('ul').slideToggle();
+    });
+
+    
+    
+    $('#sidebar .quick-search .box-item li').click(function(){
+        if($(this).parents('.box-item ').hasClass('duration-box')){
+            $('#sidebar .quick-search .duration-box li').removeClass('active');
+            $(this).addClass('active');
+        }
+        else{
+            if($(this).hasClass('active')){
+                $(this).removeClass('active');
+            }
+            else{
+                $(this).addClass('active');
+            }
+            $('.single-tour .quick-search [name=des]').attr('value', arr_des_id);
+        }
+        
+    });
+
+    //fixed group group-fixed sidebar when scroll
+    if($('#sidebar .group-fixed').length){
+        var height_topHeader = $('header .top').outerHeight() + $('menu-top').outerHeight();
+        var distance_arrow = $('.back-to-start').offset().top; 
+        
+        $(window).scroll(function(){
+            distance_arrow = $('.back-to-start').offset().top; 
+            var height_window = $(window).scrollTop();
+            var width_sidebar = $('#sidebar .gr-not-fixed').outerWidth();
+            var distance_sidebar = $('#sidebar').offset().top;
+            //var height_sidebar = $('#sidebar').outerHeight() - $('#sidebar .group-fixed').outerHeight();
+            var height_sidebar = $('#sidebar .gr-not-fixed').outerHeight(); 
+
+            //if have list heading
+            if($('.table-heading').length){
+                if(height_sidebar < $('.table-heading').offset().top + $('.table-heading').outerHeight())
+                    height_sidebar = $('.table-heading').offset().top - distance_sidebar + height_topHeader;
+            }
+            
+            if( (height_window > (distance_sidebar + height_sidebar - height_topHeader)) && (height_window < (distance_arrow - height_topHeader - 400))){
+                $('#sidebar .group-fixed').css('width', width_sidebar);
+                $('#sidebar .group-fixed').addClass('fixed');
+
+                if($('#sidebar .group-fixed').hasClass('fixed')){
+                    //scroll to in scrollbar
+                    var h_scrollTo = 0; 
+                    var index = $('.table-list li a.active').closest('li').index() + 1;
+                    $('.table-list li').each(function(){ 
+                        if(($(this).closest('li').index() + 1) < index) 
+                            h_scrollTo += $(this).outerHeight(); 
+                    });
+                    $('.scrollbar-inner').animate({scrollTop: h_scrollTo}, 1); //console.log(index, h_scrollTo);
+                }
+                else{
+
+                }
+                
+            } 
+            else{
+                $('#sidebar .group-fixed').removeClass('fixed');
+            }
+        });
+    }
+
+
+    //close table list sidebar
+    $('#sidebar .table-list .close').click(function(){
+        $(this).parents('.table-content').addClass('hide');
+        $('.single-tour #sidebar .personalize-tour').addClass('expand');
+    });
+    $('#sidebar .table-list .table-bar').click(function(){
+        $(this).parents('.table-list').find('.table-content').removeClass('hide');
+        $('.single-tour #sidebar .personalize-tour').removeClass('expand');
+    });
+
+    //check item schedule of tour is showing screen
+    if($('.list-schedule').length){
+       
+        $(window).scroll(function(){
+            $('.list-schedule .item').each(function(){ 
+                
+                /*if(isOnScreen($(this))){
+                    var id = $(this).attr('id');
+                    $('#sidebar .table-list .table-body li a').removeClass('active');
+                    $('#sidebar .table-list .table-body li a[href=#'+ id +']').addClass('active');
+                    console.log(id, $(this).outerHeight());
+                }
+                if(!isOnScreen($(this))){
+                    var id = $(this).attr('id');
+                    $('#sidebar .table-list .table-body li a[href=#'+ id +']').removeClass('active');
+                    console.log(id, $(this).outerHeight());
+                }*/
+                var id = $(this).attr('id');
+                if($(this).isInSchedule()){
+                    $('#sidebar .table-list .table-body li a').removeClass('active');
+                    $('#sidebar .table-list .table-body li a[href=#'+ id +']').addClass('active');
+                }
+                else{
+                    $('#sidebar .table-list .table-body li a[href=#'+ id +']').removeClass('active');
+                }
+               
+
+            });
+
+        });
+    }
+
+    //check item schedule of tour is showing screen
+    if($('.list-tb-content').length){
+       
+        $(window).scroll(function(){
+            $('.list-tb-content .item-tb-content').each(function(){ 
+                var id = $(this).attr('id'); 
+                if($(this).isInSchedule()){
+                    $('#sidebar .table-list .table-body li a').removeClass('active');
+                    $('#sidebar .table-list .table-body li a[href=#'+ id +']').addClass('active');
+                }
+                else{
+                    $('#sidebar .table-list .table-body li a[href=#'+ id +']').removeClass('active');
+                }
+            });
+
+        });
+    }
+
+    
+
+    //event click scroll to table content item
+    $('.list-heading li a, #sidebar .table-list .table-body li a').click(function(e){
+        e.preventDefault();
+        var id = $(this).attr('href');
+        $([document.documentElement, document.body]).animate({
+            scrollTop: $(".list-tb-content "+ id).offset().top - 200
+        }, 1000);
+    });
+
+    //show & hide table heading
+    $('.table-heading .collapse-bar').click(function(e){
+        e.preventDefault();
+        $(this).addClass('hide');
+        $(this).closest('.table-heading').find('.list-heading').addClass('hide');
+        $(this).closest('.table-heading').find('.expand-bar').removeClass('hide');
+    });
+    $('.table-heading .expand-bar').click(function(e){
+        e.preventDefault();
+        $(this).addClass('hide');
+        $(this).closest('.table-heading').find('.list-heading').removeClass('hide');
+        $(this).closest('.table-heading').find('.collapse-bar').removeClass('hide');
+    });
+
+});
+//validate email
+function validateEmail($email) {
+  var emailReg = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/;
+  return emailReg.test( $email );
+}
+
+$.fn.isInSchedule = function() {
+      var elementTop = $(this).offset().top;
+      var elementBottom = elementTop + $(this).outerHeight();
+
+      var viewportTop = $(window).scrollTop();
+      var viewportBottom = viewportTop + $(window).height();
+
+      return elementBottom > viewportTop && elementTop < viewportBottom - $(window).height() + 300;
+};

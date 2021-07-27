@@ -1,0 +1,239 @@
+<?php
+namespace App\Http\Controllers;
+use Illuminate\Http\Request;
+use App\Http\Requests;
+use App\Pages;
+use Mail;
+use App\Metas;
+use App\SlideDetail;
+use App\ArticleCat;
+use App\Article;
+use App\Countries;
+
+class PagesController extends Controller
+{
+    public function index(){
+        $page = Pages::find(1);   
+        $articlesVip = Article::latest()->limit(8)->get();
+        $articlesNew = Article::latest()->paginate(15);        
+        $homeSlide = slideDetail::where('slide_id',5)->get();
+
+        $data = [];        
+        $data['homeSlide'] = $homeSlide;
+        $seo = get_seo($page->id,'page');  
+
+        $destination = Countries::where('parent_id', 0)->limit(4)->get();
+
+        return view('index',['page'=>$page, 'data'=>$data, 'destination'=>$destination, 'seo'=>$seo, 'articlesNew'=>$articlesNew]);
+    }    
+    /**
+    * Display content contac page   
+    */
+    public function contact(){
+        $page = Pages::find(15);
+        return view("contact",['page'=>$page]);
+    }
+    public function updateContact(Request $request){
+        $alert = "error";
+        if($request->ajax()):
+            //mail admin
+            $fullName = $request->title.' '.$request->firstName.' '.$request->lastName;
+            $email = $request->email;
+            $birthday = $request->birthday;
+            $country = $request->country;
+            $newsletter = $request->newsletter;
+            $phone = $request->areaCode.$request->numberPhone;
+            $subject = $request->subject;
+            $message_user = $request->message;
+            $firstNameIntro = $request->firstNameIntro;
+            $lastNameIntro = $request->lastNameIntro;
+            $phoneSystem = phone();
+            $mailSystem = mailSystem();
+            // content
+            $h3 = 'font-size: 16px;line-height:31px;height:31px;background-color:#666;border-radius: 10px; margin: 35px 0 20px;color: #fff;text-align: center; ';
+            $display_table = 'display:table; width: 100%;';
+            $fleft = 'float: left; width: 100%;';
+            $wrapper = 'font-size: 15px; line-height: 21px; color: #666; font-family: Arial; background-color: #fff; width: 600px; margin: 0 auto; display: table';
+            $header = 'background-color: #666; ';
+            $logo ='float: left; width: 63px; display: block; margin: 6px 0 7px 10px;';
+            $header_text = 'float: left; width: calc(100% - 156px); line-height: 63px; margin: 0; text-align: center; color: #fff; margin-top: 6px;';
+            $header_img = 'float: left; width: 63px; margin: 6px 20px 7px 0';
+            $container_fluid = 'padding: 0 40px; float:left;';
+            $box_modal = 'padding: 10px; text-align: left;';
+            $box_modal_ul = 'padding-left: 25px; margin: 0;';
+            $box_modal_p_li = 'color: #555; position: relative; margin-left: 0;';
+            $box_modal_li = 'width: 45%; float: left; padding-right: 10px; padding-left: 10px;';	
+            $about_box = 'background-color: #f1f1f1;padding:18px 34px 44px; text-align: center; border-bottom-right-radius: 10px; border-bottom-left-radius: 10px; float:left; height: 230px';
+            $about_box_ul = 'padding-left:0 ;list-style: none; margin: 0; color: #7e7e7e;';
+            $about_box_info_li = 'margin-bottom: 22px; display: block; margin-left: 0;';
+            $list_button = 'padding-top: 25px;';
+            $list_button_li = 'padding: 0 23px;float: left;width: 38%;height: 33px;line-height: 33px;text-align: center; margin-left: 0;';
+            $list_button_li_a = 'display: block;background-color: #e73361;color: #fff; border-radius: 10px; text-decoration: none;';
+            $red_color = 'color: #e73362';
+            $button_group = 'background-color: #f1f1f1; margin-bottom: 50px; border-radius: 10px;';
+            $share_box = 'background-color: #f1f1f1; border-top-left-radius: 10px; border-top-right-radius: 10px;';
+            $share_h3 = 'color: #666; font-size: 14px; line-height: 20px; margin: 19px 0 25px; text-align: center;';
+            $share_ul = 'float: left; width: 100%; margin: 0 0 30px 96px;';
+            $share_li = 'float:left; padding: 0 18px; margin-left: 0;';
+            $share_li_a = 'width: 30px; height: 30px; line-height: 30px; text-align: center; background-color: #e73361; border-radius: 5px; display: block';
+            $footer = 'background-color: #666; ';
+            $footer_ul = 'float: left; width: 100%; margin: 22px 0 22px 25px;';
+            $footer_li = 'padding: 0 15px; width: 28%; float: left; color: #fff; margin-left: 0;';
+            $footer_li_a = 'color: inherit; text-decoration: underline; font-size: 14px;';
+            $footer_span = 'border-radius: 50%; width: 25px; height: 25px; line-height: 25px; text-align: center; background-color: #fff; display: inline-block; margin-right: 6px;';	
+            $wrap_img = 'margin: 30px 0 25px; text-align: center;';
+            $img = 'display: inline-block; max-width: 100%; height: auto; vertical-align: middle;'; 
+            $note = 'text-align: right; color: #666; margin-top: 10px; font-size: 11px; line-height: 18px';
+            $onMouseOver = "this.style.backgroundColor='#e73361'";
+            $onMouseOut = "this.style.backgroundColor ='#d9d9d9'";
+
+            $content = '<div style="'. $wrapper .'">';
+                $content .= '<div style="'. $header . $display_table. '">';
+                    $content .= '<a href="'.route('home').'" target="_blank" style="'. $logo .'"><img src="'.getLogo().'" style="'. $img .'"></a>';
+                    $content .= '<p style="'. $header_text .'">Tailor-made tour specialist in Laos</p>';
+                $content .= '</div> ';
+                $content .= '<div style="'. $container_fluid .'">'; 
+                    $content .= '<div style="'. $about_box .'">';
+                    $content .= '<ul style= "'. $about_box_ul .'">';
+                        $content .= '<li style="'.  $about_box_info_li .'">'.$fullName.'</li>';
+                        $content .= '<li style="color: #e62757; '. $about_box_info_li .' ">Greetings from BiiG Holiday !</li>';
+                        $content .= '<li style="'.  $about_box_info_li .'">Many thanks for your interest.</li>';
+                        $content .= '<li style="'.  $about_box_info_li .'">One of our travel consultants will contact you shortly to address your query.</li>';
+                        $content .= '<li style="'.  $about_box_info_li .' margin-bottom:0;">In the meantime. you can review your message as detailed below. send another request or view our tour collection.</li>';
+                    $content .= '</ul>';
+                    $content .= '<ul style="'. $about_box_ul . $list_button . $fleft .'">';
+                        $content .= '<li style="'. $list_button_li .'"><a href="'.route('home').'" style="'. $list_button_li_a .'" onMouseOver="'. $onMouseOver .'" onMouseOut="'. $onMouseOut .'">Send another request</a></li>';
+                        $content .= '<li style="'. $list_button_li .'"><a href="'.route('home').'" style="'. $list_button_li_a .'" onMouseOver="'. $onMouseOver .'" onMouseOut="'. $onMouseOut .'">View all tours</a></li>';
+                    $content .= '</ul>';
+                $content .= '</div>';
+                $content .= '<div style="'. $wrap_img . $fleft .'">';
+                    $content .= '<img src="'.asset('public/images/bee/base_fill.png').'" alt="" style="'. $img .'" />';
+                $content .= '</div>';
+                $content .= '<div style="float: left; margin-bottom: 50px">';
+                    $content .= '<div style="' .$display_table.'">';
+                        $content .= '<h3 style="'. $h3 .'">Your personal information</h3>';
+                        $content .= '<div style="'. $box_modal .'">';
+                            $content .= '<ul style="'. $box_modal_ul .'float: left;">';
+                                $content .= '<li style="'. $box_modal_li . $box_modal_p_li .'">Name: <span style="'. $red_color .'"> '.$fullName.' </span></li>';
+                                $content .= '<li style="'. $box_modal_li . $box_modal_p_li .'">Phone number: <span style="'. $red_color .'"> '.$phone.' </span></li>';
+                                $content .= '<li style="'. $box_modal_li . $box_modal_p_li .'">Email: <a href="'.$email.'" target="_blank" style="'. $red_color .'">'.$email.'</a></li>';
+                                $content .= '<li style="'. $box_modal_li . $box_modal_p_li .'">Birthday: <span style="'. $red_color .'">'.$birthday.'</span></li>';
+                                $content .= '<li style="'. $box_modal_li . $box_modal_p_li .'">Country: <span style="'. $red_color .'">'.$country.'</span></li>';
+                                $content .= '<li style="'. $box_modal_li . $box_modal_p_li .'">Newsletter: <span style="'. $red_color .'">'. $newsletter .'</span></li>';
+                            $content .= '</ul>';
+                        $content .= '</div>';
+                    $content .= '</div>';
+                    $content .= '<div style="' .$display_table.'">';
+                        $content .= '<h3 style="'. $h3 .'">Your Message</h3>';
+                        $content .= '<div style="'. $box_modal .'">';
+                            $content .= '<ul style="'. $box_modal_ul  .'">';
+                                $content .= '<li style="'. $box_modal_p_li .'">Subject: <span style="'. $red_color .'">'.$subject.'</span></li>';
+                                $content .= '<li style="'. $box_modal_p_li .'"><span style="color: #666">Message: </span> <p style="'. $red_color .'">'.$message_user.'</p></li>';
+                            $content .= '</ul>';
+                        $content .='</div>';
+                    $content .= '</div>';
+                    if($firstNameIntro != "" || $lastNameIntro != ""){
+                        $content .= '<div style="' .$display_table.'">';
+                            $content .= '<h3 style="'. $h3 .'">Sponsorship</h3>';
+                            $content .= '<div  style="'. $box_modal .'">';
+                                $content .= '<ul style="'. $box_modal_ul  .' padding-left: 17px;">';
+                                    if($firstNameIntro != "" && $lastNameIntro != ""){
+                                        $content .= '<li style="'. $box_modal_p_li .'">Sponsored by: <span style="'. $red_color .'">'. $firstNameIntro .' '. $lastNameIntro .'</span></li>';
+                                    }elseif($firstNameIntro != "" && $lastNameIntro == ""){
+                                        $content .= '<li style="'. $box_modal_p_li .'">Sponsored by: <span style="'. $red_color .'">'. $firstNameIntro .'</span></li>';
+                                    }else{
+                                        $content .= '<li style="'. $box_modal_p_li .'">Sponsored by: <span style="'. $red_color .'">'. $lastNameIntro .'</span></li>';
+                                    }
+                                $content .= '</ul>';
+                            $content .= '</div>';
+                        $content .= '</div>';
+                    }
+                $content .='</div>';    
+                $content .= '<ul style="'. $about_box_ul . $list_button . $fleft .'">';
+                    $content .= '<li style="'. $list_button_li .'"><a href="'.route('home').'" style="'. $list_button_li_a .'" onMouseOver="'. $onMouseOver .'" onMouseOut="'. $onMouseOut .'">Send another request</a></li>';
+                    $content .= '<li style="'. $list_button_li .'"><a href="'.route('home').'" style="'. $list_button_li_a .'" onMouseOver="'. $onMouseOver .'" onMouseOut="'. $onMouseOut .'">View all tours</a></li>';
+                $content .= '</ul>';
+                $content .= '<div style="'. $share_box . $display_table .'">';
+                    $content .= '<h3 style="'. $share_h3 .'">Follow us on</h3>';
+                    $content .= '<ul style="'. $about_box_ul . $share_ul .'">';
+                        $content .= '<li style="'. $share_li .'">';
+                            $content .= '<a href="https://instagram.com/" target="_blank" style="'. $share_li_a .'">';
+                                $content .= '<img src="'.asset('public/images/email_icon/instagram.png').'" alt="" style="'. $img .'" />';
+                            $content .= '</a>';
+                        $content .= '</li>';
+                        $content .= '<li style="'. $share_li .'">';
+                            $content .= '<a href="https://facebook.com/" target="_blank" style="'. $share_li_a .'">';
+                                $content .= '<img src="'.asset('public/images/email_icon/facebook.png').'" alt="" style="'. $img .'" />';
+                            $content .= '</a>';
+                        $content .= '</li>';
+                        $content .= '<li style="'. $share_li .'">';
+                            $content .= '<a href="https://twitter.com/" target="_blank" style="'. $share_li_a .'">';
+                                $content .= '<img src="'.asset('public/images/email_icon/twitter.png').'" alt="" style="'. $img .'" />';
+                            $content .= '</a>';
+                        $content .= '</li>';
+                        $content .= '<li style="'. $share_li .'">';
+                            $content .= '<a href="https://youtube.com/ target="_blank" style="'. $share_li_a .'">';
+                                $content .= '<img src="'.asset('public/images/email_icon/youtube.png').'" alt="" style="'. $img .'" />';
+                            $content .= '</a>';
+                        $content .= '</li>';
+                        $content .= '<li style="'. $share_li .'">';
+                            $content .= '<a href="https://pinterest.com/" target="_blank" style="'. $share_li_a .'">';
+                                $content .= '<img src="'.asset('public/images/email_icon/pinterest.png').'" alt="" style="'. $img .'" />';
+                            $content .= '</a>';
+                        $content .= '</li>';
+                    $content .= '</ul>';
+                $content .= '</div>';
+                $content .= '<div style="'. $footer . $display_table . '">';
+                    $content .= '<ul style="'. $about_box_ul . $footer_ul .'">';
+                        $content .= '<li style="'. $footer_li .'">';
+                            $content .= '<span style="'. $footer_span .'">';
+                                $content .= '<img src="'.asset('public/images/email_icon/phone.png').'" alt="" style="'. $img .'" />';
+                            $content .= '</span>';
+                            $content .= 'Hotline *';
+                            $content .= '<p><a href="tel:'.$phoneSystem.'" style="'. $footer_li_a .'">'.$phoneSystem.'</a></p>';
+                        $content = '</li>';
+                        $content .= '<li style="'. $footer_li .'">';
+                            $content .= '<span style="'. $footer_span .'">';
+                                $content .= '<img src="'.asset('public/images/email_icon/envelope-small.png').'" alt="" style="'. $img .'" />';
+                            $content .= '</span>';
+                            $content .= 'Email';
+                            $content .= '<p><a href="mailto:'.$mailSystem.'" style="'. $footer_li_a .'">'.$mailSystem.'</a></p>';
+                        $content = '</li>';
+                        $content .= '<li style="'. $footer_li .'">';
+                            $content .= '<span style="'. $footer_span .'">';
+                                $content .= '<img src="'.asset('public/images/email_icon/phone.png').'" alt="" style="'. $img .'" />';
+                            $content .= '</span>';
+                            $content .= 'Web site';
+                            $content .= '<p><a href="'.route('home').'" style="'. $footer_li_a .'">'.route('home').'</a></p>';
+                        $content = '</li>';
+                    $content .= '</ul>';
+                $content .= '</div>';
+                $content .= '<p style="'. $note .'">* Call us free on whatsapp. Messenger. Skype</p>';
+            $content .= '</div>';
+
+            // $data = array( 'email' => $request->email, 'name' => $request->name, 'from' => mailSystem(), 'message'=> $content);
+            // Mail::send( 'mails.admin.contact', compact('data'), function( $message ) use ($data){
+            //     $message->to(mailSystem())
+            //             ->from( $data['email'], $data['name'] )
+            //             ->subject('[Liên Hệ từ NetLoading] - '.$data['name']);
+            // });
+            //mail customer
+            $data = array( 'email' => $email, 'from'=>$email);
+            Mail::send( 'mails.contact', compact('data'), function( $msg ) use ($data){
+                $msg->to( $data['email'])
+                        ->from( $data['from'])
+                        ->subject('[BiigHoliday] Cảm ơn bạn đã phản hồi');
+            });
+            $alert = 'Cảm ơn bạn đã gửi yêu cầu đến BiigHoliday, chúng tôi sẽ phản hồi lại bạn trong thời gian sớm nhất.';
+        endif;
+        return $alert;
+    }
+    public function page($slug){
+        $page = Pages::findBySlug($slug);
+        $seo = get_seo($page->id,'page');
+        if($page->id!=15)
+           return view("page",['page'=>$page, 'seo'=>$seo]);
+        else
+            return view("contact",['page'=>$page, 'seo'=>$seo]);
+    }
+}

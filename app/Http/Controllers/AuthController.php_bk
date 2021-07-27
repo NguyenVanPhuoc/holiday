@@ -1,0 +1,324 @@
+<?php
+namespace App\Http\Controllers;
+use Validator, Input, Redirect; 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Requests;
+use App\User;
+use App\UserMetas;
+use App\Media;
+use Illuminate\Support\Facades\Mail;
+
+class AuthController extends Controller
+{
+    public function login(){
+        if(Auth::check()){
+            $user = Auth::User();
+            if($user->level == "admin")
+                return redirect('admin');
+            else
+                return redirect()->back();
+        }        
+        return view('login');
+    }
+
+    public function logout(){
+        Auth::logout();
+        return redirect(url('/'));
+    }
+    
+    public function postLogin(Request $request){        
+        if($request->ajax()):
+            if(Auth::attempt(['email'=>$request->email,'password'=>$request->pass])){
+                $user = Auth::User();    
+                if($user->level=="admin")
+                    $url = url('admin');
+                else
+                    $url = url('/');
+                return response()->json(['message'=>'success','url'=>$url]);
+            }else{
+                return response()->json(['message'=>'error']);
+            }
+        endif;        
+    }
+
+    public function register(){
+        if(Auth::check()){
+            if($user->level == "admin")
+                return redirect('admin');
+            else
+                return redirect()->back();
+        }
+        return view('register');
+    }
+    public function postRegister(Request $request){               
+        if($request->ajax()):
+            $data = array();
+            $data['_token'] = $request->token;
+            $data['captcha'] =  $request->captcha;
+            $data['email'] =  $request->email;
+            $validator = Validator::make($data,[
+                'captcha' => 'captcha',
+                'email' => 'unique:users,email'
+            ],[ 
+                'captcha.captcha'=>'Captcha không đúng, hãy thử lại captcha khác.',
+                'email.unique'=>'Email đã tồn tại.',
+            ]);
+            if ($validator->passes()){
+                $user = new User;
+                $user->name = $request->name;
+                $user->slug = $request->name;
+                $user->email = $request->email;
+                $user->password = bcrypt($request->pass);
+                $user->level = 'member';                        
+                if($user->save()){
+                    $content = '<ul>';
+                    $content .= '<li>Họ & tên: '.$request->name.'</li>';                    
+                    $content .= '<li>Email: '.$request->email.'</li>';
+                    $content .= '</ul>';
+                    $data = array( 'email' => $request->email, 'name' => $request->name, 'from' => mailSystem(), 'message'=> $content);
+                    Mail::send( 'mails.admin.register', compact('data'), function( $message ) use ($data){
+                        $message->to(mailSystem())
+                                ->from( $data['email'], $data['name'] )
+                                ->subject('[Đăng ký thành viên] - '.$data['name']);
+                    });
+                }
+                return response()->json(['message'=>'success']);               
+            }else{
+               return response()->json(['message'=>'error','error'=>$validator->errors()->all()]);
+            }            
+        endif;        
+    }
+    
+    public function postResetPassword(Request $request){
+        $this->validate($request,[
+            'phone'=>'required',
+            ],[
+            'phone.required'=>'Vui lòng số điện thoại hoặc email'
+            ]);
+        $message = "<div class='alert alert-success'>Khôi phục thành công, mật khẩu mới đã chuyển vào email của bạn.</div>";
+        $phone = trim($request->phone);
+        $password = get_Otp();
+        if(is_numeric($phone))
+            $user = User::where("phone",$request->phone)->first();
+        else
+            $user = User::where("email",$request->phone)->first();
+        
+        if($user != NULL){
+            $user->password = bcrypt($password);
+            $user->save();
+            $content = "Mật khẩu mới của bạn: ".$password;
+            if(is_numeric($phone)){
+                $postcode = aic_Send_SMS(trim($_POST['phone']),$content);
+                if($postcode=="success")               
+                    $message = "<div class='alert alert-success'>Khôi phục thành công, mật khẩu mới đã chuyển vào số phone của bạn.</div>";
+                else
+                    $message = "<div class='alert alert-danger'>Khôi phục thất bại, hệ thống đang bảo trì. Vui lòng thử lại sau!</div>";
+            }else{                
+                $data = array( 'email' => $user->email, 'name' => $user->name, 'from' => mailSystem(), 'address'=>address(), 'content'=> $content);
+                Mail::send( 'mails.reset_password', compact('data'), function( $message ) use ($data)
+                {
+                    $message->to( $data['email'] )
+                            ->from( $data['from'], $data['name'] )
+                            ->subject( 'Phục hồi mật khẩu' );
+                });
+                $message = "<div class='alert alert-success'>Khôi phục thành công, mật khẩu mới đã chuyển vào email của bạn.</div>";
+            }
+        }else{
+            $message = "<div class='alert alert-danger'>Số điện thoại hoặc email <strong>".$request->phone."</strong> không tồn tại trong hệ thống.</div>";
+        }
+        
+        return redirect('/reset')->with(['message'=>$message]); 
+    }
+
+    /**
+     * account
+     */
+    //change password account
+    public function editPassword(){
+        if(Auth::check()){  
+            $user = Auth::User();          
+            return view('shippers.password',['user'=>$user]);
+        }
+        return redirect('/');
+    }    
+    public function updatePassword(Request $request){
+        if(Auth::check()){
+            $user = Auth::User();
+            $checkPass  = password_verify($request->oldPassword, $user->password);
+            if($checkPass){
+                $user->password = bcrypt($request->newPassword);
+                $user->save();
+                $message = "<div class='alert alert-success'>Đổi mật khẩu thành công</div>";
+            }else{
+                $message = "<div class='alert alert-danger'>Mật khẩu không cũ đúng</div>";    
+            }
+            
+            $request->session()->flash('success', $message);
+            return redirect('/tai-khoan/doi-mat-khau');
+        }
+        return redirect('/');
+    }
+
+    //account
+    public function profile(){
+        $user = Auth::User();
+        return view('members.profile',['user'=>$user]);
+    }
+    public function editAccount(){
+        $user = Auth::User();
+        return view('members.profile_edit',['user'=>$user]);
+    }
+    //edit account
+   /* public function editAccount(){
+        if(Auth::check()){
+            $user = Auth::User();
+            if($user->level=="shipper")
+                return view('shippers.editProfile',['user'=>$user]);
+            else
+                return view('customers.editProfile',['user'=>$user]);
+        }
+        return redirect('/');
+    }*/
+    //media account
+    public function mediaAccount(){
+        if(Auth::check()){
+            $user = Auth::User();
+            $media = Media::where('user_id',$user->id)->latest()->paginate(14);
+            return view('shippers.media',['user'=>$user,'media'=>$media]);
+        }
+        return redirect('/');
+    }
+    //add media account
+    public function storeMediaAccount(){
+        if(Auth::check()){
+            $user = Auth::User();
+            return view('shippers.addMedia',['user'=>$user]);
+        }
+        return redirect('/');
+    }    
+
+    //delete media
+    public function deleteMediaAccount($id){
+        if(Auth::check()){
+            $media = Media::find($id);
+            $path = public_path() . '/uploads/' . $media->image_path; 
+            if(file_exists($path)) {
+                unlink($path);
+                $media->delete();
+                return redirect('/tai-khoan/thu-vien')->with('success','Xóa thành công');
+            }
+        }
+        return redirect('/');
+    }
+
+    //update account
+    public function updateAccount(Request $request){
+        if(Auth::check()){
+            $user = Auth::User();
+            $this->validate($request,[
+                'name'=>'required',                
+                'address'=>'required',
+                'image'=>'required',
+                ],[
+                'name.required'=>'Bạn chưa nhập họ & tên',
+                'address.required'=>'Bạn chưa nhập địa chỉ của bạn',
+                'image.required'=>'Bạn chưa có ảnh avatar',
+            ]);
+            if($user->email != $request->email):
+                $this->validate($request,[
+                        'email'=>'required|email|unique:users,email',
+                        ],[
+                        'email.required'=>'Bạn chưa nhập email',
+                        'email.email'=>'Email không đúng định dạng(ví dụ: lqviet.it@gmail.com)',
+                        'email.unique'=>'Email đã tồn tại',
+                ]);
+                $user->email = $request->email;
+            endif;            
+            if($request->changePassword=="on"):
+                $this->validate($request,[
+                    'password'=>'required|min:3|max:32',
+                    'confirmPassword'=>'required|same:password'
+                ],[
+                    'password.required'=>'Bạn chưa nhập mật khẩu',
+                    'password.min'=>'Mật khẩu ít nhất 3 kí tự',
+                    'password.max'=>'Mật khẩu tối đa 32 kí tự',
+                    'confirmPassword.required'=>'Bạn chưa nhập lại mật khẩu',
+                    'confirmPassword.same'=>'Mật khẩu nhập lại chưa khớp'
+                ]);
+                $user->password = bcrypt($request->password);
+            endif;
+            $user->name = $request->name;
+            $user->slug = $request->name;            
+            $user->address = $request->address;
+            $user->image = $request->image;
+            $user->save();
+
+            if($user->level == "shipper"):
+                $this->validate($request,[
+                'cmnd'=>'required',
+                'cmnd_date'=>'required',
+                'cmnd_location'=>'required',
+                'driver_name'=>'required',
+                'driver_type'=>'required',
+                'driver_number'=>'required',
+                'driver_luggage'=>'required',
+                'cmnd_before'=>'required',
+                'cmnd_after'=>'required',
+                'driver_license1'=>'required',
+                'driver_license2'=>'required',
+                'driver_photo'=>'required',
+                'image'=>'required',
+                ],[
+                'cmnd.required'=>'Bạn chưa nhập số CMND',
+                'cmnd_date.required'=>'Bạn chưa nhập ngày cấp CMND',
+                'cmnd_location.required'=>'Bạn chưa nhập nơi cấp CMND',
+                'driver_name.required'=>'Bạn chưa nhập tên xe',
+                'driver_number.required'=>'Bạn chưa nhập số xe',
+                'driver_luggage.required'=>'Bạn chưa nhập hành lý xe',
+                'cmnd_before.required'=>'Bạn chưa có ảnh CMND (mặt trước)',
+                'cmnd_after.required'=>'Bạn chưa có ảnh CMND (mặt sau)',
+                'driver_license1.required'=>'Bạn chưa có ảnh giấy đăng ký xe',
+                'driver_license2.required'=>'Bạn chưa có ảnh bằng lái xe',
+                'driver_photo.required'=>'Bạn chưa có ảnh ảnh xe',                
+                ]);
+                $userMeta = UserMetas::where('user_id',$user->id)->first();
+                if(!empty($userMeta)):
+                    $userMeta->cmnd = $request->cmnd;
+                    $userMeta->cmnd_date = dateConvert($request->cmnd_date);
+                    $userMeta->cmnd_location = $request->cmnd_location;
+                    $userMeta->cmnd_before = $request->cmnd_before;
+                    $userMeta->cmnd_after = $request->cmnd_after;
+                    $userMeta->driver_license1 = $request->driver_license1;
+                    $userMeta->driver_license2 = $request->driver_license2;
+                    $userMeta->driver_photo = $request->driver_photo;
+                    $userMeta->driver_photo = $request->driver_photo;
+                    $userMeta->driver_luggage = $request->driver_luggage;
+                    $userMeta->driver_number = $request->driver_number;
+                    $userMeta->driver_type = $request->driver_type;
+                    $userMeta->driver_name = $request->driver_name;
+                else:
+                    $userMeta = new UserMetas;
+                    $userMeta->cmnd = $request->cmnd;
+                    $userMeta->cmnd_date = dateConvert($request->cmnd_date);
+                    $userMeta->cmnd_location = $request->cmnd_location;
+                    $userMeta->cmnd_before = $request->cmnd_before;
+                    $userMeta->cmnd_after = $request->cmnd_after;
+                    $userMeta->driver_license1 = $request->driver_license1;
+                    $userMeta->driver_license2 = $request->driver_license2;
+                    $userMeta->driver_photo = $request->driver_photo;
+                    $userMeta->driver_photo = $request->driver_photo;
+                    $userMeta->driver_luggage = $request->driver_luggage;
+                    $userMeta->driver_number = $request->driver_number;
+                    $userMeta->driver_type = $request->driver_type;
+                    $userMeta->driver_name = $request->driver_name;
+                    $userMeta->user_id = $user->id;
+                endif;
+                $userMeta->save();
+            endif;
+            $request->session()->flash('success', '<div class="alert alert-success">Cập nhật thành công</div>');
+            return redirect('/tai-khoan/cap-nhat');
+        }
+        return redirect('/');
+    }
+}

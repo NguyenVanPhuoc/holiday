@@ -1,0 +1,68 @@
+@extends('templates.master')
+@section('title','Liên hệ')
+@section('content')
+<div id="contact-page" class="page bg-gray">
+	<div class="banner-contact">banner</div>	
+	<div class="container">
+		{{ Breadcrumbs::render('page', $page) }}
+	    <h2 class="title">{{$page->title}}</h2>
+	    @if(session('message')){!!session('message')!!}@endif
+	    <div class="row">
+	    	<div class="col-md-6 form">
+	    		<div class="box">
+					<form id="contact-frm" action="{{route('updateContact')}}" method="POST" name="contact" class="dev-form frm-contact" role="form">
+						{!! csrf_field() !!}
+						<div id="frm-name" class="form-group">
+							<label for="name" class="control-label">Họ & tên <small>*</small></label>
+							<input type="text" class="form-control" name="name" data-error="Bạn chưa nhập họ tên" required/>		    
+							<div class="help-block with-errors"></div>
+						</div>
+						<div id="frm-email" class="form-group">
+							<label for="email" class="control-label">Email <small>*</small></label>
+							<input type="email" class="form-control" name="email"/>
+						</div>
+						<div id="frm-phone" class="form-group">
+							<label for="title" class="control-label">Điện thoại <small>*</small></label>
+							<input type="text" class="form-control" name="phone">
+						</div>
+						<div id="frm-address" class="form-group">
+							<label for="title" class="control-label">Địa chỉ <small>*</small></label>
+							<input type="text" class="form-control" name="address">
+						</div>
+						<div id="frm-message" class="form-group">
+							<label for="title" class="control-label">Nội dung <small>*</small></label>
+							<textarea class="form-control" rows="5" name="message"></textarea>
+						</div>
+						<div class="form-group btn-group"><button type="submit" class="btn btn-primary">Gửi</button></div>
+				</form>
+				</div>
+			</div>
+			<div class="col-md-6 content"><div class="box">{!!$page->content!!}</div></div>
+		</div>		
+	</div>
+	<div id="map" class="contact-map"></div>
+</div>
+<script>
+    function loadMap() {
+        var myCenter = {lat: 21.0460867, lng: 105.8567957};
+        var map = new google.maps.Map(document.getElementById('map'), {
+            center: myCenter,
+            zoom: 14,
+            mapTypeId:google.maps.MapTypeId.ROADMAP
+        });
+        var marker = new google.maps.Marker({
+            position:myCenter,
+            title: "An Spa",
+            draggable: true,
+            animation:google.maps.Animation.BOUNCE,
+        });
+        marker.setMap(map);
+        var infowindow = new google.maps.InfoWindow({     
+            content:"An Spa"
+        });
+        infowindow.open(map,marker);
+    }   
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCP7vrRL2fG7Rke3mbxEpW9BCH5suPBbl0&libraries=places&callback=loadMap"
+async defer></script>
+@stop
